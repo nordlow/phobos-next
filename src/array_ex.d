@@ -80,7 +80,7 @@ struct Array(E,
     import std.traits : isAssignable, Unqual, isSomeChar, isArray;
     import std.functional : binaryFun;
     import std.meta : allSatisfy;
-    import qcmeman;
+    import qmem;
 
     alias ME = Unqual!E; // mutable E
 
@@ -1244,6 +1244,9 @@ static void tester(Ordering ordering, bool supportGC, alias less)()
         }
     }
 }
+
+// extern (C) void gc_addRange( in void* p, size_t sz, const TypeInfo ti = null ) nothrow @nogc;
+// extern (C) void gc_removeRange( in void* p ) nothrow @nogc;
 
 /// disabled copying
 unittest

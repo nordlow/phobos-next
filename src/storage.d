@@ -3,7 +3,7 @@ module storage;
 /// Large array storage.
 static struct Large(E, bool useGC)
 {
-    import qcmeman;
+    import qmem;
 
     E* ptr;
     size_t length;

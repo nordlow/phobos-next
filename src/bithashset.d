@@ -18,7 +18,7 @@ import dbgio : dln;
 struct BitHashSet(E, Growable growable = Growable.no)
     if (isBitHashable!E)
 {
-    import qcmeman : malloc, calloc, realloc, free;
+    import qmem : malloc, calloc, realloc, free;
     import core.bitop : bts, btr, btc, bt;
 
     @safe pure nothrow @nogc pragma(inline):

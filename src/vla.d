@@ -37,4 +37,4 @@ template hasVariableLength(T)
     enum hasVariableLength = hasMember!(T, "allocationSizeOfCapacity");
 }
 
-import qcmeman;
+import qmem;
