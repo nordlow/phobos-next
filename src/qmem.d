@@ -1,5 +1,5 @@
 /// Qualified (`@safe pure nothrow @nogc`) C memory management.
-module qcmeman;
+module qmem;
 
 extern(C)
 {
