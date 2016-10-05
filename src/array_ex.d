@@ -126,14 +126,10 @@ struct Array(E,
         nothrow:
 
         /// Allocate a store pointer of length `n`.
-        private void allocateStorePtr(size_t n) @trusted
+        private void allocateStorePtr(size_t n) @trusted pure
         {
             _storePtr = cast(E*)GC.malloc(E.sizeof * n);
-            static if (shouldAddGCRange!E)
-            {
-                import core.memory : GC;
-                GC.addRange(ptr, length * E.sizeof);
-            }
+            static if (shouldAddGCRange!E) { gc_addRange(ptr, length * E.sizeof); }
         }
     }
     else
@@ -141,14 +137,10 @@ struct Array(E,
         nothrow @nogc:
 
         /// Allocate a store pointer of length `n`.
-        private void allocateStorePtr(size_t n) @trusted
+        private void allocateStorePtr(size_t n) @trusted pure
         {
             _storePtr = cast(E*)_malloc(E.sizeof * n);
-            static if (shouldAddGCRange!E)
-            {
-                import core.memory : GC;
-                GC.addRange(ptr, length * E.sizeof);
-            }
+            static if (shouldAddGCRange!E) { gc_addRange(ptr, length * E.sizeof); }
         }
     }
 
@@ -269,7 +261,7 @@ struct Array(E,
         {
             makeReservedLengthAtLeast(n);
             _storePtr = cast(E*)GC.realloc(_storePtr, E.sizeof * _storeCapacity);
-            static if (shouldAddGCRange!E) { GC.addRange(ptr, length * E.sizeof); }
+            static if (shouldAddGCRange!E) { gc_addRange(ptr, length * E.sizeof); }
         }
     }
     else
@@ -325,7 +317,7 @@ struct Array(E,
     /// Destruct.
     static if (useGC)
     {
-        nothrow @trusted:
+        nothrow:
 
         ~this() { release(); }
 
@@ -335,19 +327,15 @@ struct Array(E,
             resetInternalData();
         }
 
-        private void release()
+        private void release() pure @trusted
         {
-            static if (shouldAddGCRange!E)
-            {
-                import core.memory : GC;
-                GC.removeRange(ptr);
-            }
+            static if (shouldAddGCRange!E) { gc_removeRange(ptr); }
             GC.free(_storePtr);
         }
     }
     else
     {
-        nothrow @trusted @nogc:
+        nothrow @nogc:
 
         ~this() { release(); }
 
@@ -357,13 +345,9 @@ struct Array(E,
             resetInternalData();
         }
 
-        private void release()
+        private void release() pure @trusted
         {
-            static if (shouldAddGCRange!E)
-            {
-                import core.memory : GC;
-                GC.removeRange(ptr);
-            }
+            static if (shouldAddGCRange!E) { gc_removeRange(ptr); }
             _free(_storePtr);
         }
     }
@@ -1245,11 +1229,8 @@ static void tester(Ordering ordering, bool supportGC, alias less)()
     }
 }
 
-// extern (C) void gc_addRange( in void* p, size_t sz, const TypeInfo ti = null ) nothrow @nogc;
-// extern (C) void gc_removeRange( in void* p ) nothrow @nogc;
-
 /// disabled copying
-unittest
+pure nothrow unittest
 {
     import std.functional : binaryFun;
     import std.conv : to;
