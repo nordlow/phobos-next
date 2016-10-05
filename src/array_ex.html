@@ -7,7 +7,7 @@
 Array container(s) with optional sortedness via template-parameter
     <pre style="display:inline;" class="d_inline_code">Ordering</pre> and optional use of GC via <pre style="display:inline;" class="d_inline_code">useGC</pre>.
 <br><br>
-TODO Make Array have reference semantics instead through via Automatic
+TODO Make Array have reference assignment instead through via Automatic
     Reference Counting and scope keyword when DIP-1000 has been implemented
 <br><br>
 
@@ -39,25 +39,25 @@ TODO Make Array have reference semantics instead through via Automatic
     collector (GC).<br><br>
 
 </dd>
-<dt><big><a name="AssignmentSemantics"></a>enum <u>AssignmentSemantics</u>: int;
+<dt><big><a name="Assignment"></a>enum <u>Assignment</u>: int;
 </big></dt>
 <dd>Semantics of copy construction and assignment.<br><br>
 
-<dl><dt><big><a name="AssignmentSemantics.disabled"></a><u>disabled</u></big></dt>
+<dl><dt><big><a name="Assignment.disabled"></a><u>disabled</u></big></dt>
 <dd>for reference counting use <pre style="display:inline;" class="d_inline_code">std.typecons.RefCounted</pre><br><br>
 
 </dd>
-<dt><big><a name="AssignmentSemantics.move"></a><u>move</u></big></dt>
+<dt><big><a name="Assignment.move"></a><u>move</u></big></dt>
 <dd>only <u>move</u> construction allowed<br><br>
 
 </dd>
-<dt><big><a name="AssignmentSemantics.copy"></a><u>copy</u></big></dt>
+<dt><big><a name="Assignment.copy"></a><u>copy</u></big></dt>
 <dd>always <u>copy</u> (often not the desirable)<br><br>
 
 </dd>
 </dl>
 </dd>
-<dt><big><a name="Array"></a>struct <u>Array</u>(E, AssignmentSemantics semantics = AssignmentSemantics.disabled, Ordering ordering = Ordering.unsorted, bool useGC = shouldAddGCRange!E, alias less = "a &lt; b");
+<dt><big><a name="Array"></a>struct <u>Array</u>(E, Assignment assignment = Assignment.disabled, Ordering ordering = Ordering.unsorted, bool useGC = shouldAddGCRange!E, alias less = "a &lt; b");
 </big></dt>
 <dd>Small-size-optimized (SSO-packed) array of value types <pre style="display:inline;" class="d_inline_code">E</pre> with optional
     ordering given by <pre style="display:inline;" class="d_inline_code">ordering</pre>.
