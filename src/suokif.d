@@ -73,6 +73,16 @@ enum Token
     brother_,
     sister_,
     sibling_,
+
+    lessThan_,
+    greaterThan_,
+    lessThanOrEqualTo_,
+    greaterThanOrEqualTo_,
+
+    date_,
+    insured_,
+    askPrice_,
+    outOfTheMoney_,
 }
 
 bool isLispSymbolChar(char x)
@@ -278,11 +288,19 @@ Array!Token lexSUOKIF(string src) @safe pure
                 case `disjoint`: tokens ~= Token.disjoint_; break;
                 case `mother`: tokens ~= Token.mother_; break;
                 case `father`: tokens ~= Token.father_; break;
-                case `son_`: tokens ~= Token.son_; break;
-                case `daughter_`: tokens ~= Token.daughter_; break;
-                case `brother_`: tokens ~= Token.brother_; break;
-                case `sister_`: tokens ~= Token.sister_; break;
-                case `sibling_`: tokens ~= Token.sibling_; break;
+                case `son`: tokens ~= Token.son_; break;
+                case `daughter`: tokens ~= Token.daughter_; break;
+                case `brother`: tokens ~= Token.brother_; break;
+                case `sister`: tokens ~= Token.sister_; break;
+                case `sibling`: tokens ~= Token.sibling_; break;
+                case `lessThan`: tokens ~= Token.lessThan_; break;
+                case `lessThanOrEqualTo`: tokens ~= Token.lessThanOrEqualTo_; break;
+                case `greaterThan`: tokens ~= Token.greaterThan_; break;
+                case `greaterThanOrEqualTo`: tokens ~= Token.greaterThanOrEqualTo_; break;
+                case `date`: tokens ~= Token.date_; break;
+                case `insured`: tokens ~= Token.insured_; break;
+                case `askPrice`: tokens ~= Token.askPrice_; break;
+                case `outOfTheMoney`: tokens ~= Token.outOfTheMoney_; break;
                 default:
                     import std.uni : isLower;
                     import std.algorithm : endsWith;
