@@ -1326,6 +1326,10 @@ class Rule : Node
         sink.put(";\n");
         sink.showNIndents(1); sink.put("}\n");
     }
+    @property bool isFragment() const @nogc
+    {
+        return false;
+    }
     const Token head;           ///< Name.
     Pattern top;
 }
@@ -1336,6 +1340,10 @@ final class FragmentRule : Rule
     this(Token head, Pattern top) @nogc
     {
         super(head, top);
+    }
+    @property final override bool isFragment() const @nogc
+    {
+        return true;
     }
 }
 
