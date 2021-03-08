@@ -3557,19 +3557,36 @@ struct GxFileParser           // TODO: convert to `class`
         output.put(parserSourceEnd);
     }
 
+    static GxFileParser findModuleUpwards(const string cwd,
+                                          scope const(char)[] moduleName,
+                                          scope const string ext)
+    {
+        import std.path : chainPath, dirName;
+        import std.array : array;
+        import std.file : FileException;
+        const modulePath = chainPath(cwd, moduleName ~ ext).array.idup; // TODO: detect mutual file recursion
+        try
+            return GxFileParser(modulePath);
+        catch (Exception e)
+        {
+            const cwdNext = cwd.dirName;
+            if (cwdNext == cwd) // stuck at top directory
+                throw new FileException("Couldn't find module named " ~ moduleName); // TODO: add source of import statement
+            return findModuleUpwards(cwdNext, moduleName, ext);
+        }
+    }
+
     void toMatchersForImportedModule(in const(char)[] moduleName,
                                      scope ref RuleNames doneRuleNames,
                                      scope ref Output output) const scope
     {
         import std.path : chainPath, dirName, extension;
-        import std.array : array;
 
         const string path = parser._lexer.path;
+        string cwd = path.dirName; // current working directory
         const string ext = path.extension;
 
-        const modulePath = chainPath(dirName(path), moduleName ~ ext).array.idup; // TODO: detect mutual file recursion
-
-        auto fp_ = GxFileParser(modulePath);
+        GxFileParser fp_ = findModuleUpwards(cwd, moduleName, ext);
 
         while (!fp_.parser.empty)
             fp_.parser.popFront();
