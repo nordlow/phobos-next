@@ -3557,25 +3557,6 @@ struct GxFileParser           // TODO: convert to `class`
         output.put(parserSourceEnd);
     }
 
-    static GxFileParser findModuleUpwards(const string cwd,
-                                          scope const(char)[] moduleName,
-                                          scope const string ext)
-    {
-        import std.path : chainPath, dirName;
-        import std.array : array;
-        import std.file : FileException;
-        const modulePath = chainPath(cwd, moduleName ~ ext).array.idup; // TODO: detect mutual file recursion
-        try
-            return GxFileParser(modulePath);
-        catch (Exception e)
-        {
-            const cwdNext = cwd.dirName;
-            if (cwdNext == cwd) // stuck at top directory
-                throw new FileException("Couldn't find module named " ~ moduleName); // TODO: add source of import statement
-            return findModuleUpwards(cwdNext, moduleName, ext);
-        }
-    }
-
     void toMatchersForImportedModule(in const(char)[] moduleName,
                                      scope ref RuleNames doneRuleNames,
                                      scope ref Output output) const scope
@@ -3611,6 +3592,25 @@ struct GxFileParser           // TODO: convert to `class`
             }
             importedRule.toMatcherInSource(output, parser);
             doneRuleNames.put(importedRule.head.input);
+        }
+    }
+
+    private static GxFileParser findModuleUpwards(const string cwd,
+                                                  scope const(char)[] moduleName,
+                                                  scope const string ext)
+    {
+        import std.path : chainPath, dirName;
+        import std.array : array;
+        import std.file : FileException;
+        const modulePath = chainPath(cwd, moduleName ~ ext).array.idup; // TODO: detect mutual file recursion
+        try
+            return GxFileParser(modulePath);
+        catch (Exception e)
+        {
+            const cwdNext = cwd.dirName;
+            if (cwdNext == cwd) // stuck at top directory
+                throw new FileException("Couldn't find module named " ~ moduleName); // TODO: add source of import statement
+            return findModuleUpwards(cwdNext, moduleName, ext);
         }
     }
 
