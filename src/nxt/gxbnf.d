@@ -3587,7 +3587,7 @@ struct GxFileParser           // TODO: convert to `class`
         {
             if (isOverridden(importedRule)) // if `importedRule` has already been defined
             {
-                // fp_.parser._lexer.warningattoken(importedrule.head, "ignoring rule overridden in top grammar");
+                fp_.parser._lexer.warningAtToken(importedRule.head, "ignoring rule overridden in top grammar");
                 continue;
             }
             importedRule.toMatcherInSource(output, parser);
