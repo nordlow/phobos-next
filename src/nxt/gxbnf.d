@@ -14,7 +14,7 @@
 
     TODO:
 
-    - Parallelize generation of parser files from grammars using https://dlang.org/phobos/std_parallelism.html#.parallel
+    - Parallelize grammar parsing and generation of parser files using https://dlang.org/phobos/std_parallelism.html#.parallel
 
     - Use: https://forum.dlang.org/post/zcvjwdetohmklaxriswk@forum.dlang.org
 
