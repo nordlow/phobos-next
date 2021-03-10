@@ -4156,7 +4156,7 @@ version(show)
 
     auto of = stdout;           // output file
 
-    string adjustRelativePath(const return scope string path)
+    string tryRelativePath(const return scope string path)
     {
         const cwd = getcwd();
         if (root.startsWith(cwd))
@@ -4174,7 +4174,7 @@ version(show)
             if (fn.isGxFilename)
             {
                 if (showProgressFlag)
-                    of.writeln("Lexing ", adjustRelativePath(fn), " ...");  // TODO: read use curren directory
+                    of.writeln("Lexing ", tryRelativePath(fn), " ...");  // TODO: read use curren directory
                 const data = cast(Input)rawReadPath(fn); // exclude from benchmark
                 scope StopWatch swOne;
                 swOne.start();
@@ -4182,7 +4182,7 @@ version(show)
                 while (!lexer.empty)
                     lexer.popFront();
                 if (showProgressFlag)
-                    of.writeln("Lexing ", adjustRelativePath(fn), " took ", swOne.peek());
+                    of.writeln("Lexing ", tryRelativePath(fn), " took ", swOne.peek());
             }
         }
         of.writeln("Lexing all took ", swAll.peek());
@@ -4209,7 +4209,7 @@ version(show)
                         writeln("TODO: Parse example file: ", exf);
                 }
                 if (showProgressFlag)
-                    of.writeln("Reading ", adjustRelativePath(fn), " ...");
+                    of.writeln("Reading ", tryRelativePath(fn), " ...");
 
                 scope StopWatch swOne;
                 swOne.start();
@@ -4224,7 +4224,7 @@ version(show)
                     buildSourceFiles([parsePath]);
 
                 if (showProgressFlag)
-                    of.writeln("Reading ", adjustRelativePath(fn), " took ", swOne.peek());
+                    of.writeln("Reading ", tryRelativePath(fn), " took ", swOne.peek());
             }
         }
         if (buildAllFlag)
