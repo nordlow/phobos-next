@@ -4146,7 +4146,7 @@ version(show)
     import std.file : dirEntries, SpanMode, getcwd;
     import std.path : expandTilde, relativePath, baseName, dirName, buildPath;
 
-    const root = "~/Work/grammars-v4/".expandTilde;
+    const rootDirPath = "~/Work/grammars-v4/".expandTilde;
 
     const lexerFlag = false;
     const parserFlag = true;
@@ -4159,7 +4159,7 @@ version(show)
     string tryRelativePath(const return scope string path)
     {
         const cwd = getcwd();
-        if (root.startsWith(cwd))
+        if (rootDirPath.startsWith(cwd))
             return path.relativePath(cwd);
         return path;
     }
@@ -4168,7 +4168,7 @@ version(show)
     {
         scope StopWatch swAll;
         swAll.start();
-        foreach (const e; dirEntries(root, SpanMode.breadth))
+        foreach (const e; dirEntries(rootDirPath, SpanMode.breadth))
         {
             const fn = e.name;
             if (fn.isGxFilename)
@@ -4193,7 +4193,7 @@ version(show)
         scope StopWatch swAll;
         swAll.start();
         DynamicArray!string parserPaths; ///< Paths to generated parsers in D.
-        foreach (const e; dirEntries(root, SpanMode.breadth))
+        foreach (const e; dirEntries(rootDirPath, SpanMode.breadth))
         {
             const fn = e.name;
             const dn = fn.dirName;
