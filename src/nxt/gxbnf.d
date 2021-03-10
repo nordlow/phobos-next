@@ -15,6 +15,7 @@
     TODO:
 
     - Parallelize grammar parsing and generation of parser files using https://dlang.org/phobos/std_parallelism.html#.parallel
+      After that compilation of parser files should grouped into CPU-count number of groups.
 
     - Use: https://forum.dlang.org/post/zcvjwdetohmklaxriswk@forum.dlang.org
 
