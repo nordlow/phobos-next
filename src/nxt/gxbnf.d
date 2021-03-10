@@ -14,6 +14,8 @@
 
     TODO:
 
+    - Parallelize generation of parser files from grammars using https://dlang.org/phobos/std_parallelism.html#.parallel
+
     - Use: https://forum.dlang.org/post/zcvjwdetohmklaxriswk@forum.dlang.org
 
     - Use: `nxt.git` to scan parsing examples in `grammars-v4`
