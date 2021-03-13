@@ -287,14 +287,10 @@ public:
         const adjusted_rhs = that / factor;
         const long new_den = this._num * adjusted_rhs;
         if (new_den > SomeIntegral.max)
-        {
             throw new Exception("");
-        }
         else
-        {
             return typeof(this)(cast(SomeIntegral)new_den,
                                 adjusted_den);
-        }
     }
 
     auto opBinaryRight(string op, Rhs)(const scope Rhs that) const
@@ -567,9 +563,7 @@ public:
     if (isRational!Rhs)
     {
         if (opEquals(that))
-        {
             return 0;
-        }
 
         /* Check a few obvious cases first, see if we can avoid having to use a
          * common denominator.  These are basically speed hacks.
@@ -605,13 +599,9 @@ public:
         auto rhsNum = that._num * (commonDenom / that._den);
 
         if (lhsNum > rhsNum)
-        {
             return 1;
-        }
         else if (lhsNum < rhsNum)
-        {
             return -1;
-        }
 
         /* We've checked for equality already.  If we get to this point,
          * there's clearly something wrong.
@@ -623,25 +613,17 @@ public:
     if (isIntegerLike!Rhs)
     {
         if (opEquals(that))
-        {
             return 0;
-        }
 
         // Again, check the obvious cases first.
         if (that >= this._num)
-        {
             return -1;
-        }
 
         const that_ = that * this._den;
         if (that_ > this._num)
-        {
             return -1;
-        }
         else if (that_ < this._num)
-        {
             return 1;
-        }
 
         // Already checked for equality.  If we get here, something's wrong.
         assert(0);
@@ -697,13 +679,9 @@ public:
                     {
                         // Try to make numbers smaller instead of bigger.
                         if ((temp._den & 1) == 0)
-                        {
                             temp._den >>= 1;
-                        }
                         else
-                        {
                             temp._num <<= 1;
-                        }
                     }
                     else
                     {
@@ -746,9 +724,7 @@ public:
                 real oldAns = ans;
                 ans += lIntPart * expon;
                 if (ans == oldAns)  // Smaller than epsilon.
-                {
                     return ans * sign;
-                }
 
                 // Subtract out int part.
                 temp._num -= intPart * temp._den;
@@ -851,7 +827,7 @@ class OverflowException : Exception
 
 pure unittest
 {
-    import std.bigint;
+    import std.bigint : BigInt;
     import std.math : isClose;
 
     // All reference values from the Maxima computer algebra system.
@@ -1057,9 +1033,7 @@ private Rational!SomeIntegral toRationalImpl(SomeIntegral)(real floatNum, real e
     }
 
     if (abs(actualEpsilon) <= epsilon)
-    {
         return ret;
-    }
 
     // Else get results from downstream recursions, add them to this result.
     return ret + toRationalImpl!(SomeIntegral)(actualEpsilon, epsilon);
@@ -1139,9 +1113,7 @@ if (isIntegerLike!I1 &&
     const n1 = abs(a);
     const n2 = abs(b);
     if (n1 == n2)
-    {
         return n1;
-    }
     return (n1 / gcf(n1, n2)) * n2;
 }
 
@@ -1150,9 +1122,7 @@ SomeIntegral floor(SomeIntegral)(const scope Rational!SomeIntegral r)
 {
     SomeIntegral intPart = r.integerPart;
     if (r > 0 || intPart == r)
-    {
         return intPart;
-    }
     else
     {
         intPart -= 1;
@@ -1174,9 +1144,7 @@ SomeIntegral ceil(SomeIntegral)(const scope Rational!SomeIntegral r)
 {
     SomeIntegral intPart = r.integerPart;
     if (intPart == r || r < 0)
-    {
         return intPart;
-    }
     else
     {
         intPart += 1;
@@ -1213,9 +1181,7 @@ SomeIntegral round(SomeIntegral)(const scope Rational!SomeIntegral r)
     static if (!isUnsigned!SomeIntegral)
     {
         if (!added && fractPart <= rational(-1, 2))
-        {
             intPart -= 1;
-        }
     }
 
     return intPart;
