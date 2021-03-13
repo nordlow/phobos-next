@@ -118,9 +118,7 @@ if (Ranges.length >= 2)
         {
             import std.algorithm.searching : skipOver;
             if (haystack.skipOver(needle)) // TODO: nothrow
-            {
                 return index + 1;
-            }
         }
     }
     return 0;
