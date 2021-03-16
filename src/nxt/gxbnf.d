@@ -1027,7 +1027,9 @@ void showNIndents(scope ref Output sink, uint indentDepth) @safe pure nothrow @n
 }
 
 /// Put `x` indented at `indentDepth`.
-void iput(T)(scope ref Output sink, uint indentDepth, T x) @safe pure nothrow @nogc
+void iput(T)(scope ref Output sink,
+             uint indentDepth, T x) @safe pure nothrow @nogc
+if (is(typeof(sink.put(x))))
 {
     foreach (_; 0 .. indentDepth*indentStep)
         sink.put(" ");
@@ -2096,12 +2098,19 @@ void putStringLiteralBackQuoted(scope ref Output sink,
     for (size_t i; i < inp.length; ++i)
     {
         if (inp[i] == '`')
-            sink.put("\\`");
-        else if (i + 2 <= inp.length &&
-                 inp[i .. i + 2] == `\'`)
+            sink.put("\\`");    // quote backquote in D raw string
+        else if (inp[i] == '\\' &&
+                 i + 1 < inp.length)
         {
             i += 1;             // one extra char
-            sink.put('\'');
+            if (inp[i + 1] == '\\')
+                sink.put('\\'); // strip quoting of backslash in D raw string
+            else if (inp[i + 1] == '\'')
+                sink.put('\''); // strip quoting of single-quote in D raw string
+            else if (inp[i + 1] == '"')
+                sink.put('"'); // strip quoting of double-quote in D raw string
+            else
+                sink.put(inp[i]);
         }
         else
             sink.put(inp[i]);
