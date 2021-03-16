@@ -2080,7 +2080,7 @@ void putStringLiteralDoubleQuoted(scope ref Output sink,
     for (size_t i; i < inp.length; ++i)
     {
         if (inp[i] == '"')
-            sink.put(`\"`);
+            sink.put(`\"`);     // backslash doublequote in D string
         else if (i + 2 <= inp.length &&
                  inp[i .. i + 2] == `\'`)
         {
@@ -2098,7 +2098,7 @@ void putStringLiteralBackQuoted(scope ref Output sink,
     for (size_t i; i < inp.length; ++i)
     {
         if (inp[i] == '`')
-            sink.put("\\`");    // quote backquote in D raw string
+            sink.put("\\`");    // backslash backquote in D raw string
         else if (inp[i] == '\\' &&
                  i + 1 < inp.length)
         {
