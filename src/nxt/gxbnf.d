@@ -1026,6 +1026,14 @@ void showNIndents(scope ref Output sink, uint indentDepth) @safe pure nothrow @n
         sink.put(" ");
 }
 
+/// Put `x` indented at `indentDepth`.
+void iput(T)(scope ref Output sink, uint indentDepth, T x) @safe pure nothrow @nogc
+{
+    foreach (_; 0 .. indentDepth*indentStep)
+        sink.put(" ");
+    sink.put(x);
+}
+
 private void showChars(in const(char)[] chars) @trusted
 {
     printf("%.*s", cast(uint)chars.length, chars.ptr);
@@ -1307,18 +1315,18 @@ class Rule : Node
     }
     void toMatcherInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
     {
-        sink.showNIndents(1); sink.put(`Match `);
+        sink.iput(1, `Match `);
         if (head.input != "EOF")
             sink.put(matcherFunctionNamePrefix);
         sink.put(head.input); sink.put("()\n");
-        sink.showNIndents(1); sink.put("{\n");
+        sink.iput(1, "{\n");
         import std.ascii : isUpper;
         if (head.input[0].isUpper ||
             cast(const FragmentRule)this)
         {
-            sink.showNIndents(2); sink.put("pragma(inline, true);\n");
+            sink.iput(2, "pragma(inline, true);\n");
         }
-        sink.showNIndents(2); sink.put(`return`);
+        sink.iput(2, `return`);
         if (top)
         {
             sink.put(` `);
@@ -1327,7 +1335,7 @@ class Rule : Node
         else
             sink.put(` Match.zero()`);
         sink.put(";\n");
-        sink.showNIndents(1); sink.put("}\n");
+        sink.iput(1, "}\n");
     }
     @property bool isFragment() const @nogc
     {
@@ -4108,6 +4116,8 @@ private bool isGxFilenameParsed(const scope char[] name) @safe pure nothrow @nog
 {
     if (!isGxFilename(name))
          return false;
+    if (name != `Arithmetic.g4`)
+        return false;
     if (// TODO:
         name == `Python2.g4` ||
         name == `Python3.g4` ||
