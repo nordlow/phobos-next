@@ -2102,7 +2102,6 @@ void putStringLiteralBackQuoted(scope ref Output sink,
         else if (inp[i] == '\\' &&
                  i + 1 < inp.length)
         {
-            i += 1;             // one extra char
             if (inp[i + 1] == '\\')
                 sink.put('\\'); // strip quoting of backslash in D raw string
             else if (inp[i + 1] == '\'')
@@ -2111,6 +2110,7 @@ void putStringLiteralBackQuoted(scope ref Output sink,
                 sink.put('"'); // strip quoting of double-quote in D raw string
             else
                 sink.put(inp[i]);
+            i += 1;             // one extra char
         }
         else
             sink.put(inp[i]);
@@ -4125,8 +4125,8 @@ private bool isGxFilenameParsed(const scope char[] name) @safe pure nothrow @nog
 {
     if (!isGxFilename(name))
          return false;
-    if (name != `Arithmetic.g4`)
-        return false;
+    // if (name != `Arithmetic.g4`)
+    //     return false;
     if (// TODO:
         name == `Python2.g4` ||
         name == `Python3.g4` ||
