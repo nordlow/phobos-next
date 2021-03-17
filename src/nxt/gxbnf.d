@@ -4236,42 +4236,45 @@ static immutable mainSource =
 }
 `;
 
-SourceFile createMainFile(string path, const string[] ppaths)
+SourceFile createMainFile(string path, const string[] parserPaths)
 {
+    writeln("mainPath:", path);
     auto file = typeof(return)(path, "w");
-    foreach (const ppath; ppaths)
+    foreach (const ppath; parserPaths)
     {
-        // file.write(`import `);
-        // file.write(ppath.toPathModuleName);
-        // file.write(";\n");
+        file.write(`import `);
+        file.write(ppath.toPathModuleName);
+        file.write(";\n");
     }
+
+    file.write("\n");           // separator
     file.write(mainSource);
     file.close();
     return file;
 }
 
-/// Build the D source files `ppaths`.
-string buildSourceFiles(const string[] ppaths,
+/// Build the D source files `parserPaths`.
+string buildSourceFiles(const string[] parserPaths,
                         in bool linkFlag = false)
 {
     import std.process : execute;
 
     const mainPath = "g4x.d";
-    createMainFile(mainPath, ppaths);
+    createMainFile(mainPath, parserPaths);
     const parserName = "parser";
     const outFile = parserName ~ (linkFlag ? "" : ".o");
     const args = (["dmd"] ~
                   (linkFlag ? [] : ["-c"]) ~
                   ["-dip25", "-dip1000", "-vcolumns", "-wi"] ~
-                  ppaths ~
+                  parserPaths ~
                   (linkFlag ? [mainPath] : []) ~
                   ("-of=" ~ outFile));
     writeln("args:", args);
     const dmd = execute(args);
     if (dmd.status == 0)
-        writeln("Compilation of ", ppaths, " successful");
+        writeln("Compilation of ", parserPaths, " successful");
     else
-        writeln("Compilation of ", ppaths, " failed with output:\n",
+        writeln("Compilation of ", parserPaths, " failed with output:\n",
                 dmd.output);
     return outFile;
 }
