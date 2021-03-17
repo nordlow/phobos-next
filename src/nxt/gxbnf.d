@@ -3793,7 +3793,7 @@ struct Parser
 
     Match ch(in char x) pure nothrow @nogc
     {
-        pragma(inline, true);
+        version(LDC) pragma(inline, true);
         if (off == inp.length)  // TODO:
             return Match.none();
         if (inp[off] == x)
@@ -4197,15 +4197,25 @@ struct GxFileReader
 }
 
 /// Build the D source files `ppaths`.
-void buildSourceFiles(const string[] ppaths)
+string buildSourceFiles(const string[] ppaths,
+                        in bool linkFlag = false)
 {
     import std.process : execute;
-    const dmd = execute(["dmd", "-c", "-dip25", "-dip1000", "-vcolumns", "-wi"] ~ ppaths);
+    const parserName = "parser";
+    const outFile = parserName ~ (linkFlag ? "" : ".o");
+    const args = (["dmd"] ~
+                  (linkFlag ? [] : ["-c"]) ~
+                  ["-dip25", "-dip1000", "-vcolumns", "-wi"] ~
+                  ppaths ~
+                  ("-of=" ~ outFile));
+    writeln("args:", args);
+    const dmd = execute(args);
     if (dmd.status == 0)
         writeln("Compilation of ", ppaths, " successful");
     else
         writeln("Compilation of ", ppaths, " failed with output:\n",
                 dmd.output);
+    return outFile;
 }
 
 private bool isGxFilename(const scope char[] name) @safe pure nothrow @nogc
@@ -4315,7 +4325,9 @@ void parseAllInDirTree(string rootDirPath,
             else
                 parserPaths.insertBack(parsePath);
             if (buildSingleFlag)
-                buildSourceFiles([parsePath]);
+            {
+                const parseExePath = buildSourceFiles([parsePath], true);
+            }
 
             static if (showProgressFlag)
                 outFile.writeln("Reading ", tryRelativePath(rootDirPath, fn), " took ", swOne.peek());
@@ -4330,7 +4342,7 @@ void doTree(string rootDirPath) @system
 {
     const lexerFlag = true;
     const parserFlag = true;
-    const buildSingleFlag = false;
+    const buildSingleFlag = true;
     const buildAllFlag = true;
     File outFile = stdout;
     if (lexerFlag)
