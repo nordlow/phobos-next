@@ -3591,10 +3591,11 @@ struct GxFileParser           // TODO: convert to `class`
 
     alias RuleNames = DynamicArray!string;
 
-    void generateParserSourceString(scope ref Output output)
+    void generateParserSourceString(scope ref Output output,
+                                    out string moduleName)
     {
         const path = parser._lexer.path;
-        const moduleName = path.toPathModuleName();
+        moduleName = path.toPathModuleName();
 
         output.put("/// Automatically generated from `");
         output.put(path);
@@ -4181,10 +4182,10 @@ struct GxFileReader
             fp.parser.popFront();
     }
 
-    string createParserSourceFilePath()
+    string createParserSourceFilePath(out string moduleName)
     {
         Output pss;
-        fp.generateParserSourceString(pss);
+        fp.generateParserSourceString(pss, moduleName);
         import std.file : write;
         const path = fp.parser._lexer.path;
         const ppath = path.stripExtension ~ "_parser.d";
@@ -4226,8 +4227,12 @@ struct ExecutableFile
     alias _file this;
 }
 
+static immutable mainName = `main`;
+
 static immutable mainSource =
-`int main(string[] args)
+`//import home.per.Work.grammars_v4.antlr.antlr4.ANTLRv4Lexer_parser;
+
+int ` ~ mainName ~ `(string[] args)
 {
 	return 0;
 }
@@ -4368,7 +4373,8 @@ void parseAllInDirTree(string rootDirPath,
             swOne.start();
 
             auto reader = GxFileReader(fn);
-            const parsePath = reader.createParserSourceFilePath();
+            string moduleName;
+            const parsePath = reader.createParserSourceFilePath(moduleName);
             if (parserPaths[].canFind(parsePath)) // TODO: remove because this should not happen
                 outFile.writeln("Warning: duplicate entry outFile ", parsePath);
             else
