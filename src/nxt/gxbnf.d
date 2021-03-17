@@ -4196,6 +4196,26 @@ struct GxFileReader
     ~this() @nogc {}
 }
 
+struct ObjectFile
+{
+    File file;
+    void open(string name, scope const(char)[] stdioOpenmode = "rb") @safe
+    {
+        file.open(name, stdioOpenmode);
+    }
+    alias file this;
+}
+
+struct ExecutableFile
+{
+    File file;
+    void open(string name, scope const(char)[] stdioOpenmode = "rb") @safe
+    {
+        file.open(name, stdioOpenmode);
+    }
+    alias file this;
+}
+
 /// Build the D source files `ppaths`.
 string buildSourceFiles(const string[] ppaths,
                         in bool linkFlag = false)
