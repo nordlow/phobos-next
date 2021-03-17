@@ -441,9 +441,7 @@ private:
                peekN(i) == '_' ||
                (attributeFlag && // attribute name
                 peekN(i) == ':')) // may include colon qualifier
-        {
             i += 1;
-        }
 
         // skip optional whitespace before label assignment
         auto j = i;
@@ -563,9 +561,7 @@ private:
             // skip over all escape sequences in quoted
             if (inChar ||
                 inString)
-            {
                 while (skipOverEsc(i)) {}
-            }
 
             if (!inBlockComment &&
                 !inLineComment &&
@@ -575,7 +571,8 @@ private:
                 if (peekN(i) == '/' &&
                     peekN(i + 1) == '/')
                 {
-                    if (infoFlag) infoAtIndex("line comment start", i, ds[]);
+                    if (infoFlag)
+                        infoAtIndex("line comment start", i, ds[]);
                     inLineComment = true;
                     i += 2;
                     continue;
@@ -583,19 +580,22 @@ private:
                 else if (peekN(i) == '/' &&
                          peekN(i + 1) == '*')
                 {
-                    if (infoFlag) infoAtIndex("block comment start", i, ds[]);
+                    if (infoFlag)
+                        infoAtIndex("block comment start", i, ds[]);
                     inBlockComment = true;
                     i += 2;
                     continue;
                 }
                 else if (peekN(i) == '{')
                 {
-                    if (infoFlag) infoAtIndex("brace open", i, ds[]);
+                    if (infoFlag)
+                        infoAtIndex("brace open", i, ds[]);
                     ds.put('{');
                 }
                 else if (peekN(i) == '}')
                 {
-                    if (infoFlag) infoAtIndex("brace close", i, ds[]);
+                    if (infoFlag)
+                        infoAtIndex("brace close", i, ds[]);
                     if (!ds.empty &&
                         ds.back != '{')
                         errorAtIndex("unmatched", i);
@@ -603,12 +603,14 @@ private:
                 }
                 else if (peekN(i) == '[')
                 {
-                    if (infoFlag) infoAtIndex("hook open", i, ds[]);
+                    if (infoFlag)
+                        infoAtIndex("hook open", i, ds[]);
                     ds.put('[');
                 }
                 else if (peekN(i) == ']')
                 {
-                    if (infoFlag) infoAtIndex("hook close", i, ds[]);
+                    if (infoFlag)
+                        infoAtIndex("hook close", i, ds[]);
                     if (!ds.empty &&
                         ds.back != '[')
                         errorAtIndex("unmatched", i);
@@ -616,12 +618,14 @@ private:
                 }
                 else if (peekN(i) == '(')
                 {
-                    if (infoFlag) infoAtIndex("paren open", i, ds[]);
+                    if (infoFlag)
+                        infoAtIndex("paren open", i, ds[]);
                     ds.put('(');
                 }
                 else if (peekN(i) == ')')
                 {
-                    if (infoFlag) infoAtIndex("paren close", i, ds[]);
+                    if (infoFlag)
+                        infoAtIndex("paren close", i, ds[]);
                     if (!ds.empty &&
                         ds.back != '(')
                         errorAtIndex("unmatched", i);
@@ -634,7 +638,8 @@ private:
                 peekN(i) == '*' &&
                 peekN(i + 1) == '/')
             {
-                if (infoFlag) infoAtIndex("block comment close", i, ds[]);
+                if (infoFlag)
+                    infoAtIndex("block comment close", i, ds[]);
                 inBlockComment = false;
                 i += 2;
                 continue;
@@ -645,7 +650,8 @@ private:
                 (peekN(i) == '\n' ||
                  peekN(i) == '\r'))
             {
-                if (infoFlag) infoAtIndex("line comment close", i, ds[]);
+                if (infoFlag)
+                    infoAtIndex("line comment close", i, ds[]);
                 inLineComment = false;
             }
 
@@ -658,13 +664,15 @@ private:
                 if (!ds.empty &&
                     ds.back == '\'')
                 {
-                    if (infoFlag) infoAtIndex("single-quote close", i, ds[]);
+                    if (infoFlag)
+                        infoAtIndex("single-quote close", i, ds[]);
                     ds.popBack();
                     inChar = false;
                 }
                 else
                 {
-                    if (infoFlag) infoAtIndex("single-quote open", i, ds[]);
+                    if (infoFlag)
+                        infoAtIndex("single-quote open", i, ds[]);
                     ds.put('\'');
                     inChar = true;
                 }
@@ -679,13 +687,15 @@ private:
                 if (!ds.empty &&
                     ds.back == '"')
                 {
-                    if (infoFlag) infoAtIndex("double-quote close", i, ds[]);
+                    if (infoFlag)
+                        infoAtIndex("double-quote close", i, ds[]);
                     ds.popBack();
                     inString = false;
                 }
                 else
                 {
-                    if (infoFlag) infoAtIndex("doubl-quote open", i, ds[]);
+                    if (infoFlag)
+                        infoAtIndex("doubl-quote open", i, ds[]);
                     ds.put('"');
                     inString = true;
                 }
