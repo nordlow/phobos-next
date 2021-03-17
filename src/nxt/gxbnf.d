@@ -14,7 +14,7 @@
 
     TODO:
 
-    - Generate all parsers and `g4main.d` in a `buildRootPath` and make parsers get names only underscores relative to `home.per.Work.grammars_v4`
+    - Generate all parsers and `g4main.d` in a `genDirPath` and make parsers get names only underscores relative to `home.per.Work.grammars_v4`
 
     - Should be allowed instead of warning:
 
