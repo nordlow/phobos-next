@@ -4252,7 +4252,8 @@ import std.path : expandTilde, relativePath, baseName, dirName, buildPath;
 
 enum showProgressFlag = true;
 
-void doLex(string rootDirPath, File outFile) @system
+void lexAllInDirTree(string rootDirPath,
+           scope File outFile) @system
 {
     scope StopWatch swAll;
     swAll.start();
@@ -4276,10 +4277,10 @@ void doLex(string rootDirPath, File outFile) @system
     outFile.writeln("Lexing all took ", swAll.peek());
 }
 
-void doParse(string rootDirPath,
-             File outFile,
-             bool buildSingleFlag,
-             bool buildAllFlag) @system
+void parseAllInDirTree(string rootDirPath,
+                       scope File outFile,
+                       bool buildSingleFlag,
+                       bool buildAllFlag) @system
 {
     scope StopWatch swAll;
     swAll.start();
@@ -4321,18 +4322,17 @@ void doParse(string rootDirPath,
     outFile.writeln("Reading all took ", swAll.peek());
 }
 
-void doAll() @system
+void doTree(string rootDirPath) @system
 {
-    const rootDirPath = "~/Work/grammars-v4/".expandTilde;
     const lexerFlag = false;
     const parserFlag = true;
     const buildSingleFlag = false;
     const buildAllFlag = true;
     File outFile = stdout;
     if (lexerFlag)
-        doLex(rootDirPath, outFile);
+        lexAllInDirTree(rootDirPath, outFile);
     if (parserFlag)
-        doParse(rootDirPath, outFile, buildSingleFlag, buildAllFlag);
+        parseAllInDirTree(rootDirPath, outFile, buildSingleFlag, buildAllFlag);
 }
 
 string tryRelativePath(scope string rootDirPath,
@@ -4348,5 +4348,6 @@ string tryRelativePath(scope string rootDirPath,
 version(show)
 @system unittest
 {
-    doAll();
+    const rootDirPath = "~/Work/grammars-v4/".expandTilde;
+    doTree(rootDirPath);
 }
