@@ -3863,7 +3863,7 @@ struct Parser
     Match altNch(chars...)() pure nothrow @nogc
     {
         pragma(inline, true);
-        import std.algorithm.comparison : among; // TODO: replace with switch
+        import std.algorithm.comparison : among; // TODO: replace with switch over static foreach to speed up compilation
         if (inp[off].among!(chars))
         {
             off += 1;
