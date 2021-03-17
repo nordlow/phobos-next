@@ -112,7 +112,7 @@ import nxt.array_algorithm : startsWith, endsWith, endsWithEither, skipOver, ski
 import nxt.conv_ex : toDefaulted;
 import nxt.dbgio;
 
-import std.stdio : stdout, write, writeln;
+import std.stdio : File, stdout, write, writeln;
 
 @safe:
 
@@ -4246,95 +4246,107 @@ private bool isGxFilenameParsed(const scope char[] name) @safe pure nothrow @nog
     return true;
 }
 
-///
-version(show)
-@trusted unittest
+import std.datetime.stopwatch : StopWatch;
+import std.file : dirEntries, SpanMode, getcwd;
+import std.path : expandTilde, relativePath, baseName, dirName, buildPath;
+
+enum showProgressFlag = true;
+
+void doLex(string rootDirPath, File outFile) @system
 {
-    import std.datetime.stopwatch : StopWatch;
-    import std.file : dirEntries, SpanMode, getcwd;
-    import std.path : expandTilde, relativePath, baseName, dirName, buildPath;
+    scope StopWatch swAll;
+    swAll.start();
+    foreach (const e; dirEntries(rootDirPath, SpanMode.breadth))
+    {
+        const fn = e.name;
+        if (fn.isGxFilename)
+        {
+            static if (showProgressFlag)
+                outFile.writeln("Lexing ", tryRelativePath(rootDirPath, fn), " ...");  // TODO: read use curren directory
+            const data = cast(Input)rawReadPath(fn); // exclude from benchmark
+            scope StopWatch swOne;
+            swOne.start();
+            auto lexer = GxLexer(data, fn, false);
+            while (!lexer.empty)
+                lexer.popFront();
+            static if (showProgressFlag)
+                outFile.writeln("Lexing ", tryRelativePath(rootDirPath, fn), " took ", swOne.peek());
+        }
+    }
+    outFile.writeln("Lexing all took ", swAll.peek());
+}
 
+void doParse(string rootDirPath,
+             File outFile,
+             bool buildSingleFlag,
+             bool buildAllFlag) @system
+{
+    scope StopWatch swAll;
+    swAll.start();
+    DynamicArray!string parserPaths; ///< Paths to generated parsers in D.
+    foreach (const e; dirEntries(rootDirPath, SpanMode.breadth))
+    {
+        const fn = e.name;
+        const dn = fn.dirName;
+        const bn = fn.baseName;
+        if (bn.isGxFilenameParsed)
+        {
+            const exDirPath = buildPath(dn, "examples"); // examples directory
+            import std.file : exists, isDir;
+            if (exDirPath.exists &&
+                exDirPath.isDir)
+                foreach (const exf; dirEntries(exDirPath, SpanMode.breadth))
+                    writeln("TODO: Parse example file: ", exf);
+            static if (showProgressFlag)
+                outFile.writeln("Reading ", tryRelativePath(rootDirPath, fn), " ...");
+
+            scope StopWatch swOne;
+            swOne.start();
+
+            auto reader = GxFileReader(fn);
+            const parsePath = reader.createParserSourceFile();
+            if (parserPaths[].canFind(parsePath)) // TODO: remove because this should not happen
+                writeln("Warning: duplicate entry outFile ", parsePath);
+            else
+                parserPaths.insertBack(parsePath);
+            if (buildSingleFlag)
+                buildSourceFiles([parsePath]);
+
+            static if (showProgressFlag)
+                outFile.writeln("Reading ", tryRelativePath(rootDirPath, fn), " took ", swOne.peek());
+        }
+    }
+    if (buildAllFlag)
+        buildSourceFiles(parserPaths[]);
+    outFile.writeln("Reading all took ", swAll.peek());
+}
+
+void doAll() @system
+{
     const rootDirPath = "~/Work/grammars-v4/".expandTilde;
-
     const lexerFlag = false;
     const parserFlag = true;
     const buildSingleFlag = false;
     const buildAllFlag = true;
-    const showProgressFlag = true;
-
-    auto of = stdout;           // output file
-
-    string tryRelativePath(const return scope string path)
-    {
-        const cwd = getcwd();
-        if (rootDirPath.startsWith(cwd))
-            return path.relativePath(cwd);
-        return path;
-    }
-
+    File outFile = stdout;
     if (lexerFlag)
-    {
-        scope StopWatch swAll;
-        swAll.start();
-        foreach (const e; dirEntries(rootDirPath, SpanMode.breadth))
-        {
-            const fn = e.name;
-            if (fn.isGxFilename)
-            {
-                if (showProgressFlag)
-                    of.writeln("Lexing ", tryRelativePath(fn), " ...");  // TODO: read use curren directory
-                const data = cast(Input)rawReadPath(fn); // exclude from benchmark
-                scope StopWatch swOne;
-                swOne.start();
-                auto lexer = GxLexer(data, fn, false);
-                while (!lexer.empty)
-                    lexer.popFront();
-                if (showProgressFlag)
-                    of.writeln("Lexing ", tryRelativePath(fn), " took ", swOne.peek());
-            }
-        }
-        of.writeln("Lexing all took ", swAll.peek());
-    }
-
+        doLex(rootDirPath, outFile);
     if (parserFlag)
-    {
-        scope StopWatch swAll;
-        swAll.start();
-        DynamicArray!string parserPaths; ///< Paths to generated parsers in D.
-        foreach (const e; dirEntries(rootDirPath, SpanMode.breadth))
-        {
-            const fn = e.name;
-            const dn = fn.dirName;
-            const bn = fn.baseName;
-            if (bn.isGxFilenameParsed)
-            {
-                const exDirPath = buildPath(dn, "examples"); // examples directory
-                import std.file : exists, isDir;
-                if (exDirPath.exists &&
-                    exDirPath.isDir)
-                    foreach (const exf; dirEntries(exDirPath, SpanMode.breadth))
-                        writeln("TODO: Parse example file: ", exf);
-                if (showProgressFlag)
-                    of.writeln("Reading ", tryRelativePath(fn), " ...");
+        doParse(rootDirPath, outFile, buildSingleFlag, buildAllFlag);
+}
 
-                scope StopWatch swOne;
-                swOne.start();
+string tryRelativePath(scope string rootDirPath,
+                       const return scope string path) @safe
+{
+    const cwd = getcwd();
+    if (rootDirPath.startsWith(cwd))
+        return path.relativePath(cwd);
+    return path;
+}
 
-                auto reader = GxFileReader(fn);
-                const parsePath = reader.createParserSourceFile();
-                if (parserPaths[].canFind(parsePath)) // TODO: remove because this should not happen
-                    writeln("Warning: duplicate entry of ", parsePath);
-                else
-                    parserPaths.insertBack(parsePath);
-                if (buildSingleFlag)
-                    buildSourceFiles([parsePath]);
-
-                if (showProgressFlag)
-                    of.writeln("Reading ", tryRelativePath(fn), " took ", swOne.peek());
-            }
-        }
-        if (buildAllFlag)
-            buildSourceFiles(parserPaths[]);
-        of.writeln("Reading all took ", swAll.peek());
-    }
+///
+version(show)
+@system unittest
+{
+    doAll();
 }
