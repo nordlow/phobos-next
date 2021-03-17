@@ -4200,20 +4200,20 @@ struct ObjectFile
 {
     void open(string name, scope const(char)[] stdioOpenmode = "rb") @safe
     {
-        file.open(name, stdioOpenmode);
+        _file.open(name, stdioOpenmode);
     }
-    File file;
-    alias file this;
+    private File _file;
+    alias _file this;
 }
 
 struct ExecutableFile
 {
     void open(string name, scope const(char)[] stdioOpenmode = "rb") @safe
     {
-        file.open(name, stdioOpenmode);
+        _file.open(name, stdioOpenmode);
     }
-    File file;
-    alias file this;
+    private File _file;
+    alias _file this;
 }
 
 /// Build the D source files `ppaths`.
