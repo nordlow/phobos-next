@@ -4230,17 +4230,21 @@ struct ExecutableFile
 static immutable mainName = `main`;
 
 static immutable mainSource =
-`//import home.per.Work.grammars_v4.antlr.antlr4.ANTLRv4Lexer_parser;
-
-int ` ~ mainName ~ `(string[] args)
+`int ` ~ mainName ~ `(string[] args)
 {
 	return 0;
 }
 `;
 
-SourceFile createMainFile(string path)
+SourceFile createMainFile(string path, const string[] ppaths)
 {
     auto file = typeof(return)(path, "w");
+    foreach (const ppath; ppaths)
+    {
+        // file.write(`import `);
+        // file.write(ppath.toPathModuleName);
+        // file.write(";\n");
+    }
     file.write(mainSource);
     file.close();
     return file;
@@ -4253,7 +4257,7 @@ string buildSourceFiles(const string[] ppaths,
     import std.process : execute;
 
     const mainPath = "g4x.d";
-    createMainFile(mainPath);
+    createMainFile(mainPath, ppaths);
     const parserName = "parser";
     const outFile = parserName ~ (linkFlag ? "" : ".o");
     const args = (["dmd"] ~
