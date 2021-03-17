@@ -15,7 +15,8 @@
     TODO:
 
     - Should be allowed instead of warning:
-      grammars-v4/lua/Lua.g4(329,5): Warning: missing left-hand side, token `(` (leftParen) at offset 5967
+
+    grammars-v4/lua/Lua.g4(329,5): Warning: missing left-hand side, token (leftParen) at offset 5967
 
     - Parallelize grammar parsing and generation of parser files using https://dlang.org/phobos/std_parallelism.html#.parallel
       After that compilation of parser files should grouped into CPU-count number of groups.
@@ -4300,7 +4301,7 @@ void parseAllInDirTree(string rootDirPath,
             if (exDirPath.exists &&
                 exDirPath.isDir)
                 foreach (const exf; dirEntries(exDirPath, SpanMode.breadth))
-                    writeln("TODO: Parse example file: ", exf);
+                    outFile.writeln("TODO: Parse example file: ", exf);
             static if (showProgressFlag)
                 outFile.writeln("Reading ", tryRelativePath(rootDirPath, fn), " ...");
 
@@ -4310,7 +4311,7 @@ void parseAllInDirTree(string rootDirPath,
             auto reader = GxFileReader(fn);
             const parsePath = reader.createParserSourceFile();
             if (parserPaths[].canFind(parsePath)) // TODO: remove because this should not happen
-                writeln("Warning: duplicate entry outFile ", parsePath);
+                outFile.writeln("Warning: duplicate entry outFile ", parsePath);
             else
                 parserPaths.insertBack(parsePath);
             if (buildSingleFlag)
