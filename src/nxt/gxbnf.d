@@ -3860,13 +3860,13 @@ struct Parser
         return Match.none();
     }
 
-    Match altNch(chars...)() pure nothrow @nogc
+    Match altNch(chars...)() pure nothrow @nogc // TODO: non-char type in chars
     {
         pragma(inline, true);
         import std.algorithm.comparison : among; // TODO: replace with switch over static foreach to speed up compilation
         if (inp[off].among!(chars))
         {
-            off += 1;
+            off += 1; // TODO: skip over number of chars needed to encode hit
             return Match(1);
         }
         return Match.none();
