@@ -4181,7 +4181,7 @@ struct GxFileReader
             fp.parser.popFront();
     }
 
-    string createParserSourceFile()
+    string createParserSourceFilePath()
     {
         Output pss;
         fp.generateParserSourceString(pss);
@@ -4196,11 +4196,21 @@ struct GxFileReader
     ~this() @nogc {}
 }
 
+struct SourceFile
+{
+    this(string name, scope const(char)[] stdioOpenmode = "rb") @safe
+    {
+        _file = File(name, stdioOpenmode);
+    }
+    private File _file;
+    alias _file this;
+}
+
 struct ObjectFile
 {
-    void open(string name, scope const(char)[] stdioOpenmode = "rb") @safe
+    this(string name, scope const(char)[] stdioOpenmode = "rb") @safe
     {
-        _file.open(name, stdioOpenmode);
+        _file = File(name, stdioOpenmode);
     }
     private File _file;
     alias _file this;
@@ -4208,25 +4218,44 @@ struct ObjectFile
 
 struct ExecutableFile
 {
-    void open(string name, scope const(char)[] stdioOpenmode = "rb") @safe
+    this(string name, scope const(char)[] stdioOpenmode = "rb") @safe
     {
-        _file.open(name, stdioOpenmode);
+        _file = File(name, stdioOpenmode);
     }
-    private File _file;
+    File _file;
     alias _file this;
 }
+
+static immutable mainSource =
+`int main(string[] args)
+{
+	return 0;
+}
+`;
 
 /// Build the D source files `ppaths`.
 string buildSourceFiles(const string[] ppaths,
                         in bool linkFlag = false)
 {
     import std.process : execute;
+
+    SourceFile createMainFile(string path)
+    {
+        auto file = typeof(return)(path, "w");
+        file.write(mainSource);
+        file.close();
+        return file;
+    }
+
+    const mainPath = "g4x.d";
+    createMainFile(mainPath);
     const parserName = "parser";
     const outFile = parserName ~ (linkFlag ? "" : ".o");
     const args = (["dmd"] ~
                   (linkFlag ? [] : ["-c"]) ~
                   ["-dip25", "-dip1000", "-vcolumns", "-wi"] ~
                   ppaths ~
+                  (linkFlag ? [mainPath] : []) ~
                   ("-of=" ~ outFile));
     writeln("args:", args);
     const dmd = execute(args);
@@ -4339,7 +4368,7 @@ void parseAllInDirTree(string rootDirPath,
             swOne.start();
 
             auto reader = GxFileReader(fn);
-            const parsePath = reader.createParserSourceFile();
+            const parsePath = reader.createParserSourceFilePath();
             if (parserPaths[].canFind(parsePath)) // TODO: remove because this should not happen
                 outFile.writeln("Warning: duplicate entry outFile ", parsePath);
             else
