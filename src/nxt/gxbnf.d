@@ -49,7 +49,7 @@
     - Ask on forums for AST node allocation patterns. Use region allocator of
       immutable. Size can be predicate.
 
-    - `not(...)`'s implementation needs to be adjusted. often used in conjunction with `altNch`?
+    - `not(...)`'s implementation needs to be adjusted. often used in conjunction with `altN`?
 
     - Use `DETECT` upper-case lexer rules LexerRule
 
@@ -1433,19 +1433,19 @@ pure nothrow:
             switch (subs.length)
             {
             case 2:
-                sink.put("alt2ch!(");
+                sink.put("alt2!(");
                 break;
             case 3:
-                sink.put("alt3ch!(");
+                sink.put("alt3!(");
                 break;
             case 4:
-                sink.put("alt4ch!(");
+                sink.put("alt4!(");
                 break;
             case 5:
-                sink.put("alt5ch!(");
+                sink.put("alt5!(");
                 break;
             default:
-                sink.put("altNch!(");
+                sink.put("altN!(");
                 break;
             }
         }
@@ -2474,7 +2474,7 @@ final class CharAltM : Pattern
             return;
         }
 
-        sink.put("altNch!(");
+        sink.put("altN!(");
         for (size_t i; i < inp.length;)
         {
             if (i)
@@ -3879,7 +3879,7 @@ struct Parser
         return Match.none();
     }
 
-    Match alt2ch(char a, char b)() pure nothrow @nogc
+    Match alt2(char a, char b)() pure nothrow @nogc
     {
         pragma(inline, true);
         const x = inp[off];
@@ -3892,7 +3892,7 @@ struct Parser
         return Match.none();
     }
 
-    Match alt3ch(char a, char b, char c)() pure nothrow @nogc
+    Match alt3(char a, char b, char c)() pure nothrow @nogc
     {
         pragma(inline, true);
         const x = inp[off];
@@ -3906,7 +3906,7 @@ struct Parser
         return Match.none();
     }
 
-    Match alt4ch(char a, char b, char c, char d)() pure nothrow @nogc
+    Match alt4(char a, char b, char c, char d)() pure nothrow @nogc
     {
         pragma(inline, true);
         const x = inp[off];
@@ -3921,7 +3921,7 @@ struct Parser
         return Match.none();
     }
 
-    Match alt5ch(char a, char b, char c, char d, char e)() pure nothrow @nogc
+    Match alt5(char a, char b, char c, char d, char e)() pure nothrow @nogc
     {
         pragma(inline, true);
         const x = inp[off];
@@ -3937,7 +3937,7 @@ struct Parser
         return Match.none();
     }
 
-    Match altNch(chars...)() pure nothrow @nogc // TODO: non-char type in chars
+    Match altN(chars...)() pure nothrow @nogc // TODO: non-char type in chars
     {
         pragma(inline, true);
         import std.algorithm.comparison : among; // TODO: replace with switch over static foreach to speed up compilation
