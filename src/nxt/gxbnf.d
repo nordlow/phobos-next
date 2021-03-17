@@ -4198,21 +4198,21 @@ struct GxFileReader
 
 struct ObjectFile
 {
-    File file;
     void open(string name, scope const(char)[] stdioOpenmode = "rb") @safe
     {
         file.open(name, stdioOpenmode);
     }
+    File file;
     alias file this;
 }
 
 struct ExecutableFile
 {
-    File file;
     void open(string name, scope const(char)[] stdioOpenmode = "rb") @safe
     {
         file.open(name, stdioOpenmode);
     }
+    File file;
     alias file this;
 }
 
