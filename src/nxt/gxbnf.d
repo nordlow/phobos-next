@@ -4238,7 +4238,6 @@ static immutable mainSource =
 
 SourceFile createMainFile(string path, const string[] parserPaths)
 {
-    writeln("mainPath:", path);
     auto file = typeof(return)(path, "w");
     foreach (const ppath; parserPaths)
     {
@@ -4257,9 +4256,15 @@ SourceFile createMainFile(string path, const string[] parserPaths)
 string buildSourceFiles(const string[] parserPaths,
                         in bool linkFlag = false)
 {
+    import std.path : chainPath, dirName;
+    import std.array : array;
     import std.process : execute;
 
-    const mainPath = "g4x.d";
+    writeln("parserPaths:", parserPaths);
+    const mainDirPath = dirName(parserPaths[0]);
+    writeln("mainDirPath:", mainDirPath);
+    auto mainPath = chainPath(mainDirPath, "g4main.d").array.idup;
+    writeln("mainPath:", mainPath);
     createMainFile(mainPath, parserPaths);
     const parserName = "parser";
     const outFile = parserName ~ (linkFlag ? "" : ".o");
