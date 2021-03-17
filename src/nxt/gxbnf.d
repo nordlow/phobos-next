@@ -3790,7 +3790,7 @@ struct Parser
         return Match(1);
     }
 
-    Match ch(const char x) pure nothrow @nogc
+    Match ch(in char x) pure nothrow @nogc
     {
         pragma(inline, true);
         if (off == inp.length)  // TODO:
