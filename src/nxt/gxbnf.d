@@ -1409,7 +1409,7 @@ pure nothrow:
     override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
     {
         // preprocess
-        bool allSubChars = true;
+        bool allSubChars = true; // true if all sub-patterns are characters
         foreach (const sub; subs)
         {
             if (const lit = cast(const StrLiteral)sub)
@@ -1429,7 +1429,26 @@ pure nothrow:
 
         // prefix
         if (allSubChars)
-            sink.put("altNch!(");
+        {
+            switch (subs.length)
+            {
+            case 2:
+                sink.put("alt2ch!(");
+                break;
+            case 3:
+                sink.put("alt3ch!(");
+                break;
+            case 4:
+                sink.put("alt4ch!(");
+                break;
+            case 5:
+                sink.put("alt5ch!(");
+                break;
+            default:
+                sink.put("altNch!(");
+                break;
+            }
+        }
         else
             sink.put("alt(");
 
@@ -3860,11 +3879,70 @@ struct Parser
         return Match.none();
     }
 
+    Match alt2ch(char a, char b)() pure nothrow @nogc
+    {
+        pragma(inline, true);
+        const x = inp[off];
+        if (x == a ||
+            x == b)
+        {
+            off += 1;
+            return Match(1);
+        }
+        return Match.none();
+    }
+
+    Match alt3ch(char a, char b, char c)() pure nothrow @nogc
+    {
+        pragma(inline, true);
+        const x = inp[off];
+        if (x == a ||
+            x == b ||
+            x == c)
+        {
+            off += 1;
+            return Match(1);
+        }
+        return Match.none();
+    }
+
+    Match alt4ch(char a, char b, char c, char d)() pure nothrow @nogc
+    {
+        pragma(inline, true);
+        const x = inp[off];
+        if (x == a ||
+            x == b ||
+            x == c ||
+            x == d)
+        {
+            off += 1;
+            return Match(1);
+        }
+        return Match.none();
+    }
+
+    Match alt5ch(char a, char b, char c, char d, char e)() pure nothrow @nogc
+    {
+        pragma(inline, true);
+        const x = inp[off];
+        if (x == a ||
+            x == b ||
+            x == c ||
+            x == d ||
+            x == e)
+        {
+            off += 1;
+            return Match(1);
+        }
+        return Match.none();
+    }
+
     Match altNch(chars...)() pure nothrow @nogc // TODO: non-char type in chars
     {
         pragma(inline, true);
         import std.algorithm.comparison : among; // TODO: replace with switch over static foreach to speed up compilation
-        if (inp[off].among!(chars))
+        const x = inp[off];
+        if (x.among!(chars))
         {
             off += 1; // TODO: skip over number of chars needed to encode hit
             return Match(1);
