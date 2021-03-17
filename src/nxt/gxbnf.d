@@ -4312,10 +4312,8 @@ version(show)
                 import std.file : exists, isDir;
                 if (exDirPath.exists &&
                     exDirPath.isDir)
-                {
                     foreach (const exf; dirEntries(exDirPath, SpanMode.breadth))
                         writeln("TODO: Parse example file: ", exf);
-                }
                 if (showProgressFlag)
                     of.writeln("Reading ", tryRelativePath(fn), " ...");
 
