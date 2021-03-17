@@ -3784,7 +3784,7 @@ struct Parser
 
     Match any() pure nothrow @nogc
     {
-        pragma(inline, true);
+        version(LDC) pragma(inline, true);
         if (off == inp.length)  // TODO:
             return Match.none();
         off += 1;
