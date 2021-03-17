@@ -4233,19 +4233,19 @@ static immutable mainSource =
 }
 `;
 
+SourceFile createMainFile(string path)
+{
+    auto file = typeof(return)(path, "w");
+    file.write(mainSource);
+    file.close();
+    return file;
+}
+
 /// Build the D source files `ppaths`.
 string buildSourceFiles(const string[] ppaths,
                         in bool linkFlag = false)
 {
     import std.process : execute;
-
-    SourceFile createMainFile(string path)
-    {
-        auto file = typeof(return)(path, "w");
-        file.write(mainSource);
-        file.close();
-        return file;
-    }
 
     const mainPath = "g4x.d";
     createMainFile(mainPath);
