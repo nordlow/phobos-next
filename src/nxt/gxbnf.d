@@ -15,7 +15,7 @@
     TODO:
 
     - Should be allowed instead of warning:
-      /home/per/Work/grammars-v4/lua/Lua.g4(329,5): Warning: missing left-hand side, token `(` (leftParen) at offset 5967
+      grammars-v4/lua/Lua.g4(329,5): Warning: missing left-hand side, token `(` (leftParen) at offset 5967
 
     - Parallelize grammar parsing and generation of parser files using https://dlang.org/phobos/std_parallelism.html#.parallel
       After that compilation of parser files should grouped into CPU-count number of groups.
