@@ -3584,7 +3584,7 @@ string toPathModuleName(string path)
                .stripExtension
                .pathSplitter()
                .map!(_ => adjustDirectoryName(_))
-               .joiner("__")
+               .joiner("__")    // "/" => "__"
                .substitute('-', '_')
                .to!string ~ "_parser"; // TODO: use lazy ranges that return `char`;
 }
