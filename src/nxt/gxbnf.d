@@ -4273,15 +4273,9 @@ string buildSourceFiles(const string[] parserPaths,
     import std.file : tempDir;
 
     const mainFilePath = buildPath(tempDir(), "gxmain.d");
-    writeln("mainFilePath:", mainFilePath);
-
     const string mainDirPath = dirName(mainFilePath);
-    writeln("mainDirPath:", mainDirPath);
-
-    writeln("parserPaths:", parserPaths);
 
     File mainFile = createMainFile(mainFilePath, parserPaths);
-    writeln("mainFile.name:", mainFile.name);
 
     const parserName = "parser";
     const outFile = parserName ~ (linkFlag ? "" : ".o");
