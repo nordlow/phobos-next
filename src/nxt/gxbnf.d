@@ -3558,7 +3558,7 @@ private:
 }
 
 /// Returns: `path` as module name.
-string toPathModuleName(scope string path) pure
+string toPathModuleName(string path)
 {
     string adjustDirectoryName(const return scope string name) pure nothrow @nogc
     {
@@ -3566,16 +3566,25 @@ string toPathModuleName(scope string path) pure
             return "asm_";
         return name;
     }
-    import std.path : pathSplitter, stripExtension;
+
+    const stripLeadingSlashesFlag = false;
+    if (stripLeadingSlashesFlag)
+        while (path[0] == '/' ||
+               path[0] == '\\')
+            path = path[1 .. $];    // strip leading '/'s
+
+    import std.path : pathSplitter, stripExtension, expandTilde;
     import std.algorithm.iteration : map, joiner, substitute;
     import std.conv : to;
-    while (path[0] == '/' ||
-           path[0] == '\\')
-        path = path[1 .. $];    // strip leading '/'s
-    return path.stripExtension
+
+    const antlrRootPath = "~/Work/grammars-v4".expandTilde; // TODO: move
+
+    return path.expandTilde
+               .relativePath(antlrRootPath)
+               .stripExtension
                .pathSplitter()
                .map!(_ => adjustDirectoryName(_))
-               .joiner(".")
+               .joiner("__")
                .substitute('-', '_')
                .to!string ~ "_parser"; // TODO: use lazy ranges that return `char`;
 }
@@ -4401,13 +4410,14 @@ void parseAllInDirTree(scope ref BuildCtx bcx) @system
 
             auto reader = GxFileReader(fn);
             string moduleName;
-            const parsePath = reader.createParserSourceFilePath(moduleName);
-            if (parserPaths[].canFind(parsePath)) // TODO: remove because this should not happen
-                bcx.outFile.writeln("Warning: duplicate entry outFile ", parsePath);
+            const parserPath = reader.createParserSourceFilePath(moduleName);
+            if (parserPaths[].canFind(parserPath)) // TODO: remove because this should not happen
+                bcx.outFile.writeln("Warning: duplicate entry outFile ", parserPath);
             else
-                parserPaths.insertBack(parsePath);
+                parserPaths.insertBack(parserPath);
+
             if (bcx.buildSingleFlag)
-                const parseExePath = buildSourceFiles([parsePath], true);
+                const parseExePath = buildSourceFiles([parserPath], true);
 
             static if (showProgressFlag)
                 bcx.outFile.writeln("Reading ", tryRelativePath(bcx.rootDirPath, fn), " took ", swOne.peek());
