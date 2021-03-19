@@ -5,6 +5,8 @@
  */
 module nxt.tempfs;
 
+@safe:
+
 /** Create a New Temporary File starting with ($D namePrefix) and ending with 6 randomly defined characters.
  *
  * Returns: File Descriptor to opened file.
