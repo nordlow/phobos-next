@@ -4261,20 +4261,26 @@ string buildSourceFiles(const string[] parserPaths,
     import std.path : chainPath, dirName;
     import std.array : array;
     import std.process : execute;
+    import std.file : tempDir;
+
+    const mainFilePath = buildPath(tempDir(), "gxmain.d");
+    writeln("mainFilePath:", mainFilePath);
+
+    const string mainDirPath = dirName(mainFilePath);
+    writeln("mainDirPath:", mainDirPath);
 
     writeln("parserPaths:", parserPaths);
-    const mainDirPath = dirName(parserPaths[0]);
-    writeln("mainDirPath:", mainDirPath);
-    auto mainPath = chainPath(mainDirPath, "g4main.d").array.idup;
-    writeln("mainPath:", mainPath);
-    createMainFile(mainPath, parserPaths);
+
+    File mainFile = createMainFile(mainFilePath, parserPaths);
+    writeln("mainFile.name:", mainFile.name);
+
     const parserName = "parser";
     const outFile = parserName ~ (linkFlag ? "" : ".o");
     const args = (["dmd"] ~
                   (linkFlag ? [] : ["-c"]) ~
                   ["-dip25", "-dip1000", "-vcolumns", "-wi"] ~
                   parserPaths ~
-                  (linkFlag ? [mainPath] : []) ~
+                  (linkFlag ? [mainFilePath] : []) ~
                   ("-of=" ~ outFile));
     writeln("args:", args);
     const dmd = execute(args);
@@ -4334,18 +4340,17 @@ import std.path : expandTilde, relativePath, baseName, dirName, buildPath;
 
 enum showProgressFlag = true;
 
-void lexAllInDirTree(string rootDirPath,
-           scope File outFile) @system
+void lexAllInDirTree(scope ref BuildCtx bcx) @system
 {
     scope StopWatch swAll;
     swAll.start();
-    foreach (const e; dirEntries(rootDirPath, SpanMode.breadth))
+    foreach (const e; dirEntries(bcx.rootDirPath, SpanMode.breadth))
     {
         const fn = e.name;
         if (fn.isGxFilename)
         {
             static if (showProgressFlag)
-                outFile.writeln("Lexing ", tryRelativePath(rootDirPath, fn), " ...");  // TODO: read use curren directory
+                bcx.outFile.writeln("Lexing ", tryRelativePath(bcx.rootDirPath, fn), " ...");  // TODO: read use curren directory
             const data = cast(Input)rawReadPath(fn); // exclude from benchmark
             scope StopWatch swOne;
             swOne.start();
@@ -4353,21 +4358,29 @@ void lexAllInDirTree(string rootDirPath,
             while (!lexer.empty)
                 lexer.popFront();
             static if (showProgressFlag)
-                outFile.writeln("Lexing ", tryRelativePath(rootDirPath, fn), " took ", swOne.peek());
+                bcx.outFile.writeln("Lexing ", tryRelativePath(bcx.rootDirPath, fn), " took ", swOne.peek());
         }
     }
-    outFile.writeln("Lexing all took ", swAll.peek());
+    bcx.outFile.writeln("Lexing all took ", swAll.peek());
 }
 
-void parseAllInDirTree(string rootDirPath,
-                       scope File outFile,
-                       bool buildSingleFlag,
-                       bool buildAllFlag) @system
+/// Build Context
+struct BuildCtx
+{
+    string rootDirPath;
+    File outFile;
+    bool buildSingleFlag = true;
+    bool buildAllFlag = true;
+    bool lexerFlag = true;
+    bool parserFlag = true;
+}
+
+void parseAllInDirTree(scope ref BuildCtx bcx) @system
 {
     scope StopWatch swAll;
     swAll.start();
     DynamicArray!string parserPaths; ///< Paths to generated parsers in D.
-    foreach (const e; dirEntries(rootDirPath, SpanMode.breadth))
+    foreach (const e; dirEntries(bcx.rootDirPath, SpanMode.breadth))
     {
         const fn = e.name;
         const dn = fn.dirName;
@@ -4379,9 +4392,9 @@ void parseAllInDirTree(string rootDirPath,
             if (exDirPath.exists &&
                 exDirPath.isDir)
                 foreach (const exf; dirEntries(exDirPath, SpanMode.breadth))
-                    outFile.writeln("TODO: Parse example file: ", exf);
+                    bcx.outFile.writeln("TODO: Parse example file: ", exf);
             static if (showProgressFlag)
-                outFile.writeln("Reading ", tryRelativePath(rootDirPath, fn), " ...");
+                bcx.outFile.writeln("Reading ", tryRelativePath(bcx.rootDirPath, fn), " ...");
 
             scope StopWatch swOne;
             swOne.start();
@@ -4390,34 +4403,27 @@ void parseAllInDirTree(string rootDirPath,
             string moduleName;
             const parsePath = reader.createParserSourceFilePath(moduleName);
             if (parserPaths[].canFind(parsePath)) // TODO: remove because this should not happen
-                outFile.writeln("Warning: duplicate entry outFile ", parsePath);
+                bcx.outFile.writeln("Warning: duplicate entry outFile ", parsePath);
             else
                 parserPaths.insertBack(parsePath);
-            if (buildSingleFlag)
-            {
+            if (bcx.buildSingleFlag)
                 const parseExePath = buildSourceFiles([parsePath], true);
-            }
 
             static if (showProgressFlag)
-                outFile.writeln("Reading ", tryRelativePath(rootDirPath, fn), " took ", swOne.peek());
+                bcx.outFile.writeln("Reading ", tryRelativePath(bcx.rootDirPath, fn), " took ", swOne.peek());
         }
     }
-    if (buildAllFlag)
-        buildSourceFiles(parserPaths[]);
-    outFile.writeln("Reading all took ", swAll.peek());
+    if (bcx.buildAllFlag)
+        const parseExePath = buildSourceFiles(parserPaths[]);
+    bcx.outFile.writeln("Reading all took ", swAll.peek());
 }
 
-void doTree(string rootDirPath) @system
+void doTree(scope ref BuildCtx bcx) @system
 {
-    const lexerFlag = true;
-    const parserFlag = true;
-    const buildSingleFlag = true;
-    const buildAllFlag = true;
-    File outFile = stdout;
-    if (lexerFlag)
-        lexAllInDirTree(rootDirPath, outFile);
-    if (parserFlag)
-        parseAllInDirTree(rootDirPath, outFile, buildSingleFlag, buildAllFlag);
+    if (bcx.lexerFlag)
+        lexAllInDirTree(bcx);
+    if (bcx.parserFlag)
+        parseAllInDirTree(bcx);
 }
 
 string tryRelativePath(scope string rootDirPath,
@@ -4433,6 +4439,9 @@ string tryRelativePath(scope string rootDirPath,
 version(show)
 @system unittest
 {
-    const rootDirPath = "~/Work/grammars-v4/".expandTilde;
-    doTree(rootDirPath);
+    BuildCtx bcx = {
+        rootDirPath : "~/Work/grammars-v4/".expandTilde,
+        outFile : stdout,
+    };
+    doTree(bcx);
 }
