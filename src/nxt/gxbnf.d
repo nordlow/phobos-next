@@ -3577,10 +3577,10 @@ string toPathModuleName(string path)
     import std.algorithm.iteration : map, joiner, substitute;
     import std.conv : to;
 
-    const antlrRootPath = "~/Work/grammars-v4".expandTilde; // TODO: move
+    const grammarsV4DirPath = "~/Work/grammars-v4".expandTilde; // TODO: move somewhere suitable
 
     return path.expandTilde
-               .relativePath(antlrRootPath)
+               .relativePath(grammarsV4DirPath)
                .stripExtension
                .pathSplitter()
                .map!(_ => adjustDirectoryName(_))
