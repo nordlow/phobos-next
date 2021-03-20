@@ -108,6 +108,10 @@ import core.stdc.stdio : putchar, printf;
 
 import std.conv : to;
 import std.algorithm.comparison : min, max;
+import std.algorithm.iteration : map, joiner, substitute;
+import std.array : array;
+import std.file : tempDir;
+import std.path;
 
 // `d-deps.el` requires these to be at the top:
 import nxt.line_column : offsetLineColumn;
@@ -3573,10 +3577,6 @@ string toPathModuleName(string path)
                path[0] == '\\')
             path = path[1 .. $];    // strip leading '/'s
 
-    import std.path : pathSplitter, stripExtension, expandTilde;
-    import std.algorithm.iteration : map, joiner, substitute;
-    import std.conv : to;
-
     const grammarsV4DirPath = "~/Work/grammars-v4".expandTilde; // TODO: move somewhere suitable
 
     return path.expandTilde
@@ -3595,7 +3595,6 @@ struct GxFileParser           // TODO: convert to `class`
 @safe:
     this(string path)
     {
-        import std.path : expandTilde;
         Input data = cast(Input)rawReadPath(path.expandTilde); // cast to Input because we don't want to keep all file around:
         parser = GxParserByStatement(data, path, false);
     }
@@ -3626,8 +3625,6 @@ struct GxFileParser           // TODO: convert to `class`
                                      scope ref RuleNames doneRuleNames,
                                      scope ref Output output) const scope
     {
-        import std.path : chainPath, dirName, extension;
-
         const string path = parser._lexer.path;
         string cwd = path.dirName; // current working directory
         const string ext = path.extension;
@@ -3664,8 +3661,6 @@ struct GxFileParser           // TODO: convert to `class`
                                                   scope const(char)[] moduleName,
                                                   scope const string ext)
     {
-        import std.path : chainPath, dirName;
-        import std.array : array;
         import std.file : FileException;
         const modulePath = chainPath(cwd, moduleName ~ ext).array.idup; // TODO: detect mutual file recursion
         try
@@ -4183,7 +4178,6 @@ static immutable parserSourceEnd =
 
 struct GxFileReader
 {
-    import std.path : stripExtension;
     GxFileParser fp;
 @safe:
     this(string path)
@@ -4199,10 +4193,10 @@ struct GxFileReader
         fp.generateParserSourceString(pss, moduleName);
         import std.file : write;
         const path = fp.parser._lexer.path;
-        const ppath = path.stripExtension ~ "_parser.d";
+        const ppath = chainPath(tempDir(), path.baseName.stripExtension).array ~ "_parser.d";
         write(ppath, pss[]);
         debug writeln("Wrote ", ppath);
-        return ppath;
+        return ppath.to!(typeof(return));
     }
 
     ~this() @nogc {}
@@ -4267,10 +4261,7 @@ SourceFile createMainFile(string path, const string[] parserPaths)
 string buildSourceFiles(const string[] parserPaths,
                         in bool linkFlag = false)
 {
-    import std.path : chainPath, dirName;
-    import std.array : array;
     import std.process : execute;
-    import std.file : tempDir;
 
     const mainFilePath = buildPath(tempDir(), "gxmain.d");
     const string mainDirPath = dirName(mainFilePath);
@@ -4339,7 +4330,6 @@ private bool isGxFilenameParsed(const scope char[] name) @safe pure nothrow @nog
 
 import std.datetime.stopwatch : StopWatch;
 import std.file : dirEntries, SpanMode, getcwd;
-import std.path : expandTilde, relativePath, baseName, dirName, buildPath;
 
 enum showProgressFlag = true;
 
