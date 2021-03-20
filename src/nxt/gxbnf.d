@@ -4250,7 +4250,7 @@ SourceFile createMainFile(string path,
     foreach (const index, const ppath; parserPaths)
     {
         file.write(`import `);
-        file.write(parserPaths[index]);
+        file.write(parserModules[index]);
         file.write(";\n");
     }
 
