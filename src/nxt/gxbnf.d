@@ -4241,13 +4241,16 @@ static immutable mainSource =
 }
 `;
 
-SourceFile createMainFile(string path, const string[] parserPaths)
+SourceFile createMainFile(string path,
+                          const string[] parserPaths,
+                          const string[] parserModules)
 {
+    assert(parserPaths.length == parserModules.length);
     auto file = typeof(return)(path, "w");
-    foreach (const ppath; parserPaths)
+    foreach (const index, const ppath; parserPaths)
     {
         file.write(`import `);
-        file.write(ppath.toPathModuleName);
+        file.write(parserPaths[index]);
         file.write(";\n");
     }
 
@@ -4259,6 +4262,7 @@ SourceFile createMainFile(string path, const string[] parserPaths)
 
 /// Build the D source files `parserPaths`.
 string buildSourceFiles(const string[] parserPaths,
+                        const string[] parserModules,
                         in bool linkFlag = false)
 {
     import std.process : execute;
@@ -4266,7 +4270,7 @@ string buildSourceFiles(const string[] parserPaths,
     const mainFilePath = buildPath(tempDir(), "gxmain.d");
     const string mainDirPath = dirName(mainFilePath);
 
-    File mainFile = createMainFile(mainFilePath, parserPaths);
+    File mainFile = createMainFile(mainFilePath, parserPaths, parserModules);
 
     const parserName = "parser";
     const outFile = parserName ~ (linkFlag ? "" : ".o");
@@ -4373,6 +4377,7 @@ void parseAllInDirTree(scope ref BuildCtx bcx) @system
     scope StopWatch swAll;
     swAll.start();
     DynamicArray!string parserPaths; ///< Paths to generated parsers in D.
+    DynamicArray!string parserModules;
     foreach (const e; dirEntries(bcx.rootDirPath, SpanMode.breadth))
     {
         const fn = e.name;
@@ -4393,22 +4398,25 @@ void parseAllInDirTree(scope ref BuildCtx bcx) @system
             swOne.start();
 
             auto reader = GxFileReader(fn);
-            string moduleName;
-            const parserPath = reader.createParserSourceFilePath(moduleName);
+            string parserModule;
+            const parserPath = reader.createParserSourceFilePath(parserModule);
             if (parserPaths[].canFind(parserPath)) // TODO: remove because this should not happen
                 bcx.outFile.writeln("Warning: duplicate entry outFile ", parserPath);
             else
+            {
                 parserPaths.insertBack(parserPath);
+                parserModules.insertBack(parserModule);
+            }
 
             if (bcx.buildSingleFlag)
-                const parseExePath = buildSourceFiles([parserPath], true);
+                const parseExePath = buildSourceFiles([parserPath], [parserModule], true);
 
             static if (showProgressFlag)
                 bcx.outFile.writeln("Reading ", tryRelativePath(bcx.rootDirPath, fn), " took ", swOne.peek());
         }
     }
     if (bcx.buildAllFlag)
-        const parseExePath = buildSourceFiles(parserPaths[]);
+        const parseExePath = buildSourceFiles(parserPaths[], parserModules[]);
     bcx.outFile.writeln("Reading all took ", swAll.peek());
 }
 
