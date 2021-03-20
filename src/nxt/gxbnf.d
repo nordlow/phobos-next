@@ -14,8 +14,6 @@
 
     TODO:
 
-    - Generate all parsers and `g4main.d` in a `genDirPath` and make parsers get names only underscores relative to `home.per.Work.grammars_v4`
-
     - Should be allowed instead of warning:
 
     grammars-v4/lua/Lua.g4(329,5): Warning: missing left-hand side, token (leftParen) at offset 5967
