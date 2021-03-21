@@ -3555,8 +3555,9 @@ struct GxParserByStatement
         }
     }
 
-    /**
-       See_Also: https://stackoverflow.com/questions/29879626/antlr4-how-to-find-the-root-rules-in-a-gramar-which-maybe-used-to-find-the-star
+    /** Get root rule.
+     *
+     * See_Also: https://stackoverflow.com/questions/29879626/antlr4-how-to-find-the-root-rules-in-a-gramar-which-maybe-used-to-find-the-star
      */
     @property Rule rootRule()
     {
