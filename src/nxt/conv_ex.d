@@ -14,14 +14,31 @@ T toDefaulted(T, S, U)(const scope S value,
 if (!is(T == enum) &&
     is(typeof(() { T r = defaultValue; }))) // TODO: use std.traits.isAssignable!(T, U) ?
 {
-    try
-    {
-        import std.conv : to;
-        return value.to!T;
+    static if (is(S == enum) &&
+               is(T == string))
+    {                           // @nogc:
+        switch (value)              // instead of slower `std.conv.to`:
+        {
+            static foreach (member; __traits(allMembers, S)) // instead of slower `EnumMembers`
+            {
+            case __traits(getMember, S, member):
+                return member;
+            }
+        default:
+            return defaultValue;
+        }
     }
-    catch (Exception e) // assume `ConvException`. TODO: can we capture `ConvException` instead make it inferred `nothrow`
+    else                        // non-@nogc:
     {
-        return defaultValue;
+        try
+        {
+            import std.conv : to;
+            return value.to!T;
+        }
+        catch (Exception e) // assume `ConvException`. TODO: can we capture `ConvException` instead make it inferred `nothrow`
+        {
+            return defaultValue;
+        }
     }
 }
 /// ditto
@@ -35,22 +52,6 @@ if (is(T == enum))
         {
         case member:
             return __traits(getMember, T, member); // NOTE this is slower: mixin(`return T.` ~ member ~ `;`);
-        }
-    default:
-        return defaultValue;
-    }
-}
-/// ditto
-T toDefaulted(T : string, U)(U value,
-                             T defaultValue) @safe pure nothrow @nogc
-if (is(U == enum))
-{
-    switch (value)              // instead of slower `std.conv.to`:
-    {
-        static foreach (member; __traits(allMembers, U)) // instead of slower `EnumMembers`
-        {
-        case __traits(getMember, U, member):
-            return member;
         }
     default:
         return defaultValue;
