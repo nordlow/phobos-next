@@ -3563,10 +3563,8 @@ struct GxParserByStatement
         tagReferencedRules();
         Rules rootRules;
         foreach (rule; rules)
-        {
             if (!rule.hasRef)
                 rootRules.insertBack(rule);
-        }
         if (rootRules.length == 0)
             _lexer.warningAtToken(grammar.head, "Missing top-rule");
         else if (rootRules.length != 1)
