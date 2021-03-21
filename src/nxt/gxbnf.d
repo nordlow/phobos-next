@@ -1148,7 +1148,7 @@ abstract class NaryOpPattern : Pattern
     this(uint n)(Token head, Pattern[n] subs) @nogc if (n >= 2)
     {
         super(head);
-        foreach (const sub; subs)
+        foreach (const Pattern sub; subs)
             this.subs.put(sub);
     }
     PatternArray subs;
@@ -3575,7 +3575,7 @@ struct GxParserByStatement
         if (_rootRule)
             return _rootRule;
         tagReferencedRules();
-        foreach (rule; rules)
+        foreach (Rule rule; rules)
         {
             if (rule.hasRef)
                 continue;
@@ -3715,7 +3715,7 @@ struct GxFileParser           // TODO: convert to `class`
             return doneRuleNames[].canFind(rule.head.input);
         }
 
-        foreach (const importedRule; fp_.parser.rules)
+        foreach (const Rule importedRule; fp_.parser.rules)
         {
             if (isOverridden(importedRule)) // if `importedRule` has already been defined
             {
@@ -3746,7 +3746,7 @@ struct GxFileParser           // TODO: convert to `class`
 
     void toMatchersForRules(scope ref RuleNames doneRuleNames, scope ref Output output) const scope
     {
-        foreach (const rule; parser.rules)
+        foreach (const Rule rule; parser.rules)
         {
             // rule.show();
             rule.toMatcherInSource(output, parser);
