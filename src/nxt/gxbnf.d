@@ -1388,6 +1388,13 @@ class Rule : Node
 }
 
 /** A reusable part of a lexer rule that doesn't match (a token) on its own.
+
+  For example:
+  INTEGER: DIGIT+
+         | '0' [Xx] HEX_DIGIT+
+         ;
+  fragment DIGIT: [0-9];
+  fragment HEX_DIGIT: [0-9A-Fa-f];
  */
 final class FragmentRule : Rule
 {
