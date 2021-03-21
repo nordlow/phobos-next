@@ -3557,6 +3557,7 @@ struct GxParserByStatement
 
     /** Get root rule.
      *
+     * See_Also: https://github.com/antlr/grammars-v4/issues/2097
      * See_Also: https://stackoverflow.com/questions/29879626/antlr4-how-to-find-the-root-rules-in-a-gramar-which-maybe-used-to-find-the-star
      */
     @property Rule rootRule()
@@ -3566,15 +3567,19 @@ struct GxParserByStatement
         tagReferencedRules();
         foreach (rule; rules)
         {
-            if (!rule.hasRef)
+            if (rule.hasRef)
+                continue;
+            if (rule.isFragment)
             {
-                if (_rootRule)
-                {
-                    _lexer.warningAtToken(grammar.head, "Second root rule defined");
-                    _lexer.warningAtToken(_rootRule.head, "Existing root rule defined here");
-                }
-                _rootRule = rule;
+                _lexer.warningAtToken(rule.head, "Unused fragment rule");
+                continue;
             }
+            if (_rootRule)
+            {
+                _lexer.warningAtToken(rule.head, "Second root rule defined");
+                _lexer.warningAtToken(_rootRule.head, "Existing root rule defined here");
+            }
+            _rootRule = rule;
         }
         if (!_rootRule)
             _lexer.warningAtToken(grammar.head, "Missing root rule, all rule symbols are referenced (cyclic grammar)");
