@@ -224,7 +224,6 @@ pragma(inline):
 
         setLengthChecked(values.length);
     }
-
     /// ditto
     this(R)(scope R values) @trusted
     if (// isRefIterable!R &&
@@ -624,7 +623,6 @@ pragma(inline):
         version(D_Coverage) {} else pragma(inline, true);
         return opSlice()[] = value;
     }
-
     /// ditto
     T[] opSliceAssign(U)(scope U value, size_t i, size_t j) return scope
     {
@@ -737,7 +735,6 @@ pragma(inline):
                     insertBackMove(element);
         }
     }
-
     /// ditto
     alias put = insertBack;
 
@@ -851,7 +848,6 @@ pragma(inline):
         version(D_Coverage) {} else pragma(inline, true);
         insertBackMove(value);
     }
-
     /// ditto
     void opOpAssign(string op, U)(U[] values...) @trusted
     if (op == "~" &&
@@ -861,7 +857,6 @@ pragma(inline):
         version(D_Coverage) {} else pragma(inline, true);
         insertBack(values);
     }
-
     /// ditto
     void opOpAssign(string op, R)(R values)
     if (op == "~" &&
