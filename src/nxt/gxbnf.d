@@ -3558,20 +3558,23 @@ struct GxParserByStatement
     /**
        See_Also: https://stackoverflow.com/questions/29879626/antlr4-how-to-find-the-root-rules-in-a-gramar-which-maybe-used-to-find-the-star
      */
-    void findRootRule()
+    Rule findRootRule()
     {
         tagReferencedRules();
-        Rules rootRules;
+        Rule rootRule;
         foreach (rule; rules)
             if (!rule.hasRef)
-                rootRules.insertBack(rule);
-        if (rootRules.length == 0)
-            _lexer.warningAtToken(grammar.head, "Missing top-rule");
-        else if (rootRules.length != 1)
-        {
-            _lexer.warningAtToken(grammar.head, "Multiple top-rules being");
-            // TODO: list top-rules
-        }
+            {
+                if (rootRule)
+                {
+                    _lexer.warningAtToken(grammar.head, "Second root rule defined");
+                    _lexer.warningAtToken(rootRule.head, "Existing root rule defined here");
+                }
+                rootRule = rule;
+            }
+        if (!rootRule)
+            _lexer.warningAtToken(grammar.head, "Missing top-rule, all rule symbols are referenced");
+        return rootRule;
     }
 
     void tagReferencedRules()
