@@ -3576,7 +3576,7 @@ struct GxParserByStatement
             }
         }
         if (!_rootRule)
-            _lexer.warningAtToken(grammar.head, "Missing root rule, all rule symbols are referenced. Cyclic grammar?");
+            _lexer.warningAtToken(grammar.head, "Missing root rule, all rule symbols are referenced (cyclic grammar)");
         return _rootRule;
     }
 
