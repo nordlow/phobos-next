@@ -252,7 +252,6 @@ if (isIntegerLike!I1 &&
     ret.simplify();
     return ret;
 }
-
 /// ditto
 Rational!(I) rational(I)(I val)
 if (isIntegerLike!I)
