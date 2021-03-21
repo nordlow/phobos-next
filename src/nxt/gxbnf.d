@@ -14,6 +14,8 @@
 
     TODO:
 
+    - Warn about lexer rules with duplicate literals
+
     - Don't warn about -> skip rules such as WS
 
     - Should be allowed instead of warning:
