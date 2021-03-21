@@ -14,30 +14,26 @@ bool isPow2(T)(T x)
     return isPowerOf2(x);
 }
 alias isPowerOf2 = isPow2;
-
 /// ditto
 bool isPow2A(T)(T x) if (isIntegral!T)
 {
     return x && !(x & (x - 1));
 }
-
 /// ditto
 bool isPow2B(T)(T x) if (isIntegral!T)
 {
     return (x & -x) > (x - 1);
 }
-
+/// ditto
 bool isPow2D(T)(T x) if (isIntegral!T)
 {
     return (x > 0) && !(x & (x - 1));
 }
-
 /// ditto, avoids a jump instruction.
 bool isPow2E(T)(T x) if (isIntegral!T)
 {
     return (x > 0) & !(x & (x - 1));
 }
-
 /// ditto
 bool isPow2F(T)(T x) if (isIntegral!T)
 {
