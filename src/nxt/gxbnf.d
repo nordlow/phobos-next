@@ -1366,7 +1366,7 @@ class Rule : Node
     /** Set to `true` if is referenced by a `SymbolRef`.
         Set in `GxParserByStatement.tagReferencedRules`
     */
-    bool hasRef = true;
+    bool hasRef = false;
 }
 
 final class FragmentRule : Rule
