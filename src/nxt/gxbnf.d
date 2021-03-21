@@ -31,7 +31,7 @@
 
     - Warng about string literals, such as str(`...`), that are equal to tokens such `ELLIPSIS` in `Python3.g4`
 
-    - Make `Rule.top` be of type `Matcher` and make
+    - Make `Rule.root` be of type `Matcher` and make
       - `dcharCountSpan` and
       - `toMatchInSource`
       members of `Matcher`.
@@ -110,6 +110,7 @@ import std.algorithm.iteration : map, joiner, substitute;
 import std.array : array;
 import std.file : tempDir;
 import std.path;
+import std.exception : enforce;
 
 // `d-deps.el` requires these to be at the top:
 import nxt.line_column : offsetLineColumn;
@@ -254,7 +255,6 @@ struct GxLexer
         _input = input;
         this.path = path;
 
-        import std.exception : enforce;
         import nxt.parsing : isNullTerminated;
         enforce(_input.isNullTerminated, "Input isn't null-terminated"); // input cannot be trusted
 
@@ -1296,37 +1296,37 @@ class Rule : Node
     {
         showToken(head, fmt);
         showChars(":\n");
-        if (top)
-            top.show(Format(fmt.indentDepth + 1));
+        if (root)
+            root.show(Format(fmt.indentDepth + 1));
         showChars(" ;\n");
     }
 @safe pure nothrow:
     void diagnoseDirectLeftRecursion(const scope ref GxLexer lexer)
     {
-        void checkLeft(const scope Pattern top) @safe pure nothrow
+        void checkLeft(const scope Pattern root) @safe pure nothrow
         {
-            if (const alt = cast(const AltM)top) // common case
+            if (const alt = cast(const AltM)root) // common case
                 foreach (const sub; alt.subs[]) // all alternatives
                     checkLeft(sub);
-            else if (const seq = cast(const SeqM)top)
+            else if (const seq = cast(const SeqM)root)
                 return checkLeft(seq.subs[0]); // only first in sequence
-            else if (const s = cast(const SymbolPattern)top)
+            else if (const s = cast(const SymbolRefPattern)root)
                 if (head.input == s.head.input)
                     lexer.warningAtToken(s.head, "left-recursion");
         }
-        checkLeft(top);
+        checkLeft(root);
     }
-    this(Token head, Pattern top) @nogc
+    this(Token head, Pattern root) @nogc
     {
         this.head = head;
-        this.top = top;
+        this.root = root;
     }
     override bool equals(const Node o) const @nogc
     {
         if (this is o)
             return true;
         if (const o_ = cast(const typeof(this))o)
-            return head == o_.head && top.equals(o_.top);
+            return head == o_.head && root.equals(o_.root);
         return false;
     }
     override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
@@ -1343,14 +1343,12 @@ class Rule : Node
         import std.ascii : isUpper;
         if (head.input[0].isUpper ||
             cast(const FragmentRule)this)
-        {
             sink.iput(2, "pragma(inline, true);\n");
-        }
         sink.iput(2, `return`);
-        if (top)
+        if (root)
         {
             sink.put(` `);
-            top.toMatchInSource(sink, parser);
+            root.toMatchInSource(sink, parser);
         }
         else
             sink.put(` Match.zero()`);
@@ -1362,15 +1360,16 @@ class Rule : Node
         return false;
     }
     const Token head;           ///< Name.
-    Pattern top;
+    Pattern root;               ///< Root pattern.
+    bool isRootRule = true; ///< Set to `false` in `GxParserByStatement.tagNonRootRules`
 }
 
 final class FragmentRule : Rule
 {
 @safe pure nothrow:
-    this(Token head, Pattern top) @nogc
+    this(Token head, Pattern root) @nogc
     {
-        super(head, top);
+        super(head, root);
     }
     @property final override bool isFragment() const @nogc
     {
@@ -1896,7 +1895,7 @@ final class OtherSymbol : TokenNode
     }
 }
 
-final class SymbolPattern : Pattern
+final class SymbolRefPattern : Pattern
 {
 @safe:
     override void show(in Format fmt = Format.init) const
@@ -3000,7 +2999,7 @@ struct GxParserByStatement
                             _lexer.popFront();
                             continue; // skip element label: SYMBOL '.'. See_Also: https://www.antlr2.org/doc/metalang.html section "Element Labels"
                         }
-                        seqPutCheck(new SymbolPattern(head));
+                        seqPutCheck(new SymbolRefPattern(head));
                     }
                     break;
                 case TOK.literal:
@@ -3217,15 +3216,15 @@ struct GxParserByStatement
 
         static if (useStaticTempArrays)
         {
-            Pattern top = alts.length == 1 ? alts.backPop() : makeAltM(Token.init, alts[]);
+            Pattern root = alts.length == 1 ? alts.backPop() : makeAltM(Token.init, alts[]);
             alts.clear();
         }
         else
-            Pattern top = alts.length == 1 ? alts.backPop() : makeAltA(Token.init, alts.move());
+            Pattern root = alts.length == 1 ? alts.backPop() : makeAltA(Token.init, alts.move());
 
         Rule rule = (isFragment
-                     ? new FragmentRule(name, top)
-                     : new Rule(name, top));
+                     ? new FragmentRule(name, root)
+                     : new Rule(name, root));
 
         if (_lexer._diagnoseLeftRecursion)
             rule.diagnoseDirectLeftRecursion(_lexer);
@@ -3548,11 +3547,35 @@ struct GxParserByStatement
         }
     }
 
+    /**
+       See_Also: https://stackoverflow.com/questions/29879626/antlr4-how-to-find-the-root-rules-in-a-gramar-which-maybe-used-to-find-the-star
+     */
+    Rule findRootRule()
+    {
+        tagNonRootRules();
+        Rules topRules;
+        foreach (rule; rules)
+            if (rule.isRootRule)
+                topRules.insertBack(rule);
+        if (topRules.length != 1)
+            // TODO: _lexer.errorAtFront("TODO: handle");
+            debug writeln("TODO: ERROR: Multiple top-rules:", topRules.length);
+        return topRules[0];
+    }
+
+    void tagNonRootRules()
+    {
+        // foreach (rule; rules)
+        //     foreach (subRule; rules.subRules)
+        //         subRule.isRootRule = false;
+    }
+
     Node grammar;
     DynamicArray!(Options) optionsSet;
     Imports imports;
     Rules rules;
     RulesByName rulesByName;
+    Rule topRule;               ///< Top rule for grammar.
     bool warnUnknownSymbolFlag;
 private:
     GxLexer _lexer;
