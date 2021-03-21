@@ -1361,6 +1361,16 @@ class Rule : Node
     {
         return false;
     }
+    /** Is a token rule (beginning with a capital letter).
+     *
+     * See_Also: https://github.com/antlr/antlr4/blob/master/doc/lexer-rules.md#lexer-rule-elements
+     */
+    @property final bool isLexerTokenRule() const @nogc
+    {
+        import std.ascii : isUpper;
+        return (head.input.length &&
+                head.input[0].isUpper);
+    }
     const Token head;           ///< Name.
     Pattern root;               ///< Root pattern.
     /** Set to `true` if is referenced by a `SymbolRef`.
@@ -3569,19 +3579,17 @@ struct GxParserByStatement
         {
             if (rule.hasRef)
                 continue;
-            // TODO: if (rule.isSkipped)
-            //     continue;
-            if (rule.isFragment)
-            {
+            else if (rule.isFragment)
                 _lexer.warningAtToken(rule.head, "Unused fragment rule");
-                continue;
-            }
-            if (_rootRule)
+            else if (rule.isLexerTokenRule)
+                _lexer.warningAtToken(rule.head, "Unused (lexical) lexer token rule");
+            else if (_rootRule)
             {
                 _lexer.warningAtToken(rule.head, "Second root rule defined");
                 _lexer.warningAtToken(_rootRule.head, "  Existing root rule defined here");
             }
-            _rootRule = rule;
+            else
+                _rootRule = rule;
         }
         if (!_rootRule)
             _lexer.warningAtToken(grammar.head, "Missing root rule, all rule symbols are referenced (cyclic grammar)");
