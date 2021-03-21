@@ -40,6 +40,22 @@ if (is(T == enum))
         return defaultValue;
     }
 }
+/// ditto
+T toDefaulted(T : string, U)(U value,
+                             T defaultValue) @safe pure nothrow @nogc
+if (is(U == enum))
+{
+    switch (value)              // instead of slower `std.conv.to`:
+    {
+        static foreach (member; __traits(allMembers, U)) // instead of slower `EnumMembers`
+        {
+        case __traits(getMember, U, member):
+            return member;
+        }
+    default:
+        return defaultValue;
+    }
+}
 
 ///
 @safe pure nothrow /*TODO: @nogc*/ unittest
@@ -56,6 +72,14 @@ if (is(T == enum))
     assert("z".toDefaulted!(E)(E.init) == E.z);
     assert("z2".toDefaulted!(E)(E.init) == E.z);
     assert("_".toDefaulted!(E)(E.init) == E.unknown);
+}
+
+///
+@safe pure nothrow @nogc unittest
+{
+    enum E { unknown, x, }
+    assert(E.x.toDefaulted!string("init") == "x");
+    assert(E.init.toDefaulted!string("init") == "unknown");
 }
 
 /** More tolerant variant of `std.conv.to`.
