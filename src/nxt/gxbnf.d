@@ -15,6 +15,7 @@
     TODO:
 
     - Warn about lexer rules with duplicate literals
+    - Add errors for duplicated rule definitions in same file
 
     - Don't warn about -> skip rules such as WS
 
@@ -30,8 +31,6 @@
     - Use: `nxt.git` to scan parsing examples in `grammars-v4`
 
     - Rewriting (X+)? as X* in ANTLR grammars and commit to grammars-v4. See https://stackoverflow.com/questions/64706408/rewriting-x-as-x-in-antlr-grammars
-
-    - Add errors for duplicated rule definitions in same file
 
     - Add errors for missing symbols during code generation
 
