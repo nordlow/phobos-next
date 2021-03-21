@@ -940,7 +940,6 @@ private:
                                 const scope Input msg) const @trusted nothrow scope
     {
         const offset = (token.input.ptr && _input.ptr) ? token.input.ptr - _input.ptr : 0; // unsafe
-        // debug writeln("_input.ptr:", _input.ptr, ", token.input:", token.input, ", offset:", offset);
         const lc = offsetLineColumn(_input, offset);
         import nxt.conv_ex : toDefaulted;
         const string toks = token.tok.toDefaulted!string("unknown");
