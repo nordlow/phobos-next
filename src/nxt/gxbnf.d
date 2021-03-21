@@ -937,7 +937,7 @@ private:
 
     private void messageAtToken(const scope Token token,
                                 const scope string tag,
-                                const scope Input msg) const nothrow scope
+                                const scope Input msg) const nothrow scope @nogc
     {
         ptrdiff_t offset;
         () @trusted {
