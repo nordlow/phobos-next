@@ -1389,6 +1389,9 @@ class Rule : Node
 
 /** A reusable part of a lexer rule that doesn't match (a token) on its own.
 
+    A consequence is that fragment rules matches are never stored as a separate
+    parse tree nodes.
+
   For example:
   INTEGER: DIGIT+
          | '0' [Xx] HEX_DIGIT+
