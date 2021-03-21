@@ -4430,8 +4430,8 @@ struct BuildCtx
     File outFile;
     bool buildSingleFlag = true;
     bool buildAllFlag = true;
-    bool lexerFlag = true;
-    bool parserFlag = true;
+    bool lexerFlag = false;     ///< Flag for separate lexing pass.
+    bool parserFlag = true;     ///< Flag for separate parsing pass.
 }
 
 void parseAllInDirTree(scope ref BuildCtx bcx) @system
