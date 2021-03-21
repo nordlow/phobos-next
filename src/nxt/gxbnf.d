@@ -3569,6 +3569,8 @@ struct GxParserByStatement
         {
             if (rule.hasRef)
                 continue;
+            // TODO: if (rule.isSkipped)
+            //     continue;
             if (rule.isFragment)
             {
                 _lexer.warningAtToken(rule.head, "Unused fragment rule");
@@ -3577,7 +3579,7 @@ struct GxParserByStatement
             if (_rootRule)
             {
                 _lexer.warningAtToken(rule.head, "Second root rule defined");
-                _lexer.warningAtToken(_rootRule.head, "Existing root rule defined here");
+                _lexer.warningAtToken(_rootRule.head, "  Existing root rule defined here");
             }
             _rootRule = rule;
         }
