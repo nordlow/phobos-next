@@ -3558,23 +3558,24 @@ struct GxParserByStatement
     /**
        See_Also: https://stackoverflow.com/questions/29879626/antlr4-how-to-find-the-root-rules-in-a-gramar-which-maybe-used-to-find-the-star
      */
-    Rule findRootRule()
+    @property Rule rootRule()
     {
+        if (_rootRule)
+            return _rootRule;
         tagReferencedRules();
-        Rule rootRule;
         foreach (rule; rules)
             if (!rule.hasRef)
             {
-                if (rootRule)
+                if (_rootRule)
                 {
                     _lexer.warningAtToken(grammar.head, "Second root rule defined");
-                    _lexer.warningAtToken(rootRule.head, "Existing root rule defined here");
+                    _lexer.warningAtToken(_rootRule.head, "Existing root rule defined here");
                 }
-                rootRule = rule;
+                _rootRule = rule;
             }
-        if (!rootRule)
-            _lexer.warningAtToken(grammar.head, "Missing top-rule, all rule symbols are referenced");
-        return rootRule;
+        if (!_rootRule)
+            _lexer.warningAtToken(grammar.head, "Missing root rule, all rule symbols are referenced");
+        return _rootRule;
     }
 
     void tagReferencedRules()
@@ -3596,11 +3597,11 @@ struct GxParserByStatement
     Rules rules;
     RulesByName rulesByName;
     SymbolRefs symbolRefs;      ///< All of `SymbolRef` instances.
-    Rule topRule;               ///< Top rule for grammar.
     bool warnUnknownSymbolFlag;
 private:
     GxLexer _lexer;
     Node _front;
+    Rule _rootRule;               ///< Root rule for grammar.
 }
 
 /// Returns: `path` as module name.
@@ -3656,7 +3657,7 @@ struct GxFileParser           // TODO: convert to `class`
 
 });
         output.put(parserSourceBegin);
-        parser.findRootRule();
+        parser.rootRule();
         toMatchers(output);
         output.put(parserSourceEnd);
     }
