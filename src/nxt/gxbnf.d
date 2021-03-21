@@ -958,20 +958,20 @@ private:
 
     // TODO: into warning(const char* format...) like in `dmd` and put in `nxt.parsing` and reuse here and in lispy.d
     void errorAtIndex(const scope Input msg,
-                      in size_t i = 0) const nothrow @nogc scope
+                      in size_t i = 0) const nothrow scope @nogc
     {
         messageAtIndex("Error", msg, i);
         assert(false);          ///< TODO: propagate error instead of assert
     }
 
     void warningAtIndex(const scope Input msg,
-                        in size_t i = 0) const nothrow @nogc scope
+                        in size_t i = 0) const nothrow scope @nogc
     {
         messageAtIndex("Warning", msg, i);
     }
 
     void infoAtIndex(const scope Input msg,
-                     in size_t i = 0, in const(char)[] ds = null) const nothrow @nogc scope
+                     in size_t i = 0, in const(char)[] ds = null) const nothrow scope @nogc
     {
         messageAtIndex("Info", msg, i, ds);
     }
