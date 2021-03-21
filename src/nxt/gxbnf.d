@@ -3564,6 +3564,7 @@ struct GxParserByStatement
             return _rootRule;
         tagReferencedRules();
         foreach (rule; rules)
+        {
             if (!rule.hasRef)
             {
                 if (_rootRule)
@@ -3573,6 +3574,7 @@ struct GxParserByStatement
                 }
                 _rootRule = rule;
             }
+        }
         if (!_rootRule)
             _lexer.warningAtToken(grammar.head, "Missing root rule, all rule symbols are referenced");
         return _rootRule;
