@@ -14,6 +14,8 @@
 
     TODO:
 
+    - Don't warn about -> skip rules such as WS
+
     - Should be allowed instead of warning:
 
     grammars-v4/lua/Lua.g4(329,5): Warning: missing left-hand side, token (leftParen) at offset 5967
@@ -938,6 +940,9 @@ private:
                                 const scope Input msg) const @trusted nothrow scope
     {
         const offset = (_token.input.ptr && _input.ptr) ? token.input.ptr - _input.ptr : 0; // unsafe
+        // debug writeln("_token.input.ptr:", _token.input.ptr);
+        // debug writeln("_input.ptr:", _input.ptr);
+        // debug writeln("offset:", offset);
         const lc = offsetLineColumn(_input, offset);
         import nxt.conv_ex : toDefaulted;
         const string toks = token.tok.toDefaulted!string("unknown");
@@ -1361,7 +1366,10 @@ class Rule : Node
     {
         return false;
     }
-    /** Is a token rule (beginning with a capital letter).
+    /** Is a lexer (token) rule (beginning with a capital letter) defining a token type.
+     *
+     * A lexer rule name starts with an uppercase letter distinguishing it from
+     * a parser rule.
      *
      * See_Also: https://github.com/antlr/antlr4/blob/master/doc/lexer-rules.md#lexer-rule-elements
      */
@@ -3582,7 +3590,7 @@ struct GxParserByStatement
             else if (rule.isFragment)
                 _lexer.warningAtToken(rule.head, "Unused fragment rule");
             else if (rule.isLexerTokenRule)
-                _lexer.warningAtToken(rule.head, "Unused (lexical) lexer token rule");
+                _lexer.warningAtToken(rule.head, "Unused (lexical) lexer token rule"); // TODO: don't warn about skipped rules -> skip
             else if (_rootRule)
             {
                 _lexer.warningAtToken(rule.head, "Second root rule defined");
