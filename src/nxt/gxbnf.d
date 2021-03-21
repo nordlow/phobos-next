@@ -14,8 +14,9 @@
 
     TODO:
 
-    - Warn about lexer rules with duplicate literals
     - Add errors for duplicated rule definitions in same file
+      - Use `Pattern.opEquals`
+      - Simples to start with lexer rules
 
     - Don't warn about -> skip rules such as WS
 
@@ -1181,12 +1182,10 @@ final class SeqM : NaryOpPattern
 pure nothrow:
     this(Token head) @nogc
     {
-        this.head = head;
         super(head, PatternArray.init);
     }
     this(PatternArray subs) @nogc
     {
-        this.head = Token.init;
         super(Token.init, subs.move());
     }
     this(uint n)(Node[n] subs) if (n >= 2)
@@ -1224,7 +1223,20 @@ pure nothrow:
         }
         return lr;
     }
-    const Token head;
+    override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+        {
+            if (head.input == that_.head.input)
+            {
+                foreach (const index, const sub; subs)
+                    if (!sub.opEquals(that_.subs[index]))
+                        return false;
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 Pattern makeSeq(PatternArray subs,
@@ -1531,6 +1543,20 @@ pure nothrow:
     {
         return dcharCountSpanOf(subs[]);
     }
+    override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+        {
+            if (head.input == that_.head.input)
+            {
+                foreach (const index, const sub; subs)
+                    if (!sub.opEquals(that_.subs[index]))
+                        return false;
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 DcharCountSpan dcharCountSpanOf(const scope Pattern[] subs) @safe pure nothrow @nogc
@@ -1656,6 +1682,12 @@ final class NotPattern : UnaryOpPattern
     {
         return sub.dcharCountSpan();
     }
+    final override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+            return sub.opEquals(that_.sub);
+        return false;
+    }
 }
 
 /// Match (greedily) zero or one instances of type `sub`.
@@ -1682,6 +1714,12 @@ final class GreedyZeroOrOne : UnaryOpPattern
     {
         return typeof(return)(0, sub.dcharCountSpan.upper);
     }
+    final override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+            return sub.opEquals(that_.sub);
+        return false;
+    }
 }
 
 /// Match (greedily) zero or more instances of type `sub`.
@@ -1707,6 +1745,12 @@ final class GreedyZeroOrMore : UnaryOpPattern
     override DcharCountSpan dcharCountSpan() const @nogc
     {
         return typeof(return).full();
+    }
+    final override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+            return sub.opEquals(that_.sub);
+        return false;
     }
 }
 
@@ -1738,6 +1782,12 @@ final class GreedyOneOrMore : UnaryOpPattern
     {
         return typeof(return)(sub.dcharCountSpan.lower,
                               typeof(return).upper.max);
+    }
+    final override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+            return sub.opEquals(that_.sub);
+        return false;
     }
 }
 
@@ -1784,6 +1834,15 @@ final class NonGreedyZeroOrOne : TerminatedUnaryOpPattern
     {
         return typeof(return)(0, sub.dcharCountSpan.upper);
     }
+    override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+        {
+            return (sub.opEquals(that_.sub) &&
+                    terminator.opEquals(that_.terminator));
+        }
+        return false;
+    }
 }
 
 /// Match (non-greedily) zero or more instances of type `sub`.
@@ -1822,6 +1881,15 @@ final class NonGreedyZeroOrMore : TerminatedUnaryOpPattern
     {
         return typeof(return).full();
     }
+    override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+        {
+            return (sub.opEquals(that_.sub) &&
+                    terminator.opEquals(that_.terminator));
+        }
+        return false;
+    }
 }
 
 /// Match (non-greedily) one or more instances of type `sub`.
@@ -1856,6 +1924,15 @@ final class NonGreedyOneOrMore : TerminatedUnaryOpPattern
         return typeof(return)(sub.dcharCountSpan.lower,
                               typeof(return).upper.max);
     }
+    override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+        {
+            return (sub.opEquals(that_.sub) &&
+                    terminator.opEquals(that_.terminator));
+        }
+        return false;
+    }
 }
 
 /// Match `count` number of instances of type `sub`.
@@ -1884,6 +1961,13 @@ final class GreedyCount : UnaryOpPattern
         return typeof(return)(ss.lower == uint.max ? uint.max : ss.lower * count,
                               ss.upper == uint.max ? uint.max : ss.upper * count);
     }
+    override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+            return (count == that_.count &&
+                    sub.opEquals(that_.sub));
+        return false;
+    }
     ulong count;
 }
 
@@ -1909,6 +1993,12 @@ final class RewriteSyntacticPredicate : UnaryOpPattern
     override DcharCountSpan dcharCountSpan() const @nogc
     {
         return sub.dcharCountSpan;
+    }
+    override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+            return sub.opEquals(that_.sub);
+        return false;
     }
 }
 
@@ -1958,6 +2048,12 @@ final class SymbolRef : Pattern
     {
         assert(false);
         // return typeof(return).init;
+    }
+    override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+            return head.input == that_.head.input;
+        return false;
     }
 }
 
@@ -2011,6 +2107,12 @@ final class AnyClass : Pattern
     override DcharCountSpan dcharCountSpan() const @nogc
     {
         return typeof(return)(1);
+    }
+    override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+            return true;
+        return false;
     }
 }
 
@@ -2066,6 +2168,7 @@ abstract class Pattern : TokenNode
         super(head);
     }
     abstract DcharCountSpan dcharCountSpan() const @nogc;
+    abstract bool opEquals(const scope Pattern that) const @nogc;
 }
 
 final class StrLiteral : Pattern
@@ -2132,6 +2235,12 @@ final class StrLiteral : Pattern
             cnt = inp.byDchar.count;
         }
         return typeof(return)(cnt);
+    }
+    final override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+            return head.input == that_.head.input;
+        return false;
     }
     Input unquotedInput() const scope return @nogc
     {
@@ -2227,6 +2336,12 @@ final class AltCharLiteral : Pattern
         //     return DcharCountSpan(1, 1);
         // else
         //     return DcharCountSpan(0, uint.max);
+    }
+    final override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+            return head.input == that_.head.input;
+        return false;
     }
 }
 
@@ -2381,7 +2496,15 @@ pure nothrow:
     {
         return dcharCountSpanOf(subs[]);
     }
-}
+    final override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+            return (head.input == that_.head.input &&
+                    subs[0].opEquals(that_.subs[0]) &&
+                    subs[1].opEquals(that_.subs[1]));
+        return false;
+    }
+ }
 
 Pattern parseCharAltM(const CharAltM alt,
                       const scope ref GxLexer lexer) @safe pure nothrow
@@ -2637,6 +2760,12 @@ final class CharAltM : Pattern
     override DcharCountSpan dcharCountSpan() const @nogc
     {
         return typeof(return)(1);
+    }
+    override bool opEquals(const scope Pattern that) const @nogc
+    {
+        if (auto that_ = cast(const typeof(this))that)
+            return head.input == that_.head.input;
+        return false;
     }
 }
 
