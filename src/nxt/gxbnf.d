@@ -4428,10 +4428,10 @@ struct BuildCtx
 {
     string rootDirPath;
     File outFile;
-    bool buildSingleFlag = true;
-    bool buildAllFlag = true;
-    bool lexerFlag = false;     ///< Flag for separate lexing pass.
-    bool parserFlag = true;     ///< Flag for separate parsing pass.
+    bool buildSingleFlag;
+    bool buildAllFlag;
+    bool lexerFlag;             ///< Flag for separate lexing pass.
+    bool parserFlag;            ///< Flag for separate parsing pass.
 }
 
 void parseAllInDirTree(scope ref BuildCtx bcx) @system
@@ -4506,6 +4506,10 @@ version(show)
     BuildCtx bcx = {
         rootDirPath : "~/Work/grammars-v4/".expandTilde,
         outFile : stdout,
+        buildSingleFlag : true,
+        buildAllFlag : true,
+        lexerFlag : false,
+        parserFlag : true,
     };
     doTree(bcx);
 }
