@@ -15,8 +15,8 @@
     TODO:
 
     - Add errors for duplicated rule definitions in same file
-      - Use `Pattern.opEquals`
-      - Simples to start with lexer rules
+      - Use just defined `Pattern.opEquals`
+      - Simplest to start with lexer rules
 
     - Don't warn about -> skip rules such as WS
 
