@@ -3581,6 +3581,8 @@ struct GxParserByStatement
         return _rootRule;
     }
 
+    /** Tag all referenced rules.
+     */
     void tagReferencedRules()
     {
         foreach (const symbolRef; symbolRefs)
