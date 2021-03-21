@@ -3602,19 +3602,19 @@ struct GxParserByStatement
             if (rule.hasRef)
                 continue;
             else if (rule.isFragmentRule)
-                _lexer.warningAtToken(rule.head, "Unused fragment rule");
+                _lexer.warningAtToken(rule.head, "unused fragment rule");
             else if (rule.isLexerTokenRule)
-                _lexer.warningAtToken(rule.head, "Unused (lexical) lexer token rule"); // TODO: don't warn about skipped rules -> skip
+                _lexer.warningAtToken(rule.head, "unused (lexical) lexer token rule"); // TODO: don't warn about skipped rules -> skip
             else if (_rootRule)
             {
-                _lexer.warningAtToken(rule.head, "Second root rule defined");
-                _lexer.warningAtToken(_rootRule.head, "  Existing root rule defined here");
+                _lexer.warningAtToken(rule.head, "second root rule defined");
+                _lexer.warningAtToken(_rootRule.head, "  existing root rule defined here");
             }
             else
                 _rootRule = rule;
         }
         if (!_rootRule)
-            _lexer.warningAtToken(grammar.head, "Missing root rule, all rule symbols are referenced (cyclic grammar)");
+            _lexer.warningAtToken(grammar.head, "missing root rule, all rule symbols are referenced (cyclic grammar)");
         return _rootRule;
     }
 
