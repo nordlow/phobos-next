@@ -1395,6 +1395,8 @@ class Rule : Node
          ;
   fragment DIGIT: [0-9];
   fragment HEX_DIGIT: [0-9A-Fa-f];
+
+  See_Also: https://sodocumentation.net/antlr/topic/3271/lexer-rules-in-v4#fragments
  */
 final class FragmentRule : Rule
 {
