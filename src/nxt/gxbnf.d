@@ -27,6 +27,8 @@
 
     - Rewriting (X+)? as X* in ANTLR grammars and commit to grammars-v4. See https://stackoverflow.com/questions/64706408/rewriting-x-as-x-in-antlr-grammars
 
+    - Add errors for duplicated rule definitions in same file
+
     - Add errors for missing symbols during code generation
 
     - Warng about string literals, such as str(`...`), that are equal to tokens such `ELLIPSIS` in `Python3.g4`
@@ -1310,7 +1312,7 @@ class Rule : Node
                     checkLeft(sub);
             else if (const seq = cast(const SeqM)root)
                 return checkLeft(seq.subs[0]); // only first in sequence
-            else if (const s = cast(const SymbolRefPattern)root)
+            else if (const s = cast(const SymbolRef)root)
                 if (head.input == s.head.input)
                     lexer.warningAtToken(s.head, "left-recursion");
         }
@@ -1361,7 +1363,10 @@ class Rule : Node
     }
     const Token head;           ///< Name.
     Pattern root;               ///< Root pattern.
-    bool isRootRule = true; ///< Set to `false` in `GxParserByStatement.tagNonRootRules`
+    /** Set to `true` if is referenced by a `SymbolRef`.
+        Set in `GxParserByStatement.tagReferencedRules`
+    */
+    bool hasRef = true;
 }
 
 final class FragmentRule : Rule
@@ -1895,7 +1900,7 @@ final class OtherSymbol : TokenNode
     }
 }
 
-final class SymbolRefPattern : Pattern
+final class SymbolRef : Pattern
 {
 @safe:
     override void show(in Format fmt = Format.init) const
@@ -2863,6 +2868,7 @@ final class Class : TokenNode
 
 alias Imports = DynamicArray!(Import, null, uint);
 alias Rules = DynamicArray!(Rule, null, uint);
+alias SymbolRefs = DynamicArray!(SymbolRef, null, uint);
 
 /** Gx parser with range interface over all statements.
  *
@@ -2999,7 +3005,9 @@ struct GxParserByStatement
                             _lexer.popFront();
                             continue; // skip element label: SYMBOL '.'. See_Also: https://www.antlr2.org/doc/metalang.html section "Element Labels"
                         }
-                        seqPutCheck(new SymbolRefPattern(head));
+                        auto sref = new SymbolRef(head);
+                        seqPutCheck(sref);
+                        symbolRefs.insertBack(sref);
                     }
                     break;
                 case TOK.literal:
@@ -3550,31 +3558,43 @@ struct GxParserByStatement
     /**
        See_Also: https://stackoverflow.com/questions/29879626/antlr4-how-to-find-the-root-rules-in-a-gramar-which-maybe-used-to-find-the-star
      */
-    Rule findRootRule()
+    void findRootRule()
     {
-        tagNonRootRules();
-        Rules topRules;
+        tagReferencedRules();
+        Rules rootRules;
         foreach (rule; rules)
-            if (rule.isRootRule)
-                topRules.insertBack(rule);
-        if (topRules.length != 1)
-            // TODO: _lexer.errorAtFront("TODO: handle");
-            debug writeln("TODO: ERROR: Multiple top-rules:", topRules.length);
-        return topRules[0];
+        {
+            if (!rule.hasRef)
+                rootRules.insertBack(rule);
+        }
+        if (rootRules.length == 0)
+            _lexer.warningAtToken(grammar.head, "Missing top-rule");
+        else if (rootRules.length != 1)
+        {
+            _lexer.warningAtToken(grammar.head, "Multiple top-rules being");
+            // TODO: list top-rules
+        }
     }
 
-    void tagNonRootRules()
+    void tagReferencedRules()
     {
-        // foreach (rule; rules)
-        //     foreach (subRule; rules.subRules)
-        //         subRule.isRootRule = false;
+        foreach (const symbolRef; symbolRefs)
+        {
+            auto hit = symbolRef.head.input in rulesByName;
+            if (hit)
+                hit.hasRef = true;
+            else
+                enforce(symbolRef.head.input == "EOF",
+                        "No symbol named `" ~ symbolRef.head.input ~ "`");
+        }
     }
 
-    Node grammar;
+    TokenNode grammar;
     DynamicArray!(Options) optionsSet;
     Imports imports;
     Rules rules;
     RulesByName rulesByName;
+    SymbolRefs symbolRefs;      ///< All of `SymbolRef` instances.
     Rule topRule;               ///< Top rule for grammar.
     bool warnUnknownSymbolFlag;
 private:
@@ -3635,11 +3655,18 @@ struct GxFileParser           // TODO: convert to `class`
 
 });
         output.put(parserSourceBegin);
+        parser.findRootRule();
+        toMatchers(output);
+        output.put(parserSourceEnd);
+    }
+
+    void toMatchers(scope ref Output output)
+    {
         RuleNames doneRuleNames;
         toMatchersForRules(doneRuleNames, output);
         toMatchersForImports(doneRuleNames, output);
         toMatchersForOptionsTokenVocab(doneRuleNames, output);
-        output.put(parserSourceEnd);
+
     }
 
     void toMatchersForImportedModule(in const(char)[] moduleName,
