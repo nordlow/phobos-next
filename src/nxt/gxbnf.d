@@ -3699,9 +3699,10 @@ struct GxFileParser           // TODO: convert to `class`
 
 });
         output.put(parserSourceBegin);
-        parser.rootRule();
         toMatchers(output);
         output.put(parserSourceEnd);
+
+        parser.rootRule();      // TODO: use this
     }
 
     void toMatchers(scope ref Output output)
