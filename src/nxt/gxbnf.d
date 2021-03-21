@@ -509,7 +509,7 @@ private:
                 // TODO: convert to `dchar`
             }
             else if (peekN(i) == '\0')
-                errorAtIndex("unterminated escape sequence at end of file");
+                errorAtOffset("unterminated escape sequence at end of file");
             else
                 i += 1;
             return true;
@@ -524,7 +524,7 @@ private:
             if (!skipOverEsc(i))
                 i += 1;
         if (peekN(i) == '\0')
-            errorAtIndex("unterminated string literal at end of file");
+            errorAtOffset("unterminated string literal at end of file");
         return skipOverN(i + 1); // include terminator
     }
 
@@ -537,9 +537,9 @@ private:
         if (peekN(i) != terminator)
         {
             if (peekN(i) == '\0')
-                errorAtIndex("unterminated string literal at end of file");
+                errorAtOffset("unterminated string literal at end of file");
             else
-                errorAtIndex("unterminated token spec option");
+                errorAtOffset("unterminated token spec option");
         }
         return skipOverN(i + 1); // include terminator '>'
     }
@@ -584,7 +584,7 @@ private:
                     peekN(i + 1) == '/')
                 {
                     if (infoFlag)
-                        infoAtIndex("line comment start", i, ds[]);
+                        infoAtOffset("line comment start", i, ds[]);
                     inLineComment = true;
                     i += 2;
                     continue;
@@ -593,7 +593,7 @@ private:
                          peekN(i + 1) == '*')
                 {
                     if (infoFlag)
-                        infoAtIndex("block comment start", i, ds[]);
+                        infoAtOffset("block comment start", i, ds[]);
                     inBlockComment = true;
                     i += 2;
                     continue;
@@ -601,46 +601,46 @@ private:
                 else if (peekN(i) == '{')
                 {
                     if (infoFlag)
-                        infoAtIndex("brace open", i, ds[]);
+                        infoAtOffset("brace open", i, ds[]);
                     ds.put('{');
                 }
                 else if (peekN(i) == '}')
                 {
                     if (infoFlag)
-                        infoAtIndex("brace close", i, ds[]);
+                        infoAtOffset("brace close", i, ds[]);
                     if (!ds.empty &&
                         ds.back != '{')
-                        errorAtIndex("unmatched", i);
+                        errorAtOffset("unmatched", i);
                     ds.popBack();
                 }
                 else if (peekN(i) == '[')
                 {
                     if (infoFlag)
-                        infoAtIndex("hook open", i, ds[]);
+                        infoAtOffset("hook open", i, ds[]);
                     ds.put('[');
                 }
                 else if (peekN(i) == ']')
                 {
                     if (infoFlag)
-                        infoAtIndex("hook close", i, ds[]);
+                        infoAtOffset("hook close", i, ds[]);
                     if (!ds.empty &&
                         ds.back != '[')
-                        errorAtIndex("unmatched", i);
+                        errorAtOffset("unmatched", i);
                     ds.popBack();
                 }
                 else if (peekN(i) == '(')
                 {
                     if (infoFlag)
-                        infoAtIndex("paren open", i, ds[]);
+                        infoAtOffset("paren open", i, ds[]);
                     ds.put('(');
                 }
                 else if (peekN(i) == ')')
                 {
                     if (infoFlag)
-                        infoAtIndex("paren close", i, ds[]);
+                        infoAtOffset("paren close", i, ds[]);
                     if (!ds.empty &&
                         ds.back != '(')
-                        errorAtIndex("unmatched", i);
+                        errorAtOffset("unmatched", i);
                     ds.popBack();
                 }
             }
@@ -651,7 +651,7 @@ private:
                 peekN(i + 1) == '/')
             {
                 if (infoFlag)
-                    infoAtIndex("block comment close", i, ds[]);
+                    infoAtOffset("block comment close", i, ds[]);
                 inBlockComment = false;
                 i += 2;
                 continue;
@@ -663,7 +663,7 @@ private:
                  peekN(i) == '\r'))
             {
                 if (infoFlag)
-                    infoAtIndex("line comment close", i, ds[]);
+                    infoAtOffset("line comment close", i, ds[]);
                 inLineComment = false;
             }
 
@@ -677,14 +677,14 @@ private:
                     ds.back == '\'')
                 {
                     if (infoFlag)
-                        infoAtIndex("single-quote close", i, ds[]);
+                        infoAtOffset("single-quote close", i, ds[]);
                     ds.popBack();
                     inChar = false;
                 }
                 else
                 {
                     if (infoFlag)
-                        infoAtIndex("single-quote open", i, ds[]);
+                        infoAtOffset("single-quote open", i, ds[]);
                     ds.put('\'');
                     inChar = true;
                 }
@@ -700,14 +700,14 @@ private:
                     ds.back == '"')
                 {
                     if (infoFlag)
-                        infoAtIndex("double-quote close", i, ds[]);
+                        infoAtOffset("double-quote close", i, ds[]);
                     ds.popBack();
                     inString = false;
                 }
                 else
                 {
                     if (infoFlag)
-                        infoAtIndex("doubl-quote open", i, ds[]);
+                        infoAtOffset("doubl-quote open", i, ds[]);
                     ds.put('"');
                     inString = true;
                 }
@@ -720,9 +720,9 @@ private:
         }
 
         if (inBlockComment)
-            errorAtIndex("unterminated block comment", i);
+            errorAtOffset("unterminated block comment", i);
         if (ds.length != 0)
-            errorAtIndex("unbalanced code block", i);
+            errorAtOffset("unbalanced code block", i);
 
         return skipOverN(i);
     }
@@ -751,7 +751,7 @@ private:
                     return nextFront();
             }
             else
-                errorAtIndex("unexpected character");
+                errorAtOffset("unexpected character");
             break;
         case '(':
             _token = Token(TOK.leftParen, skipOver1());
@@ -834,7 +834,7 @@ private:
             if (peek1() == '>') // `->`
                 _token = Token(TOK.rewrite, skipOver2());
             else
-                errorAtIndex("unexpected character");
+                errorAtOffset("unexpected character");
             break;
         case '0':
             ..
@@ -895,7 +895,7 @@ private:
             else
             {
                 _token = Token(TOK._error);
-                errorAtIndex("unexpected character");
+                errorAtOffset("unexpected character");
             }
         }
     }
@@ -957,29 +957,29 @@ private:
     }
 
     // TODO: into warning(const char* format...) like in `dmd` and put in `nxt.parsing` and reuse here and in lispy.d
-    void errorAtIndex(const scope Input msg,
-                      in size_t i = 0) const nothrow scope @nogc
+    void errorAtOffset(const scope Input msg,
+                       in size_t i = 0) const nothrow scope @nogc
     {
-        messageAtIndex("Error", msg, i);
+        messageAtOffset("Error", msg, i);
         assert(false);          ///< TODO: propagate error instead of assert
     }
 
-    void warningAtIndex(const scope Input msg,
-                        in size_t i = 0) const nothrow scope @nogc
+    void warningAtOffset(const scope Input msg,
+                         in size_t i = 0) const nothrow scope @nogc
     {
-        messageAtIndex("Warning", msg, i);
+        messageAtOffset("Warning", msg, i);
     }
 
-    void infoAtIndex(const scope Input msg,
-                     in size_t i = 0, in const(char)[] ds = null) const nothrow scope @nogc
+    void infoAtOffset(const scope Input msg,
+                      in size_t i = 0, in const(char)[] ds = null) const nothrow scope @nogc
     {
-        messageAtIndex("Info", msg, i, ds);
+        messageAtOffset("Info", msg, i, ds);
     }
 
-    void messageAtIndex(const scope string tag,
-                        const scope Input msg,
-                        in size_t i = 0,
-                        in const(char)[] ds = null) const @trusted nothrow @nogc scope
+    void messageAtOffset(const scope string tag,
+                         const scope Input msg,
+                         in size_t i = 0,
+                         in const(char)[] ds = null) const @trusted nothrow @nogc scope
     {
         const lc = offsetLineColumn(_input, _offset + i);
         // TODO: remove printf
