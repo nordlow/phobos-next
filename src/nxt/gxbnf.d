@@ -937,13 +937,16 @@ private:
 
     private void messageAtToken(const scope Token token,
                                 const scope string tag,
-                                const scope Input msg) const @trusted nothrow scope
+                                const scope Input msg) const nothrow scope
     {
-        const offset = (token.input.ptr && _input.ptr) ? token.input.ptr - _input.ptr : 0; // unsafe
+        ptrdiff_t offset;
+        () @trusted {
+            offset = (token.input.ptr && _input.ptr) ? token.input.ptr - _input.ptr : 0; // unsafe
+        } ();
         const lc = offsetLineColumn(_input, offset);
         import nxt.conv_ex : toDefaulted;
         const string toks = token.tok.toDefaulted!string("unknown");
-        debug printf("%.*s(%u,%u): %s: %.*s, token `%.*s` (%.*s) at offset %llu\n",
+        debug printf("%.*s(%u,%u): %s: %.*s, `%.*s` (%.*s) at offset %llu\n",
                      cast(int)path.length, path.ptr,
                      lc.line + 1, lc.column + 1,
                      tag.ptr,
