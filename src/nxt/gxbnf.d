@@ -1362,7 +1362,7 @@ class Rule : Node
         sink.put(";\n");
         sink.iput(1, "}\n");
     }
-    @property bool isFragment() const @nogc
+    @property bool isFragmentRule() const @nogc
     {
         return false;
     }
@@ -1387,6 +1387,8 @@ class Rule : Node
     bool hasRef = false;
 }
 
+/** A reusable part of a lexer rule that doesn't match (a token) on its own.
+ */
 final class FragmentRule : Rule
 {
 @safe pure nothrow:
@@ -1394,7 +1396,7 @@ final class FragmentRule : Rule
     {
         super(head, root);
     }
-    @property final override bool isFragment() const @nogc
+    @property final override bool isFragmentRule() const @nogc
     {
         return true;
     }
@@ -2928,7 +2930,7 @@ struct GxParserByStatement
     }
 
     private Rule makeRule(Token name,
-                          in bool isFragment,
+                          in bool isFragmentRule,
                           ActionSymbol actionSymbol = null,
                           Action action = null)
     {
@@ -3248,7 +3250,7 @@ struct GxParserByStatement
         else
             Pattern root = alts.length == 1 ? alts.backPop() : makeAltA(Token.init, alts.move());
 
-        Rule rule = (isFragment
+        Rule rule = (isFragmentRule
                      ? new FragmentRule(name, root)
                      : new Rule(name, root));
 
@@ -3587,7 +3589,7 @@ struct GxParserByStatement
         {
             if (rule.hasRef)
                 continue;
-            else if (rule.isFragment)
+            else if (rule.isFragmentRule)
                 _lexer.warningAtToken(rule.head, "Unused fragment rule");
             else if (rule.isLexerTokenRule)
                 _lexer.warningAtToken(rule.head, "Unused (lexical) lexer token rule"); // TODO: don't warn about skipped rules -> skip
