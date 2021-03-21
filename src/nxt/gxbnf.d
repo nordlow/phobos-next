@@ -4428,8 +4428,8 @@ struct BuildCtx
 {
     string rootDirPath;
     File outFile;
-    bool buildSingleFlag;
-    bool buildAllFlag;
+    bool buildSingleFlag;       ///< Build each parser separately in a separate compilation.
+    bool buildAllFlag;          ///< Build all parsers together in a common single compilation.
     bool lexerFlag;             ///< Flag for separate lexing pass.
     bool parserFlag;            ///< Flag for separate parsing pass.
 }
