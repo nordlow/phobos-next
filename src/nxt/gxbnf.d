@@ -900,36 +900,36 @@ private:
         }
     }
 
-    void infoAtFront(const scope Input msg) const nothrow scope
+    void infoAtFront(const scope Input msg) const nothrow scope @nogc
     {
         messageAtToken(front, "Info", msg);
     }
 
-    void warningAtFront(const scope Input msg) const nothrow scope
+    void warningAtFront(const scope Input msg) const nothrow scope @nogc
     {
         messageAtToken(front, "Warning", msg);
     }
 
-    void errorAtFront(const scope Input msg) const nothrow scope
+    void errorAtFront(const scope Input msg) const nothrow scope @nogc
     {
         messageAtToken(front, "Error", msg);
         assert(false);          ///< TODO: propagate error instead of assert
     }
 
     private void infoAtToken(const scope Token token,
-                             const scope Input msg) const nothrow scope
+                             const scope Input msg) const nothrow scope @nogc
     {
         messageAtToken(token, "Info", msg);
     }
 
     private void warningAtToken(const scope Token token,
-                                const scope Input msg) const nothrow scope
+                                const scope Input msg) const nothrow scope @nogc
     {
         messageAtToken(token, "Warning", msg);
     }
 
     private void errorAtToken(const scope Token token,
-                              const scope Input msg) const nothrow scope
+                              const scope Input msg) const nothrow scope @nogc
     {
         messageAtToken(token, "Error", msg);
         assert(false);          ///< TODO: propagate error instead of assert
