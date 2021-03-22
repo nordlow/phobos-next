@@ -3923,7 +3923,7 @@ class GxFileParser : GxParserByStatement
         {
             const cwdNext = cwd.dirName;
             if (cwdNext == cwd) // stuck at top directory
-                throw new FileException("Couldn't find module named " ~ moduleName); // TODO: add source of import statement
+                throw new FileException("couldn't find module named " ~ moduleName); // TODO: add source of import statement
             return findModuleUpwards(cwdNext, moduleName, ext, cachedParsersByModuleName);
         }
     }
