@@ -2042,7 +2042,7 @@ final class SymbolRef : Pattern
         sink.put(head.input);
         if (parser.warnUnknownSymbolFlag &&
             head.input !in parser.rulesByName)
-            parser._lexer.warningAtToken(head, "unknown symbol");
+            parser._lexer.warningAtToken(head, "No rule for symbol");
     }
     override DcharCountSpan dcharCountSpan() const @nogc
     {
