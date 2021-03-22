@@ -292,21 +292,21 @@ struct GxLexer
         nextFront();
     }
 
-    void frontEnforce(in TOK tok, const scope Input msg = "") nothrow
+    void frontEnforce(in TOK tok, const scope Input msg = "") nothrow // TODO: @nogc
     {
         version(D_Coverage) {} else version(Do_Inline) pragma(inline, true);
         if (front.tok != tok)
             errorAtFront(msg ~ ", expected `TOK." ~ tok.toDefaulted!string(null) ~ "`");
     }
 
-    void popFrontEnforce(in TOK tok, const scope Input msg) nothrow
+    void popFrontEnforce(in TOK tok, const scope Input msg) nothrow // TODO: @nogc
     {
         version(D_Coverage) {} else version(LDC) version(Do_Inline) pragma(inline, true);
         if (frontPop().tok != tok)
             errorAtFront(msg ~ ", expected `TOK." ~ tok.toDefaulted!string(null) ~ "`");
     }
 
-    Token frontPopEnforce(in TOK tok, const scope Input msg = "") nothrow
+    Token frontPopEnforce(in TOK tok, const scope Input msg = "") nothrow // TODO: @nogc
     {
         version(D_Coverage) {} else version(LDC) version(Do_Inline) pragma(inline, true);
         const result = frontPop();
