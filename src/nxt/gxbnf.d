@@ -3916,7 +3916,10 @@ class GxFileParser : GxParserByStatement
         }
 
         import std.file : FileException;
-        const modulePath = chainPath(cwd, moduleName ~ ext).array.idup; // TODO: avoid call to `idup`
+        string modulePath;
+        () @trusted {
+            modulePath = cast(string)chainPath(cwd, moduleName ~ ext).array; /* TODO: avoid cast somehow */
+        } ();
         try
             return cachedParsersByModuleName[moduleName.to!string] = new GxFileParser(modulePath, cachedParsersByModuleName);
         catch (Exception e)
