@@ -294,21 +294,18 @@ struct GxLexer
 
     void frontEnforce(in TOK tok, const scope Input msg = "") nothrow // TODO: @nogc
     {
-        version(D_Coverage) {} else version(Do_Inline) pragma(inline, true);
         if (front.tok != tok)
             errorAtFront(msg ~ ", expected `TOK." ~ tok.toDefaulted!string(null) ~ "`");
     }
 
     void popFrontEnforce(in TOK tok, const scope Input msg) nothrow // TODO: @nogc
     {
-        version(D_Coverage) {} else version(LDC) version(Do_Inline) pragma(inline, true);
         if (frontPop().tok != tok)
             errorAtFront(msg ~ ", expected `TOK." ~ tok.toDefaulted!string(null) ~ "`");
     }
 
     Token frontPopEnforce(in TOK tok, const scope Input msg = "") nothrow // TODO: @nogc
     {
-        version(D_Coverage) {} else version(LDC) version(Do_Inline) pragma(inline, true);
         const result = frontPop();
         if (result.tok != tok)
             errorAtFront(msg ~ ", expected `TOK." ~ tok.toDefaulted!string(null) ~ "`");
@@ -323,7 +320,7 @@ struct GxLexer
         return result;
     }
 
-    Token skipOverToken(Token token) scope return nothrow
+    Token skipOverToken(in Token token) scope return nothrow
     {
         if (front == token)
             return frontPop();
