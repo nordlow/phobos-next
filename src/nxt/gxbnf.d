@@ -3916,7 +3916,7 @@ class GxFileParser : GxParserByStatement
         }
 
         import std.file : FileException;
-        const modulePath = chainPath(cwd, moduleName ~ ext).array.idup; // TODO: detect mutual file recursion
+        const modulePath = chainPath(cwd, moduleName ~ ext).array.idup; // TODO: avoid call to `idup`
         try
             return cachedParsersByModuleName[moduleName.to!string] = new GxFileParser(modulePath, cachedParsersByModuleName);
         catch (Exception e)
