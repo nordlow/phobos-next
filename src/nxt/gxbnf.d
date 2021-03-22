@@ -3831,10 +3831,12 @@ string toPathModuleName(string path)
 class GxFileParser : GxParserByStatement
 {
 @safe:
-    this(string path)
+    this(string path,
+         GxFileParser[string] cachedParsersByModuleName)
     {
         Input data = cast(Input)rawReadPath(path.expandTilde); // cast to Input because we don't want to keep all file around:
         super(data, path, false);
+        this.cachedParsersByModuleName = cachedParsersByModuleName;
     }
 
     alias RuleNames = DynamicArray!string;
@@ -3864,18 +3866,17 @@ class GxFileParser : GxParserByStatement
         toMatchersForRules(doneRuleNames, output);
         toMatchersForImports(doneRuleNames, output);
         toMatchersForOptionsTokenVocab(doneRuleNames, output);
-
     }
 
     void toMatchersForImportedModule(in const(char)[] moduleName,
                                      scope ref RuleNames doneRuleNames,
-                                     scope ref Output output) const scope
+                                     scope ref Output output) scope
     {
         const string path = _lexer.path;
         string cwd = path.dirName; // current working directory
         const string ext = path.extension;
 
-        GxFileParser fp_ = findModuleUpwards(cwd, moduleName, ext);
+        GxFileParser fp_ = findModuleUpwards(cwd, moduleName, ext, cachedParsersByModuleName);
 
         while (!fp_.empty)
             fp_.popFront();
@@ -3905,9 +3906,10 @@ class GxFileParser : GxParserByStatement
 
     private static GxFileParser findModuleUpwards(const string cwd,
                                                   scope const(char)[] moduleName,
-                                                  scope const string ext)
+                                                  scope const string ext,
+                                                  GxFileParser[string] cachedParsersByModuleName)
     {
-        if (auto existingParser = moduleName in _parsersByModuleName)
+        if (auto existingParser = moduleName in cachedParsersByModuleName)
         {
             debug writeln("reusing existing parser for module named ", moduleName.idup);
             return *existingParser;
@@ -3916,13 +3918,13 @@ class GxFileParser : GxParserByStatement
         import std.file : FileException;
         const modulePath = chainPath(cwd, moduleName ~ ext).array.idup; // TODO: detect mutual file recursion
         try
-            return _parsersByModuleName[moduleName] = new GxFileParser(modulePath);
+            return cachedParsersByModuleName[moduleName.to!string] = new GxFileParser(modulePath, cachedParsersByModuleName);
         catch (Exception e)
         {
             const cwdNext = cwd.dirName;
             if (cwdNext == cwd) // stuck at top directory
                 throw new FileException("Couldn't find module named " ~ moduleName); // TODO: add source of import statement
-            return findModuleUpwards(cwdNext, moduleName, ext);
+            return findModuleUpwards(cwdNext, moduleName, ext, cachedParsersByModuleName);
         }
     }
 
@@ -3936,14 +3938,14 @@ class GxFileParser : GxParserByStatement
         }
     }
 
-    void toMatchersForImports(scope ref RuleNames doneRuleNames, scope ref Output output) const scope
+    void toMatchersForImports(scope ref RuleNames doneRuleNames, scope ref Output output) scope
     {
         foreach (const import_; imports)
             foreach (const module_; import_.modules)
                 toMatchersForImportedModule(module_, doneRuleNames, output);
     }
 
-    void toMatchersForOptionsTokenVocab(scope ref RuleNames doneRuleNames, scope ref Output output) const scope
+    void toMatchersForOptionsTokenVocab(scope ref RuleNames doneRuleNames, scope ref Output output) scope
     {
         foreach (const options; optionsSet[])
         {
@@ -3977,9 +3979,8 @@ class GxFileParser : GxParserByStatement
             }
         }
     }
+    GxFileParser[string] cachedParsersByModuleName;
 }
-
-private GxFileParser[string] _parsersByModuleName;
 
 static immutable parserSourceBegin =
 `alias Input = const(char)[];
@@ -4430,9 +4431,9 @@ struct GxFileReader
 {
     GxFileParser fp;
 @safe:
-    this(string path)
+    this(string path, GxFileParser[string] cachedParsersByModuleName)
     {
-        fp = new GxFileParser(path);
+        fp = new GxFileParser(path, cachedParsersByModuleName);
         while (!fp.empty)
             fp.popFront();
     }
@@ -4620,6 +4621,7 @@ struct BuildCtx
     bool buildAllFlag;          ///< Build all parsers together in a common single compilation.
     bool lexerFlag;             ///< Flag for separate lexing pass.
     bool parserFlag;            ///< Flag for separate parsing pass.
+    private GxFileParser[string] cachedParsersByModuleName; ///< Parser cache.
 }
 
 void parseAllInDirTree(scope ref BuildCtx bcx) @system
@@ -4647,7 +4649,7 @@ void parseAllInDirTree(scope ref BuildCtx bcx) @system
             scope StopWatch swOne;
             swOne.start();
 
-            auto reader = GxFileReader(fn);
+            auto reader = GxFileReader(fn, bcx.cachedParsersByModuleName);
             string parserModule;
             const parserPath = reader.createParserSourceFilePath(parserModule);
             if (parserPaths[].canFind(parserPath)) // TODO: remove because this should not happen
