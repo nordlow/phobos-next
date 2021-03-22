@@ -18,8 +18,6 @@
       - Use just defined `Pattern.opEquals`
       - Simplest to start with lexer rules
 
-    - Don't warn about -> skip rules such as WS
-
     - Should be allowed instead of warning:
 
     grammars-v4/lua/Lua.g4(329,5): Warning: missing left-hand side, token (leftParen) at offset 5967
@@ -1333,10 +1331,11 @@ class Rule : Node
         }
         checkLeft(root);
     }
-    this(Token head, Pattern root) @nogc
+    this(Token head, Pattern root, bool skipFlag) @nogc
     {
         this.head = head;
         this.root = root;
+        this.skipFlag = skipFlag;
     }
     override bool equals(const Node o) const @nogc
     {
@@ -1395,6 +1394,10 @@ class Rule : Node
         Set in `GxParserByStatement.tagReferencedRules`
     */
     bool hasRef = false;
+    /** Rule is skipped (ignored). For instance
+        WS : [\r\n]+ -> skip ;
+     */
+    const bool skipFlag;
 }
 
 /** A reusable part of a lexer rule that doesn't match (a token) on its own.
@@ -1414,9 +1417,9 @@ class Rule : Node
 final class FragmentRule : Rule
 {
 @safe pure nothrow:
-    this(Token head, Pattern root) @nogc
+    this(Token head, Pattern root, bool skipFlag) @nogc
     {
-        super(head, root);
+        super(head, root, skipFlag);
     }
     @property final override bool isFragmentRule() const @nogc
     {
@@ -3075,6 +3078,8 @@ struct GxParserByStatement
     {
         _lexer.popFrontEnforce(TOK.colon, "no colon");
 
+        bool skipFlag;
+
         static if (useStaticTempArrays)
             FixedArray!(Pattern, 100) alts;
         else
@@ -3246,9 +3251,17 @@ struct GxParserByStatement
                 case TOK.hash:
                 case TOK.rewrite:
                     // ignore `head`
+                    if (_lexer.front == Token(TOK.symbol, "skip"))
+                    {
+                        skipFlag = true;
+                        _lexer.popFront();
+                    }
                     while (_lexer.front.tok != TOK.pipe &&
                            _lexer.front.tok != TOK.semicolon)
+                    {
+                        _lexer.warningAtFront("TODO: use rewrite argument");
                         _lexer.popFront(); // ignore for now
+                    }
                     break;
                 case TOK.leftParen:
                     parentDepth += 1;
@@ -3390,8 +3403,8 @@ struct GxParserByStatement
             Pattern root = alts.length == 1 ? alts.backPop() : makeAltA(Token.init, alts.move());
 
         Rule rule = (isFragmentRule
-                     ? new FragmentRule(name, root)
-                     : new Rule(name, root));
+                     ? new FragmentRule(name, root, skipFlag)
+                     : new Rule(name, root, skipFlag));
 
         if (_lexer._diagnoseLeftRecursion)
             rule.diagnoseDirectLeftRecursion(_lexer);
@@ -3738,7 +3751,8 @@ struct GxParserByStatement
         tagReferencedRules();
         foreach (Rule rule; rules)
         {
-            if (rule.hasRef)
+            if (rule.hasRef ||
+                rule.skipFlag)
                 continue;
             else if (rule.isFragmentRule)
                 _lexer.warningAtToken(rule.head, "unused fragment rule");
