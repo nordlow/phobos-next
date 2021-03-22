@@ -3914,7 +3914,6 @@ class GxFileParser : GxParserByStatement
             debug writeln("reusing existing parser for module named ", moduleName.idup);
             return *existingParser;
         }
-
         import std.file : FileException;
         string modulePath;
         () @trusted {
