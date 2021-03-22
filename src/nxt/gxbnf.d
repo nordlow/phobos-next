@@ -1112,7 +1112,7 @@ private abstract class Node
     abstract void show(in Format fmt = Format.init) const;
 pure nothrow:
     abstract bool equals(const Node o) const @nogc;
-    abstract void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const;
+    abstract void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const;
     this() @nogc {}
 }
 
@@ -1187,7 +1187,7 @@ pure nothrow:
     {
         super(subs);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         sink.put("seq(");
         foreach (const i, const sub; subs)
@@ -1345,11 +1345,11 @@ class Rule : Node
             return head == o_.head && root.equals(o_.root);
         return false;
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         // dummy
     }
-    void toMatcherInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    void toMatcherInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         sink.iput(1, `Match `);
         if (head.input != "EOF")
@@ -1463,7 +1463,7 @@ pure nothrow:
     {
         super(subs);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         // preprocess
         bool allSubChars = true; // true if all sub-patterns are characters
@@ -1624,7 +1624,7 @@ pure nothrow:
             return head == o_.head;
         return false;
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         sink.put(`tok(`);
         sink.put(head.input[]);
@@ -1672,7 +1672,7 @@ final class NotPattern : UnaryOpPattern
     {
         super(head, sub);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         sink.put("not(");
         sub.toMatchInSource(sink, parser);
@@ -1704,7 +1704,7 @@ final class GreedyZeroOrOne : UnaryOpPattern
         assert(psub);
         super(head, psub);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         sink.put("gzo(");
         sub.toMatchInSource(sink, parser);
@@ -1736,7 +1736,7 @@ final class GreedyZeroOrMore : UnaryOpPattern
         assert(psub);
         super(head, psub);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         sink.put("gzm(");
         sub.toMatchInSource(sink, parser);
@@ -1772,7 +1772,7 @@ final class GreedyOneOrMore : UnaryOpPattern
         }
         super(head, psub);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         sink.put("gom(");
         sub.toMatchInSource(sink, parser);
@@ -1817,7 +1817,7 @@ final class NonGreedyZeroOrOne : TerminatedUnaryOpPattern
         assert(psub);
         super(head, psub, terminator);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         sink.put("nzo(");
         sub.toMatchInSource(sink, parser);
@@ -1861,7 +1861,7 @@ final class NonGreedyZeroOrMore : TerminatedUnaryOpPattern
         assert(psub);
         super(head, psub, terminator);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         sink.put("nzm(");
         sub.toMatchInSource(sink, parser);
@@ -1906,7 +1906,7 @@ final class NonGreedyOneOrMore : TerminatedUnaryOpPattern
         assert(psub);
         super(head, psub, terminator);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         sink.put("nom(");
         sub.toMatchInSource(sink, parser);
@@ -1949,7 +1949,7 @@ final class GreedyCount : UnaryOpPattern
         assert(psub);
         super(head, psub);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         sink.put("cnt(");
         sub.toMatchInSource(sink, parser);
@@ -1984,7 +1984,7 @@ final class RewriteSyntacticPredicate : UnaryOpPattern
         assert(psub);
         super(head, psub);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         sink.put("syn(");
         sub.toMatchInSource(sink, parser);
@@ -2014,7 +2014,7 @@ final class OtherSymbol : TokenNode
     {
         super(head);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         if (head.input != "EOF")
             sink.put(matcherFunctionNamePrefix);
@@ -2035,7 +2035,7 @@ final class SymbolRef : Pattern
     {
         super(head);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         if (head.input != "EOF")
             sink.put(matcherFunctionNamePrefix);
@@ -2100,7 +2100,7 @@ final class AnyClass : Pattern
     {
         super(head);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         sink.put(`any()`);
     }
@@ -2183,7 +2183,7 @@ final class StrLiteral : Pattern
                 head.input[$-1] ==  '"'));
         super(head);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         auto inp = unquotedInput; // skipping single-quotes
         if (inp.isASCIICharacterLiteral())
@@ -2307,7 +2307,7 @@ final class AltCharLiteral : Pattern
     {
         super(head);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         if (head.input.startsWith(`\p`) || // https://github.com/antlr/antlr4/pull/1688
             head.input.startsWith(`\P`))
@@ -2466,7 +2466,7 @@ pure nothrow:
         assert(limits[1]);
         super(head, limits);
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         sink.put("rng(");
 
@@ -2624,7 +2624,7 @@ final class CharAltM : Pattern
         return inp;
     }
 
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
         Input inp = unquotedInput;
 
@@ -3009,7 +3009,7 @@ final class Tokens : TokenNode
         super(head);
         this.code = code;
     }
-    override void toMatchInSource(scope ref Output sink, const scope ref GxParserByStatement parser) const
+    override void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const
     {
     }
     Token code;
@@ -3036,7 +3036,7 @@ alias SymbolRefs = DynamicArray!(SymbolRef, null, uint);
  *
  * See: `ANTLRv4Parser.g4`
  */
-struct GxParserByStatement
+class GxParserByStatement
 {
 @safe pure:
     this(Input input,
@@ -3050,7 +3050,7 @@ struct GxParserByStatement
 
     @property bool empty() const nothrow scope @nogc
     {
-        version(D_Coverage) {} else version(Do_Inline) pragma(inline, true);
+        version(D_Coverage) {} else version(Do_Inline) version(LDC) pragma(inline, true);
         return _front is null;
     }
 
@@ -3063,7 +3063,7 @@ struct GxParserByStatement
 
     void popFront()
     {
-        version(D_Coverage) {} else version(Do_Inline) pragma(inline, true);
+        version(D_Coverage) {} else version(Do_Inline) version(LDC) pragma(inline, true);
         assert(!empty);
         if (_lexer.empty)
             _front = null;      // make `this` empty
@@ -3512,7 +3512,7 @@ struct GxParserByStatement
     Options makeRuleOptions(Token head,
                             in bool skipOverColon = false) nothrow
     {
-        version(Do_Inline) pragma(inline, true);
+        version(Do_Inline) version(LDC) pragma(inline, true);
         const action = _lexer.frontPopEnforce(TOK.action, "missing action");
         if (skipOverColon)
             _lexer.skipOverTOK(TOK.colon);
@@ -3521,7 +3521,7 @@ struct GxParserByStatement
 
     Options makeTopOptions(Token head) nothrow
     {
-        version(Do_Inline) pragma(inline, true);
+        version(Do_Inline) version(LDC) pragma(inline, true);
         const action = _lexer.frontPopEnforce(TOK.action, "missing action");
         _lexer.skipOverTOK(TOK.colon); // optionally scoped. See_Also: https://stackoverflow.com/questions/64477446/meaning-of-colon-inside-parenthesises/64477817#64477817
         return new Options(head, action);
@@ -3529,13 +3529,13 @@ struct GxParserByStatement
 
     Channels makeChannels(Token head) nothrow
     {
-        version(Do_Inline) pragma(inline, true);
+        version(Do_Inline) version(LDC) pragma(inline, true);
         return new Channels(head, _lexer.frontPopEnforce(TOK.action, "missing action"));
     }
 
     Tokens makeTokens(Token head) nothrow
     {
-        version(Do_Inline) pragma(inline, true);
+        version(Do_Inline) version(LDC) pragma(inline, true);
         return new Tokens(head, _lexer.frontPopEnforce(TOK.action, "missing action"));
     }
 
@@ -3557,7 +3557,7 @@ struct GxParserByStatement
 
     Action makeAction(Token head)
     {
-        version(Do_Inline) pragma(inline, true);
+        version(Do_Inline) version(LDC) pragma(inline, true);
         return new Action(head);
     }
 
@@ -3828,13 +3828,13 @@ string toPathModuleName(string path)
 }
 
 /// Gx filer parser.
-struct GxFileParser           // TODO: convert to `class`
+class GxFileParser : GxParserByStatement
 {
 @safe:
     this(string path)
     {
         Input data = cast(Input)rawReadPath(path.expandTilde); // cast to Input because we don't want to keep all file around:
-        parser = GxParserByStatement(data, path, false);
+        super(data, path, false);
     }
 
     alias RuleNames = DynamicArray!string;
@@ -3842,7 +3842,7 @@ struct GxFileParser           // TODO: convert to `class`
     void generateParserSourceString(scope ref Output output,
                                     out string moduleName)
     {
-        const path = parser._lexer.path;
+        const path = _lexer.path;
         moduleName = path.toPathModuleName();
 
         output.put("/// Automatically generated from `");
@@ -3855,7 +3855,7 @@ struct GxFileParser           // TODO: convert to `class`
         toMatchers(output);
         output.put(parserSourceEnd);
 
-        parser.rootRule();      // TODO: use this
+        rootRule();      // TODO: use this
     }
 
     void toMatchers(scope ref Output output)
@@ -3871,14 +3871,14 @@ struct GxFileParser           // TODO: convert to `class`
                                      scope ref RuleNames doneRuleNames,
                                      scope ref Output output) const scope
     {
-        const string path = parser._lexer.path;
+        const string path = _lexer.path;
         string cwd = path.dirName; // current working directory
         const string ext = path.extension;
 
         GxFileParser fp_ = findModuleUpwards(cwd, moduleName, ext);
 
-        while (!fp_.parser.empty)
-            fp_.parser.popFront();
+        while (!fp_.empty)
+            fp_.popFront();
 
         fp_.toMatchersForImports(doneRuleNames, output); // transitive imports
 
@@ -3891,14 +3891,14 @@ struct GxFileParser           // TODO: convert to `class`
             return doneRuleNames[].canFind(rule.head.input);
         }
 
-        foreach (const Rule importedRule; fp_.parser.rules)
+        foreach (const Rule importedRule; fp_.rules)
         {
             if (isOverridden(importedRule)) // if `importedRule` has already been defined
             {
-                fp_.parser._lexer.warningAtToken(importedRule.head, "ignoring rule overridden in top grammar");
+                fp_._lexer.warningAtToken(importedRule.head, "ignoring rule overridden in top grammar");
                 continue;
             }
-            importedRule.toMatcherInSource(output, parser);
+            importedRule.toMatcherInSource(output, this);
             doneRuleNames.put(importedRule.head.input);
         }
     }
@@ -3907,10 +3907,16 @@ struct GxFileParser           // TODO: convert to `class`
                                                   scope const(char)[] moduleName,
                                                   scope const string ext)
     {
+        if (auto existingParser = moduleName in _parsersByModuleName)
+        {
+            debug writeln("reusing existing parser for module named ", moduleName.idup);
+            return *existingParser;
+        }
+
         import std.file : FileException;
         const modulePath = chainPath(cwd, moduleName ~ ext).array.idup; // TODO: detect mutual file recursion
         try
-            return GxFileParser(modulePath);
+            return _parsersByModuleName[moduleName] = new GxFileParser(modulePath);
         catch (Exception e)
         {
             const cwdNext = cwd.dirName;
@@ -3922,24 +3928,24 @@ struct GxFileParser           // TODO: convert to `class`
 
     void toMatchersForRules(scope ref RuleNames doneRuleNames, scope ref Output output) const scope
     {
-        foreach (const Rule rule; parser.rules)
+        foreach (const Rule rule; rules)
         {
             // rule.show();
-            rule.toMatcherInSource(output, parser);
+            rule.toMatcherInSource(output, this);
             doneRuleNames.put(rule.head.input);
         }
     }
 
     void toMatchersForImports(scope ref RuleNames doneRuleNames, scope ref Output output) const scope
     {
-        foreach (const import_; parser.imports)
+        foreach (const import_; imports)
             foreach (const module_; import_.modules)
                 toMatchersForImportedModule(module_, doneRuleNames, output);
     }
 
     void toMatchersForOptionsTokenVocab(scope ref RuleNames doneRuleNames, scope ref Output output) const scope
     {
-        foreach (const options; parser.optionsSet[])
+        foreach (const options; optionsSet[])
         {
             const(char)[] co = options.code.input;
 
@@ -3971,11 +3977,9 @@ struct GxFileParser           // TODO: convert to `class`
             }
         }
     }
-
-    ~this() @nogc {}
-
-    GxParserByStatement parser;
 }
+
+private GxFileParser[string] _parsersByModuleName;
 
 static immutable parserSourceBegin =
 `alias Input = const(char)[];
@@ -4428,9 +4432,9 @@ struct GxFileReader
 @safe:
     this(string path)
     {
-        fp = GxFileParser(path);
-        while (!fp.parser.empty)
-            fp.parser.popFront();
+        fp = new GxFileParser(path);
+        while (!fp.empty)
+            fp.popFront();
     }
 
     string createParserSourceFilePath(out string moduleName)
@@ -4438,7 +4442,7 @@ struct GxFileReader
         Output pss;
         fp.generateParserSourceString(pss, moduleName);
         import std.file : write;
-        const path = fp.parser._lexer.path;
+        const path = fp._lexer.path;
         const ppath = chainPath(tempDir(), path.baseName.stripExtension).array ~ "_parser.d";
         write(ppath, pss[]);
         debug writeln("Wrote ", ppath);
