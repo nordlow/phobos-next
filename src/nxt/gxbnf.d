@@ -3400,7 +3400,19 @@ struct GxParserByStatement
             rule.diagnoseDirectLeftRecursion(_lexer);
 
         rules.insertBack(rule);
-        rulesByName[rule.head.input] = rule;
+
+        // See_Also: https://dlang.org/spec/hash-map.html#advanced_updating
+        rulesByName.update(rule.head.input,
+                           {
+                               return rule;
+                           },
+                           (const scope ref Rule existingRule)
+                           {
+                               _lexer.warningAtToken(rule.head, "rule with same name already exists");
+                               _lexer.warningAtToken(existingRule.head, "existing definition here");
+                               return rule;
+                           });
+
         return rule;
     }
 
