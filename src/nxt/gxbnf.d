@@ -3917,7 +3917,10 @@ class GxFileParser : GxParserByStatement
         import std.file : FileException;
         string modulePath;
         () @trusted {
-            modulePath = cast(string)chainPath(cwd, moduleName ~ ext).array; /* TODO: avoid cast somehow */
+            /* TODO: avoid cast somehow
+               https://forum.dlang.org/post/ypnssfszqfuhjremnsqo@forum.dlang.org
+            */
+            modulePath = cast(string)chainPath(cwd, moduleName ~ ext).array;
         } ();
         try
             return cachedParsersByModuleName[moduleName.to!string] = new GxFileParser(modulePath, cachedParsersByModuleName);
