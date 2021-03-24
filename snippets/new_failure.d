@@ -10,8 +10,11 @@ import std.stdio;
     enum EiB = 2UL^^60;    ///< Exbibyte
     enum ZiB = 2UL^^70;    ///< Zebibyte
     enum YiB = 2UL^^80;    ///< Yobibyte
-    const n = TiB;
-    writeln("n:", n);
-    // auto x = new int[TiB];
-    // writeln(x.length);
+    const n = PiB;
+    ubyte[] allocate(in size_t count) @safe pure nothrow
+    {
+        return new ubyte[TiB];
+    }
+    auto x = allocate(n);
+    writeln(x.length);
 }
