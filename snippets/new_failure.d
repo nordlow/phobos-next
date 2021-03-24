@@ -11,7 +11,7 @@ import std.stdio;
     enum ZiB = 2UL^^70;    ///< Zebibyte
     enum YiB = 2UL^^80;    ///< Yobibyte
     const n = PiB;
-    ubyte[] allocate(in size_t count) @safe pure nothrow
+    static ubyte[] allocate(in size_t count) @safe pure nothrow
     {
         return new ubyte[TiB];
     }
