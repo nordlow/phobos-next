@@ -25,7 +25,7 @@ import core.internal.traits : Unqual;
  */
 Unqual!T[n] staticArray(T, size_t n)(T[n] x...) @trusted
 {
-    static if (__traits(isCopyable, T))  // TODO: remove `move` when compiler does it for us
+    static if (__traits(isCopyable, T))  // TODO: remove when compiler does move for us
     {
         return x[];
     }
@@ -36,15 +36,13 @@ Unqual!T[n] staticArray(T, size_t n)(T[n] x...) @trusted
         import core.internal.traits : hasElaborateDestructor;
         static if (hasElaborateDestructor!T)
         {
+            import core.lifetime : move;
             /* NOTE: moveEmplaceAll doesn't support uncopyable elements
              * import std.algorithm.mutation : moveEmplaceAll;
              * moveEmplaceAll(x[], y[]);
              */
             foreach (const ix, ref value; x)
-            {
-                import core.lifetime : move;
                 move(value, y[ix]);
-            }
         }
         else
         {
