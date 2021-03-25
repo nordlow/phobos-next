@@ -5,3 +5,5 @@ dub.selections.json
 *.lst
 phobos-next-test-library
 docs
+.fldd.cache
+dub_describe.json
