@@ -1,6 +1,8 @@
-import std.stdio, std.conv, std.random, std.datetime;
+import std.stdio, std.conv, std.random;
+import core.time : Duration;
+import std.datetime.stopwatch : StopWatch;
 
-ulong lookup(in uint[uint] m, in uint[] b) @safe
+Duration lookup(in uint[uint] m, in uint[] b) @safe
 {
     ulong tot = 0;
 
@@ -14,7 +16,7 @@ ulong lookup(in uint[uint] m, in uint[] b) @safe
     }
     sw.stop;
 
-    return sw.peek.msecs;
+    return sw.peek;
 }
 
 void randomizeInput(RNG)(uint[] a,
@@ -50,7 +52,7 @@ int main(const scope string[] args)
     auto rng = Xorshift(0);
     auto a = new uint[n];
     auto b = new uint[r];
-    ulong t = 0;
+    Duration t;
 
     foreach (immutable _; 0 .. k)
     {
@@ -63,6 +65,6 @@ int main(const scope string[] args)
         m.destroy; // previously .clear
     }
 
-    writefln("%.2f MOPS\n", double(r) * k / t);
+    writefln("%.2f MOPS\n", double(r.msecs) * k / t);
     return 0;
 }
