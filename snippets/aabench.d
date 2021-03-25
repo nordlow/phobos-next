@@ -10,9 +10,7 @@ ulong lookup(in uint[uint] m, in uint[] b) @safe
     {
         const ptr = bi in m;
         if (ptr != null)
-        {
             tot += *ptr;
-        }
     }
     sw.stop;
 
@@ -25,9 +23,7 @@ void randomizeInput(RNG)(uint[] a,
                          ref RNG rng) @safe pure
 {
     foreach (ref ai; a)
-    {
         ai = uniform!"[]"(0, uint.max, rng);
-    }
 
     foreach (ref bi; b)
     {
@@ -61,9 +57,7 @@ int main(const scope string[] args)
         uint[uint] m;
         randomizeInput(a, b, p, rng);
         foreach (immutable i, immutable ai; a)
-        {
             m[ai] = cast(typeof(n))i;
-        }
 
         t += lookup(m, b);
         m.destroy; // previously .clear
