@@ -26,13 +26,10 @@ void randomizeInput(RNG)(uint[] a,
 {
     foreach (ref ai; a)
         ai = uniform!"[]"(0, uint.max, rng);
-
     foreach (ref bi; b)
-    {
-        bi = (uniform01(rng) <= p) ?
-        a[uniform(0, $, rng)] :
-        uniform!"[]"(0, uint.max, rng);
-    }
+        bi = ((uniform01(rng) <= p) ?
+              a[uniform(0, $, rng)] :
+              uniform!"[]"(0, uint.max, rng));
 }
 
 int main(const scope string[] args)
