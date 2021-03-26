@@ -51,9 +51,11 @@ enum hasStealableElements(R) = (hasPureCopy!(ElementType!R)); // TODO: recurse
 /* } */
 
 /** Steal front from $(D r) destructively and return it.
-   See_Also: http://forum.dlang.org/thread/jkbhlezbcrufowxtthmy@forum.dlang.org#post-konhvblwbmpdrbeqhyuv:40forum.dlang.org
-   See_Also: http://forum.dlang.org/thread/onibkzepudfisxtrigsi@forum.dlang.org#post-dafmzroxvaeejyxrkbon:40forum.dlang.org
-*/
+ *
+ * See_Also: http://forum.dlang.org/thread/jkbhlezbcrufowxtthmy@forum.dlang.org#post-konhvblwbmpdrbeqhyuv:40forum.dlang.org
+ * See_Also: http://forum.dlang.org/thread/onibkzepudfisxtrigsi@forum.dlang.org#post-dafmzroxvaeejyxrkbon:40forum.dlang.org
+ * See_Also: https://forum.dlang.org/thread/arufovtvoewhyfuesvco@forum.dlang.org
+ */
 ElementType!R frontPop(R)(ref R r)
 if (isInputRange!R &&
     hasStealableElements!R)
@@ -72,9 +74,7 @@ if (isInputRange!R &&
         return move(e);
     }
     else
-    {
         return e;
-    }
 }
 alias stealFront = frontPop;
 alias pullFront = frontPop;
@@ -108,8 +108,10 @@ version(unittest)
 }
 
 /** Steal back from $(D r) destructively and return it.
-    See_Also: http://forum.dlang.org/thread/jkbhlezbcrufowxtthmy@forum.dlang.org#post-konhvblwbmpdrbeqhyuv:40forum.dlang.org
-    See_Also: http://forum.dlang.org/thread/onibkzepudfisxtrigsi@forum.dlang.org#post-dafmzroxvaeejyxrkbon:40forum.dlang.org
+ *
+ * See_Also: http://forum.dlang.org/thread/jkbhlezbcrufowxtthmy@forum.dlang.org#post-konhvblwbmpdrbeqhyuv:40forum.dlang.org
+ * See_Also: http://forum.dlang.org/thread/onibkzepudfisxtrigsi@forum.dlang.org#post-dafmzroxvaeejyxrkbon:40forum.dlang.org
+ * See_Also: https://forum.dlang.org/thread/arufovtvoewhyfuesvco@forum.dlang.org
 */
 ElementType!R backPop(R)(ref R r)
 if (isInputRange!R &&
@@ -129,9 +131,7 @@ if (isInputRange!R &&
         return move(e);
     }
     else
-    {
         return e;
-    }
 }
 alias stealBack = backPop;
 alias pullBack = backPop;
@@ -183,8 +183,7 @@ if (isSomeString!Range ||
     alias R = Unqual!Range;
 
     this(R)(R data, size_t lower = 0)
-    in { assert(lower <= data.length); }
-    do
+    in (lower <= data.length)
     {
         _data = data;
         static if (hasSlicing!Range) // TODO: should we use isSomeString here instead?
@@ -196,7 +195,7 @@ if (isSomeString!Range ||
         {
             while (lower)
             {
-                popFront;
+                popFront();
                 --lower;
             }
         }
@@ -204,10 +203,9 @@ if (isSomeString!Range ||
     }
 
     this(R)(R data, size_t lower, size_t upper)
-    in { assert(lower <= upper + 1 || // the extra + 1 makes empty initialization (lower + 1 == upper) possible in for example opSlice below
-                ((lower <= data.length) &&
-                 (upper <= data.length))); }
-    do
+    in (lower <= upper + 1 || // the extra + 1 makes empty initialization (lower + 1 == upper) possible in for example opSlice below
+        ((lower <= data.length) &&
+         (upper <= data.length)))
     {
         _data = data;
         _lower = lower;
@@ -224,20 +222,14 @@ if (isSomeString!Range ||
     {
         static if (isNarrowString!R)
         {
+            import std.utf: stride;
             if (_lower < _upper)
-            {
-                import std.utf: stride;
                 _lower += stride(_data, _lower);
-            }
             else                // when we can't decode beyond
-            {
                 ++_lower; // so just indicate we're beyond back
-            }
         }
         else
-        {
             ++_lower;
-        }
     }
 
     static if (!isInfinite!R)
@@ -251,20 +243,14 @@ if (isSomeString!Range ||
         {
             static if (isNarrowString!R)
             {
+                import std.utf: strideBack;
                 if (_lower < _upper)
-                {
-                    import std.utf: strideBack;
                     _upper -= strideBack(_data, _upper);
-                }
                 else                // when we can't decode beyond
-                {
                     --_upper; // so just indicate we're beyond front
-                }
             }
             else
-            {
                 --_upper;
-            }
         }
     }
 
@@ -292,8 +278,7 @@ if (isSomeString!Range ||
     static if (hasSlicing!R)
     {
         Tuple!(R, R) opIndex(size_t i)
-        in { assert(i < length); }
-        do
+        in (i < length)
         {
             return typeof(return)(_data[0 .. _lower + i],
                                   _data[_lower + i .. _upper]);
@@ -302,17 +287,13 @@ if (isSomeString!Range ||
         typeof(this) opSlice(size_t lower, size_t upper)
         {
             if (lower == upper)
-            {
                 return slidingSplitter(_data,
                                        _upper + 1, // defines empty intialization
                                        _upper);
-            }
             else
-            {
                 return slidingSplitter(_data,
                                        _lower + lower,
                                        _lower + (upper - 1));
-            }
         }
 
         // TODO: Should length be provided if isNarrowString!Range?
@@ -641,7 +622,7 @@ auto adjacentTuples(size_t N, R)(R r)
             foreach (i; 0 .. M)
             {
                 if (!empty)
-                    popFront;
+                    popFront();
             }
         }
 
@@ -727,23 +708,23 @@ if (isInputRange!R)
 }
 
 ///
-@safe pure nothrow @nogc unittest
+@trusted pure nothrow @nogc unittest // TODO: @safe
 {
     import std.typecons : t = tuple;
     import std.algorithm : equal;
     auto x = ["1", "2", "3", "4"].s;
     auto y = x[].adjacentPairs;
-    assert(y.equal([t("1", "2"), t("2", "3"), t("3", "4")].s[]));
+    assert(y.equal([t("1", "2"), t("2", "3"), t("3", "4")].s[])); // TODO: @safe
 }
 
 ///
-@safe pure nothrow @nogc unittest
+@trusted pure nothrow @nogc unittest // TODO: @safe
 {
     import std.typecons : t = tuple;
     import std.algorithm : equal;
     immutable x = ["1", "2", "3", "4"].s;
     auto y = x[].adjacentPairs;
-    assert(y.equal([t("1", "2"), t("2", "3"), t("3", "4")].s[]));
+    assert(y.equal([t("1", "2"), t("2", "3"), t("3", "4")].s[])); // TODO: @safe
 }
 
 auto rangify(T)(T range)

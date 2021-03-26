@@ -278,7 +278,7 @@ if (isSourceOfSomeChar!Source)
         this(Source s_)
         {
             _remainingSource = s_;
-            popFront;
+            popFront();
         }
 
         // empty

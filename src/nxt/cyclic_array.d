@@ -298,7 +298,7 @@ public:
         {
             if (array[(i + start) % array.length] != r.front)
                 return false;
-            r.popFront;
+            r.popFront();
         }
         return true;
     }
