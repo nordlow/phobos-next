@@ -96,8 +96,8 @@
       * yet defined for `this` rule. *
       size_t lastOffset = size_t.max;
 
-    - Make diagnostics functions mutable and pure via outputting to an outFile
-      parameter that has context for
+    - Make diagnostics functions mutable and non-pure. Alternatively pure via
+      outputting to an `outFile` parameter.
 
     - Warn about `options{greedy=false;}:` and advice to replace with non-greedy variants
     - Warn about `options{greedy=true;}:` being deprecated
