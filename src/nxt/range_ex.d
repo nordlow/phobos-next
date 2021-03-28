@@ -107,22 +107,21 @@ version(unittest)
     assert(x.frontPop() == V(21, 22)); assert(x == []);
 }
 
-ElementType!R peekFront(R)(ref R r, out bool hit)
+ElementType!R* frontPtr(R)(auto ref R r) @system
 if (isInputRange!R)
 {
     import std.range.primitives: empty, front;
     if (r.empty)
         return typeof(return).init;
-    hit = true;
-    return r.front;
+    return &(r.front);
 }
 
-@safe pure unittest
+@trusted pure unittest
 {
     auto x = [11, 22];
     bool hit;
-    assert(x.peekFront(hit) == 11);
-    assert(hit);
+    if (const y = x.frontPtr)
+        assert(*y == 11);
 }
 
 /** Steal back from $(D r) destructively and return it.
