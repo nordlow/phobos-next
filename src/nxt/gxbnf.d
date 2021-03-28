@@ -66,8 +66,6 @@
 
     - Use `TOK.tokenSpecOptions` in parsing. Ignored for now.
 
-    - Sort `AltM` subs by descending minLength. Should we match minimum or maximum first?
-
     - Essentially, Packrat parsing just means caching whether sub-expressions
       match at the current position in the string when they are tested -- this
       means that if the current attempt to fit the string into an expression
