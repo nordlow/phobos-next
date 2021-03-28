@@ -1411,6 +1411,11 @@ class Rule : Node
         WS : [\r\n]+ -> skip ;
      */
     const bool skipFlag;
+    /** Last offset during parsing.
+     *
+     * Used to detect infinite recursion, `size_t.max` indicates no last offset
+     * yet defined for `this` rule. */
+    size_t lastOffset = size_t.max;
 }
 
 /** A reusable part of a lexer rule that doesn't match (a token) on its own.
