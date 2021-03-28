@@ -72,6 +72,13 @@
 
     - Sort `AltM` subs by descending minLength. Should we match minimum or maximum first?
 
+    - Essentially, Packrat parsing just means caching whether sub-expressions
+      match at the current position in the string when they are tested -- this
+      means that if the current attempt to fit the string into an expression
+      fails then attempts to fit other possible expressions can benefit from the
+      known pass/fail of subexpressions at the points in the string where they
+      have already been tested.
+
     - Deal with differences between `import` and `tokenVocab`.
       See: https://stackoverflow.com/questions/28829049/antlr4-any-difference-between-import-and-tokenvocab
 
