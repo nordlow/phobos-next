@@ -16,7 +16,10 @@
 
     - Add Syntax Tree Nodes as structs with members being sub-nodes. Composition
       over inheritance. If we use structs over classes more languages, such as
-      Vox, can be supported in the code generation phase.
+      Vox, can be supported in the code generation phase. Optionally use
+      extern(C++) classes. Sub-node pointers should be defined as unique
+      pointers with deterministic destruction.
+    - Allocated nodes using region allocator copied from vox source code.
 
     - Add errors for duplicated rule definitions in same file
       - Use just defined `Pattern.opEquals`
