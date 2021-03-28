@@ -20,7 +20,7 @@
       extern(C++) classes. Sub-node pointers should be defined as unique
       pointers with deterministic destruction.
 
-    - Allocated nodes using region allocator copied from vox source code.
+    - Allocated nodes using region allocator copied from Vox source code.
 
     - Should be allowed instead of warning:
     grammars-v4/lua/Lua.g4(329,5): Warning: missing left-hand side, token (leftParen) at offset 5967
