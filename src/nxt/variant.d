@@ -175,10 +175,7 @@ public:
 
         alias MT = Unqual!T;
         static if (needsMove!MT)
-        {
-            moveEmplace(that,
-                        *cast(MT*)(&_store)); // TODO: ok when `that` has indirections?
-        }
+            moveEmplace(that, *cast(MT*)(&_store)); // TODO: ok when `that` has indirections?
         else
         {
             dbg(as!T, " = ", that);
@@ -306,7 +303,8 @@ public:
 
     size_t currentSize()() const @safe nothrow @nogc // template-lazy
     {
-        if (isNull) { return 0; }
+        if (isNull)
+            return 0;
         final switch (typeIndex)
         {
             foreach (const i, const typeSize; typeSizes)
