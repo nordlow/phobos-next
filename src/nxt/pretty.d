@@ -231,6 +231,8 @@ class Viz
      */
     bool newlinedTags = true;
 
+    bool _completed = false;
+
     this(ioFile outFile,
          Terminal* term,
          VizForm form = VizForm.textAsciiDocUTF8,
@@ -248,16 +250,17 @@ class Viz
         this.flushNewlines = flushNewlines;
         this.newlinedTags = newlinedTags;
         if (form == VizForm.HTML)
-        {
             ppRaw(this, htmlHeader);
-        }
     }
 
-    ~this() @nogc
+    private void completeIfNeeded()
     {
-        if (form == VizForm.HTML)
+        if (!_completed)
         {
-            ppRaw("</body>\n</html>");
+            if (form == VizForm.HTML)
+                ppRaw("</body>\n</html>");
+            _completed = true;
+            viz.outFile.flush();
         }
     }
 
@@ -267,13 +270,9 @@ class Viz
         foreach (const arg; args)
         {
             if (outFile == stdout)
-            {
                 term.write(arg); // trick
-            }
             else
-            {
                 outFile.write(arg);
-            }
         }
     }
 
@@ -1345,7 +1344,7 @@ auto getFace(Arg)(in Arg arg) @safe pure nothrow
  */
 void show(Viz viz)
 {
-    viz.outFile.flush();
+    viz.completeIfNeeded();
     import std.process : spawnProcess, wait;
     auto pid = spawnProcess([`xdg-open`, viz.outFile.name]);
     assert(wait(pid) == 0);
@@ -1410,6 +1409,5 @@ unittest
     viz.pp1([NamedRational("x", Rational!long(11, 13)),
              NamedRational("y", Rational!long(111, 133)),
              NamedRational("z", Rational!long(1111, 1333))].asTable);
-
     viz.show();
 }
