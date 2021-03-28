@@ -3745,7 +3745,7 @@ alias SymbolRefs = DynamicArray!(SymbolRef, null, uint);
      * See_Also: https://github.com/antlr/grammars-v4/issues/2097
      * See_Also: https://stackoverflow.com/questions/29879626/antlr4-how-to-find-the-root-rules-in-a-gramar-which-maybe-used-to-find-the-star
      */
-    @property Rule rootRule()
+    @property Rule rootRule() nothrow
     {
         if (_rootRule)
             return _rootRule;
