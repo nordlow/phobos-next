@@ -3869,7 +3869,7 @@ string toPathModuleName(string path)
         {
             if (symbolRef.head.input == "EOF")
                 continue;
-            if (tagReferencedRule(symbolRef))
+            if (tryTagReferencedRule(symbolRef))
                 continue;
             foreach (const Import import_; imports)
                 foreach (const Input moduleName; import_.moduleNames)
@@ -3878,7 +3878,7 @@ string toPathModuleName(string path)
                     string cwd = path.dirName; // current working directory
                     const string ext = path.extension;
                     GxFileParser sub = findModuleUpwards(cwd, moduleName, ext, cachedParsersByModuleName);
-                    if (sub.tagReferencedRule(symbolRef))
+                    if (sub.tryTagReferencedRule(symbolRef))
                         goto done;
                 }
             _lexer.warningAtToken(symbolRef.head, "no symbol named `" ~ symbolRef.head.input ~ "`");
@@ -3886,7 +3886,7 @@ string toPathModuleName(string path)
         }
     }
 
-    bool tagReferencedRule(const scope SymbolRef symbolRef) nothrow @nogc
+    bool tryTagReferencedRule(const scope SymbolRef symbolRef) nothrow @nogc
     {
         if (auto hit = symbolRef.head.input in rulesByName)
         {
