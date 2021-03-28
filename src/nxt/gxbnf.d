@@ -60,8 +60,6 @@
 
     - `not(...)`'s implementation needs to be adjusted. often used in conjunction with `altN`?
 
-    - Use `DETECT` upper-case lexer rules LexerRule
-
     - handle all TODO's in `makeRule`
 
     - Move parserSourceBegin to gxbnf_rdbase.d
