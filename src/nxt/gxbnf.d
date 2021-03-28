@@ -53,7 +53,6 @@
       Use https://www.regular-expressions.info/unicode.html
       Use https://forum.dlang.org/post/rsmlqfwowpnggwyuibok@forum.dlang.org
 
-    - Rule[Input] RulesByLiteralPrefix
     - Use to detect conflicting rules with `import` and `tokenVocab`
 
     - Ask on forums for AST node allocation patterns. Use region allocator of
