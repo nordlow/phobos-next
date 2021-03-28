@@ -963,7 +963,7 @@ private:
         } ();
         const lc = offsetLineColumn(_input, offset);
         import nxt.conv_ex : toDefaulted;
-        const string tokString = token.tok.toDefaulted!string("unknown");
+        const tokString = token.tok.toDefaulted!string("unknown");
         debug printf("%.*s(%u,%u): %s: %.*s, `%.*s` (%.*s) at offset %llu\n",
                cast(int)path.length, &path[0],
                lc.line + 1, lc.column + 1,
