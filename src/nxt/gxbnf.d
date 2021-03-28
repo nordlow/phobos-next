@@ -3500,9 +3500,7 @@ alias SymbolRefs = DynamicArray!(SymbolRef, null, uint);
     OtherSymbol skipOverOtherSymbol(string symbolIdentifier) return
     {
         if (_lexer.front == Token(TOK.symbol, symbolIdentifier))
-        {
             return new typeof(return)(_lexer.frontPop());
-        }
         return null;
     }
 
