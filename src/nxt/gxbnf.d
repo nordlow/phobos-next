@@ -49,7 +49,7 @@
       Python3.g4` with TOK.whitespaceIndent, whitespaceDedent, whitespaceLineBreak useWhitespaceClassesFlag
       See: https://stackoverflow.com/questions/8642154/antlr-what-is-simpliest-way-to-realize-python-like-indent-depending-grammar
 
-    - unicode regular expressions.
+    - Unicode regular expressions.
       Use https://www.regular-expressions.info/unicode.html
       Use https://forum.dlang.org/post/rsmlqfwowpnggwyuibok@forum.dlang.org
 
