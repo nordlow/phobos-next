@@ -69,12 +69,13 @@ template Concise(Tuple)
         }
     }
     else
-    {
         alias Concise = Tuple;
-    }
 }
 
-auto concise(T)(T t) { return Concise!T(t); }
+auto concise(T)(T t)
+{
+    return Concise!T(t);
+}
 
 /** Returns: Duration `dur` in a Level-Of-Detail (LOD) string
     representation.
@@ -86,9 +87,7 @@ string shortDurationString(in Duration dur) @safe pure nothrow
     if (weeks)
     {
         if (weeks < 52)
-        {
             return to!string(weeks) ~ ` week` ~ (weeks >= 2 ? `s` : ``);
-        }
         else
         {
             immutable years = weeks / 52;
@@ -284,24 +283,16 @@ class Viz
             if (outFile == stdout)
             {
                 if (flushNewlines)
-                {
                     term.writeln(arg);
-                }
                 else
-                {
                     term.write(arg, '\n');
-                }
             }
             else
             {
                 if (flushNewlines)
-                {
                     outFile.writeln(arg);
-                }
                 else
-                {
                     outFile.write(arg, '\n');
-                }
             }
         }
     }
@@ -313,9 +304,7 @@ class Viz
         {
             ppRaw(`<` ~ tag);
             foreach (param; params)
-            {
                 ppRaw(' ', param);
-            }
             ppRaw(`>`);
         }
     }
@@ -332,13 +321,9 @@ class Viz
     {
         immutable arg = (form == VizForm.HTML) ? `<` ~ tag ~ `>` : tag;
         if (newlinedTags)
-        {
             pplnRaw(arg);
-        }
         else
-        {
             ppRaw(arg);
-        }
     }
 
     /// Print closing of tag `tag` on a separate line.
@@ -346,13 +331,9 @@ class Viz
     {
         immutable arg = (form == VizForm.HTML) ? `</` ~ tag ~ `>` : tag;
         if (newlinedTags)
-        {
             pplnRaw(arg);
-        }
         else
-        {
             ppRaw(arg);
-        }
     }
 
     /** Put `arg` to `viz` possibly with conversion. */
@@ -360,20 +341,14 @@ class Viz
                   bool nbsp = true)
     {
         if (outFile == stdout)
-        {
             term.write(arg);
-        }
         else
         {
+            import nxt.w3c : encodeHTML;
             if (form == VizForm.HTML)
-            {
-                import nxt.w3c : encodeHTML;
                 outFile.write(arg.encodeHTML(nbsp));
-            }
             else
-            {
                 outFile.write(arg);
-            }
         }
     }
 
@@ -398,13 +373,13 @@ class Viz
             if (form == VizForm.HTML &&
                 args[0].empty &&
                 !nonStateHTMLTags.find(tag).empty)
-            {
                 return;         // skip HTML tags with no content
-            }
         }
-        if (form == VizForm.HTML) { ppRaw(`<` ~ tag ~ `>`); }
+        if (form == VizForm.HTML)
+            ppRaw(`<` ~ tag ~ `>`);
         ppN(args);
-        if (form == VizForm.HTML) { ppRaw(`</` ~ tag ~ `>`); }
+        if (form == VizForm.HTML)
+            ppRaw(`</` ~ tag ~ `>`);
     }
 
     /** Print `args` tagged as `tag` on a separate line. */
@@ -440,31 +415,23 @@ class Viz
         static if (is(typeof(ppMathML(arg))))
         {
             if (form == VizForm.HTML)
-            {
                 return ppMathML(arg);
-            }
         }
         static if (is(typeof(arg.toMathML)))
         {
             if (form == VizForm.HTML)
-            {
                 // TODO: Check for MathML support on backend
                 return ppRaw(arg.toMathML);
-            }
         }
         static if (is(typeof(arg.toHTML)))
         {
             if (form == VizForm.HTML)
-            {
                 return ppRaw(arg.toHTML);
-            }
         }
         static if (is(typeof(arg.toLaTeX)))
         {
             if (form == VizForm.LaTeX)
-            {
                 return ppRaw(arg.toLaTeX);
-            }
         }
 
         /* TODO: Check if any member has mmber toMathML if so call it otherwise call
@@ -484,24 +451,16 @@ class Viz
             foreach (ix, subArg; arg.args)
             {
                 static if (ix >= 1)
-                {
                     pp1(depth + 1, `,`); // separator
-                }
                 static if (isInputRange!(typeof(subArg)))
-                {
                     foreach (subsubArg; subArg)
-                    {
                         ppN(subsubArg, `,`);
-                    }
-                }
             }
         }
         else static if (isInstanceOf!(AsBold, Arg))
         {
             if      (form == VizForm.HTML)
-            {
                 ppTaggedN(`b`, arg.args);
-            }
             else if (form == VizForm.Markdown)
             {
                 ppRaw(`**`);
@@ -512,9 +471,7 @@ class Viz
         else static if (isInstanceOf!(AsItalic, Arg))
         {
             if      (form == VizForm.HTML)
-            {
                 ppTaggedN(`i`, arg.args);
-            }
             else if (form == VizForm.Markdown)
             {
                 ppRaw(`*`);
@@ -525,9 +482,7 @@ class Viz
         else static if (isInstanceOf!(AsMonospaced, Arg))
         {
             if      (form == VizForm.HTML)
-            {
                 ppTaggedN(`tt`, arg.args);
-            }
             else if (form == VizForm.jiraWikiMarkup)
             {
                 ppRaw(`{{`);
@@ -559,9 +514,7 @@ class Viz
         else static if (isInstanceOf!(AsEmphasized, Arg))
         {
             if      (form == VizForm.HTML)
-            {
                 ppTaggedN(`em`, arg.args);
-            }
             else if (form == VizForm.jiraWikiMarkup)
             {
                 ppRaw(`_`);
@@ -587,9 +540,7 @@ class Viz
         else static if (isInstanceOf!(AsStrong, Arg))
         {
             if      (form == VizForm.HTML)
-            {
                 ppTaggedN(`strong`, arg.args);
-            }
             else if (form == VizForm.jiraWikiMarkup)
             {
                 ppRaw(`*`);
@@ -600,9 +551,7 @@ class Viz
         else static if (isInstanceOf!(AsCitation, Arg))
         {
             if      (form == VizForm.HTML)
-            {
                 ppTaggedN(`cite`, arg.args);
-            }
             else if (form == VizForm.jiraWikiMarkup)
             {
                 ppRaw(`??`);
@@ -613,9 +562,7 @@ class Viz
         else static if (isInstanceOf!(AsDeleted, Arg))
         {
             if      (form == VizForm.HTML)
-            {
                 ppTaggedN(`deleted`, arg.args);
-            }
             else if (form == VizForm.jiraWikiMarkup)
             {
                 ppRaw(`-`);
@@ -626,9 +573,7 @@ class Viz
         else static if (isInstanceOf!(AsInserted, Arg))
         {
             if      (form == VizForm.HTML)
-            {
                 ppTaggedN(`inserted`, arg.args);
-            }
             else if (form == VizForm.jiraWikiMarkup)
             {
                 ppRaw(`+`);
@@ -639,9 +584,7 @@ class Viz
         else static if (isInstanceOf!(AsSuperscript, Arg))
         {
             if      (form == VizForm.HTML)
-            {
                 ppTaggedN(`sup`, arg.args);
-            }
             else if (form == VizForm.jiraWikiMarkup)
             {
                 ppRaw(`^`);
@@ -652,9 +595,7 @@ class Viz
         else static if (isInstanceOf!(AsSubscript, Arg))
         {
             if      (form == VizForm.HTML)
-            {
                 ppTaggedN(`sub`, arg.args);
-            }
             else if (form == VizForm.jiraWikiMarkup)
             {
                 ppRaw(`~`);
@@ -679,22 +620,20 @@ class Viz
         }
         else static if (isInstanceOf!(AsHeader, Arg))
         {
+            import std.conv: to;
             if      (form == VizForm.HTML)
-            {
-                import std.conv: to;
                 pplnTaggedN(`h` ~ to!string(arg.level),
                             arg.args);
-            }
             else if (form == VizForm.jiraWikiMarkup)
             {
-                import std.conv: to;
                 ppRaw(`h` ~ to!string(arg.level) ~ `. `);
                 ppN(arg.args);
                 pplnRaw(``);
             }
             else if (form == VizForm.Markdown)
             {
-                foreach (_; 0 .. arg.level) { pp1(0, `#`); }
+                foreach (_; 0 .. arg.level)
+                    pp1(0, `#`);
                 ppN(` `, arg.args);
                 pplnRaw(``);
             }
@@ -702,18 +641,18 @@ class Viz
                      form == VizForm.textAsciiDocUTF8)
             {
                 ppRaw('\n');
-                foreach (_; 0 .. arg.level) { pp1(0, `=`); }
+                foreach (_; 0 .. arg.level)
+                    pp1(0, `=`);
                 ppN(' ', arg.args, ' ');
-                foreach (_; 0 .. arg.level) { pp1(0, `=`); }
+                foreach (_; 0 .. arg.level)
+                    pp1(0, `=`);
                 ppRaw('\n');
             }
         }
         else static if (isInstanceOf!(AsParagraph, Arg))
         {
             if (form == VizForm.HTML)
-            {
                 pplnTaggedN(`p`, arg.args);
-            }
             else if (form == VizForm.LaTeX)
             {
                 ppRaw(`\par `);
@@ -723,16 +662,15 @@ class Viz
                      form == VizForm.textAsciiDocUTF8)
             {
                 ppRaw('\n');
-                foreach (_; 0 .. arg.level) { pp1(0, `=`); }
+                foreach (_; 0 .. arg.level)
+                    pp1(0, `=`);
                 ppN(` `, arg.args, ` `, tag, '\n');
             }
         }
         else static if (isInstanceOf!(AsBlockquote, Arg))
         {
             if (form == VizForm.HTML)
-            {
                 pplnTaggedN(`blockquote`, arg.args);
-            }
             else if (form == VizForm.jiraWikiMarkup)
             {
                 pplnRaw(`{quote}`);
@@ -742,9 +680,7 @@ class Viz
             else if (form == VizForm.Markdown)
             {
                 foreach (subArg; arg.args)
-                {
                     pplnRaw(`> `, subArg); // TODO: Iterate for each line in subArg
-                }
             }
         }
         else static if (isInstanceOf!(AsBlockquoteSP, Arg))
@@ -759,50 +695,56 @@ class Viz
         else static if (is(HorizontalRuler == Arg))
         {
             if (form == VizForm.HTML)
-            {
                 pplnTagOpen(`hr`);
-            }
-            if (form == VizForm.jiraWikiMarkup)
-            {
+            else if (form == VizForm.jiraWikiMarkup)
                 pplnRaw(`----`);
-            }
         }
         else static if (isInstanceOf!(MDash, Arg))
         {
             if (form == VizForm.HTML)
-            {
                 ppRaw(`&mdash;`);
-            }
-            if (form == VizForm.jiraWikiMarkup ||
-                form == VizForm.Markdown ||
-                form == VizForm.LaTeX)
+            else if (form == VizForm.jiraWikiMarkup ||
+                     form == VizForm.Markdown ||
+                     form == VizForm.LaTeX)
             {
                 pplnRaw(`---`);
             }
         }
         else static if (isInstanceOf!(AsUList, Arg))
         {
-            if (form == VizForm.HTML) { pplnTagOpen(`ul`); }
-            else if (form == VizForm.LaTeX) { pplnRaw(`\begin{enumerate}`); }
+            if (form == VizForm.HTML)
+                pplnTagOpen(`ul`);
+            else if (form == VizForm.LaTeX)
+                pplnRaw(`\begin{enumerate}`);
             ppN(arg.args);
-            if (form == VizForm.HTML) { pplnTagClose(`ul`); }
-            else if (form == VizForm.LaTeX) { pplnRaw(`\end{enumerate}`); }
+            if (form == VizForm.HTML)
+                pplnTagClose(`ul`);
+            else if (form == VizForm.LaTeX)
+                pplnRaw(`\end{enumerate}`);
         }
         else static if (isInstanceOf!(AsOList, Arg))
         {
-            if (form == VizForm.HTML) { pplnTagOpen(`ol`); }
-            else if (form == VizForm.LaTeX) { pplnRaw(`\begin{itemize}`); }
+            if (form == VizForm.HTML)
+                pplnTagOpen(`ol`);
+            else if (form == VizForm.LaTeX)
+                pplnRaw(`\begin{itemize}`);
             ppN(arg.args);
-            if (form == VizForm.HTML) { pplnTagClose(`ol`); }
-            else if (form == VizForm.LaTeX) { pplnRaw(`\end{itemize}`); }
+            if (form == VizForm.HTML)
+                pplnTagClose(`ol`);
+            else if (form == VizForm.LaTeX)
+                pplnRaw(`\end{itemize}`);
         }
         else static if (isInstanceOf!(AsDescription, Arg)) // if args .length == 1 && an InputRange of 2-tuples pairs
         {
-            if (form == VizForm.HTML) { pplnTagOpen(`dl`); } // TODO: TERM <dt>, DEFINITION <dd>
-            else if (form == VizForm.LaTeX) { pplnRaw(`\begin{description}`); } // TODO: \item[TERM] DEFINITION
+            if (form == VizForm.HTML)
+                pplnTagOpen(`dl`); // TODO: TERM <dt>, DEFINITION <dd>
+            else if (form == VizForm.LaTeX)
+                pplnRaw(`\begin{description}`); // TODO: \item[TERM] DEFINITION
             ppN(arg.args);
-            if (form == VizForm.HTML) { pplnTagClose(`dl`); }
-            else if (form == VizForm.LaTeX) { pplnRaw(`\end{description}`); }
+            if (form == VizForm.HTML)
+                pplnTagClose(`dl`);
+            else if (form == VizForm.LaTeX)
+                pplnRaw(`\end{description}`);
         }
         else static if (isInstanceOf!(AsTable, Arg))
         {
@@ -812,9 +754,7 @@ class Viz
                 pplnTagOpen(`table` ~ border);
             }
             else if (form == VizForm.LaTeX)
-            {
                 pplnRaw(`\begin{tabular}`);
-            }
 
             static if (arg.args.length == 1 &&
                        isIterable!(typeof(arg.args[0])))
@@ -825,18 +765,12 @@ class Viz
                 ppNFlushed(rows);
             }
             else
-            {
                 ppN(arg.args);
-            }
 
             if (form == VizForm.HTML)
-            {
                 pplnTagClose(`table`);
-            }
             else if (form == VizForm.LaTeX)
-            {
                 pplnRaw(`\end{tabular}`);
-            }
         }
         else static if (isInstanceOf!(AsRows, Arg) &&
                         arg.args.length == 1 &&
@@ -862,11 +796,14 @@ class Viz
                 // Can we lookup file and line of user defined types aswell?
 
                 // member names header.
-                if (form == VizForm.HTML) { pplnTagOpen(`tr`); } // TODO: Functionize
+                if (form == VizForm.HTML)
+                    pplnTagOpen(`tr`); // TODO: Functionize
 
                 // index column
-                if      (arg.rowNr == RowNr.offsetZero) pplnTaggedN(`td`, `0-Offset`);
-                else if (arg.rowNr == RowNr.offsetOne)  pplnTaggedN(`td`, `1-Offset`);
+                if      (arg.rowNr == RowNr.offsetZero)
+                    pplnTaggedN(`td`, `0-Offset`);
+                else if (arg.rowNr == RowNr.offsetOne)
+                    pplnTaggedN(`td`, `1-Offset`);
                 foreach (const ix, Member; typeof(Front.tupleof))
                 {
                     import std.ascii : isUpper; // TODO: support ASCII in fast path and Unicode in slow path
@@ -890,7 +827,8 @@ class Viz
                                 qual.asKeyword,
                                 typeName.asType);
                 }
-                if (form == VizForm.HTML) { pplnTagClose(`tr`); }
+                if (form == VizForm.HTML)
+                    pplnTagClose(`tr`);
             }
 
             size_t ix = 0;
@@ -919,19 +857,13 @@ class Viz
                     /* if (args0.length >= 1) { ppRaw(`|`); } */
                 }
                 if      (arg.rowNr == RowNr.offsetZero)
-                {
                     pplnTaggedN(`td`, arg.rowIx + 0);
-                }
                 else if (arg.rowNr == RowNr.offsetOne)
-                {
                     pplnTaggedN(`td`, arg.rowIx + 1);
-                }
                 foreach (subArg; args0.tupleof) // for each table column
                 {
                     if (form == VizForm.HTML)
-                    {
                         pplnTaggedN(`td`, subArg); // each element in aggregate as a column
-                    }
                     else if (form == VizForm.jiraWikiMarkup)
                     {
                         /* pp1(subArg); ppRaw(`|`); */
@@ -939,33 +871,31 @@ class Viz
                 }
             }
             else
-            {
                 pplnTaggedN(`tr`, arg.args);
-            }
         }
         else static if (isInstanceOf!(AsRow, Arg))
         {
             string spanArg;
             static if (arg.args.length == 1 &&
                        isInstanceOf!(Span, typeof(arg.args[0])))
-            {
                 spanArg ~= ` rowspan="` ~ to!string(arg._span) ~ `"`;
-            }
-            if (form == VizForm.HTML) { pplnTagOpen(`tr` ~ spanArg); }
+            if (form == VizForm.HTML)
+                pplnTagOpen(`tr` ~ spanArg);
             ppN(arg.args);
-            if (form == VizForm.HTML) { pplnTagClose(`tr`); }
+            if (form == VizForm.HTML)
+                pplnTagClose(`tr`);
         }
         else static if (isInstanceOf!(AsCell, Arg))
         {
             string spanArg;
             static if (arg.args.length != 0 &&
                        isInstanceOf!(Span, typeof(arg.args[0])))
-            {
                 spanArg ~= ` colspan="` ~ to!string(arg._span) ~ `"`;
-            }
-            if (form == VizForm.HTML) { ppTagOpen(`td` ~ spanArg); }
+            if (form == VizForm.HTML)
+                ppTagOpen(`td` ~ spanArg);
             ppN(arg.args);
-            if (form == VizForm.HTML) { pplnTagClose(`td`); }
+            if (form == VizForm.HTML)
+                pplnTagClose(`td`);
         }
         else static if (isInstanceOf!(AsTHeading, Arg))
         {
@@ -978,9 +908,7 @@ class Viz
             else if (form == VizForm.jiraWikiMarkup)
             {
                 if (args.length != 0)
-                {
                     ppRaw(`||`);
-                }
                 foreach (subArg; args)
                 {
                     pp1(subArg);
@@ -990,17 +918,25 @@ class Viz
         }
         else static if (isInstanceOf!(AsItem, Arg))
         {
-            if (form == VizForm.HTML) { ppTagOpen(`li`); }
-            else if (form == VizForm.textAsciiDoc) { ppRaw(` - `); } // if inside ordered list use . instead of -
-            else if (form == VizForm.LaTeX) { ppRaw(`\item `); }
-            else if (form == VizForm.textAsciiDocUTF8) { ppRaw(` • `); }
-            else if (form == VizForm.Markdown) { ppRaw(`* `); } // TODO: Alternatively +,-,*, or 1. TODO: Need counter for ordered lists
+            if (form == VizForm.HTML)
+                ppTagOpen(`li`);
+            else if (form == VizForm.textAsciiDoc)
+                ppRaw(` - `);   // if inside ordered list use . instead of -
+            else if (form == VizForm.LaTeX)
+                ppRaw(`\item `);
+            else if (form == VizForm.textAsciiDocUTF8)
+                ppRaw(` • `);
+            else if (form == VizForm.Markdown)
+                ppRaw(`* `); // TODO: Alternatively +,-,*, or 1. TODO: Need counter for ordered lists
             ppN(arg.args);
-            if (form == VizForm.HTML) { pplnTagClose(`li`); }
-            else if (form == VizForm.LaTeX) { pplnRaw(``); }
+            if (form == VizForm.HTML)
+                pplnTagClose(`li`);
+            else if (form == VizForm.LaTeX)
+                pplnRaw(``);
             else if (form == VizForm.textAsciiDoc ||
                      form == VizForm.textAsciiDocUTF8 ||
-                     form == VizForm.Markdown) { pplnRaw(``); }
+                     form == VizForm.Markdown)
+                pplnRaw(``);
         }
         else static if (isInstanceOf!(AsPath, Arg) ||
                         isInstanceOf!(AsURL, Arg))
@@ -1011,29 +947,19 @@ class Viz
             enum isString = isSomeString!(typeof(arg.arg)); // only create hyperlink if arg is a string
 
             static if (isString)
-            {
                 if (form == VizForm.HTML)
                 {
                     static if (isInstanceOf!(AsPath, Arg))
-                    {
                         ppTagOpen(`a href="file://` ~ arg.arg ~ `"`);
-                    }
                     else static if (isInstanceOf!(AsURL, Arg))
-                    {
                         ppTagOpen(`a href="` ~ arg.arg ~ `"`);
-                    }
                 }
-            }
 
             vizArg.pp1(depth + 1, arg.arg);
 
             static if (isString)
-            {
                 if (form == VizForm.HTML)
-                {
                     ppTagClose(`a`);
-                }
-            }
         }
         else static if (isInstanceOf!(AsName, Arg))
         {
@@ -1069,9 +995,7 @@ class Viz
         else static if (isInputRange!Arg)
         {
             foreach (subArg; arg)
-            {
                 pp1(depth + 1, subArg);
-            }
         }
         else static if (__traits(hasMember, arg, `parent`)) // TODO: Use isFile = File or NonNull!File
         {
@@ -1089,22 +1013,20 @@ class Viz
                 foreach (parent; arg.parents)
                 {
                     ppPut(dirSeparator);
-                    if (form == VizForm.HTML) { ppTagOpen(`b`); }
+                    if (form == VizForm.HTML)
+                        ppTagOpen(`b`);
                     ppPut(dirFace, parent.name);
-                    if (form == VizForm.HTML) { ppTagClose(`b`); }
+                    if (form == VizForm.HTML)
+                        ppTagClose(`b`);
                 }
                 ppPut(dirSeparator);
             }
 
             // write name
             static if (__traits(hasMember, arg, `isRoot`)) // TODO: Use isDir = Dir or NonNull!Dir
-            {
                 immutable name = arg.isRoot ? dirSeparator : arg.name ~ dirSeparator;
-            }
             else
-            {
                 immutable name = arg.name;
-            }
 
             if (form == VizForm.HTML)
             {
@@ -1120,14 +1042,13 @@ class Viz
                 // static if (isDir!Arg) { ppTagClose(`b`); }
             }
 
-            if (form == VizForm.HTML) { ppTagClose(`a`); }
+            if (form == VizForm.HTML)
+                ppTagClose(`a`);
         }
         else
         {
             static if (__traits(hasMember, arg, `path`))
-            {
                 const arg_string = arg.path;
-            }
             else
             {
                 import std.conv: to;
@@ -1138,35 +1059,23 @@ class Viz
                        __traits(hasMember, arg.face, `tagsHTML`))
             {
                 if (form == VizForm.HTML)
-                {
                     foreach (tag; arg.face.tagsHTML)
-                    {
                         outFile.write(`<`, tag, `>`);
-                    }
-                }
             }
 
             // write
             term.setFace(arg.getFace(), colorFlag);
             if (outFile == stdout)
-            {
                 term.write(arg_string);
-            }
             else
-            {
                 ppPut(arg.getFace(), arg_string);
-            }
 
             static if (__traits(hasMember, arg, `face`) &&
                        __traits(hasMember, arg.face, `tagsHTML`))
             {
                 if (form == VizForm.HTML)
-                {
                     foreach (tag; arg.face.tagsHTML)
-                    {
                         outFile.write(`</`, tag, `>`);
-                    }
-                }
             }
         }
     }
@@ -1175,9 +1084,7 @@ class Viz
     void ppN(Args...)(Args args)
     {
         foreach (arg; args)
-        {
             pp1(0, arg);
-        }
     }
 
     /** Pretty-Print Arguments `args` to Terminal `term` without Line Termination. */
@@ -1185,9 +1092,7 @@ class Viz
     {
         ppN(args);
         if (outFile == stdout)
-        {
             term.flush();
-        }
     }
 
     /** Pretty-Print Arguments `args` including final line termination. */
@@ -1200,18 +1105,14 @@ class Viz
             term.flush();
         }
         else
-        {
             outFile.writeln(lbr(form == VizForm.HTML));
-        }
     }
 
     /** Pretty-Print Arguments `args` each including a final line termination. */
     void pplns(Args...)(Args args)
     {
         foreach (arg; args)
-        {
             ppln(args);
-        }
     }
 
     /** Print End of Line to Terminal `term`. */
@@ -1292,10 +1193,8 @@ void setFace(Term, Face)(ref Term term,
     if (colorFlag)
     {
         version(useTerm)
-        {
             term.color(face.foregroundColor | (face.bright ? Bright : 0) ,
                        face.backgroundColor);
-        }
     }
 }
 
@@ -1319,9 +1218,7 @@ auto getFace(Arg)(in Arg arg) @safe pure nothrow
 {
     // pick face
     static if (__traits(hasMember, arg, `face`))
-    {
         return arg.face;
-    }
     // else static if (isInstanceOf!(Digest, Arg)) // instead of is(Unqual!(Arg) == SHA1Digest)
     // {
     //     return digestFace;
@@ -1335,9 +1232,7 @@ auto getFace(Arg)(in Arg arg) @safe pure nothrow
     //     return ctxFaces.cycle[arg.ix];
     // }
     else
-    {
         return stdFace;
-    }
 }
 
 /** Show `viz`.
