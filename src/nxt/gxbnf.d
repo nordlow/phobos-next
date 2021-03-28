@@ -243,7 +243,7 @@ enum TOK
 /// Gx rule.
 @safe struct Token
 {
-@safe nothrow:
+nothrow:
     this(in TOK tok, Input input = null) @nogc pure
     {
         this.tok = tok;
@@ -1095,7 +1095,7 @@ private void showToken(Token token,
  */
 @safe struct DcharCountSpan
 {
-@safe pure nothrow:
+pure nothrow:
     @disable this();       // be explicit for now as default init is not obvious
     static typeof(this) full() @nogc
     {
@@ -1151,7 +1151,7 @@ bool equalsAll(const scope Node[] a,
 }
 
 /// N-ary expression.
-abstract class NaryOpPattern : Pattern
+@safe abstract class NaryOpPattern : Pattern
 {
 @safe nothrow:
     this(Token head, PatternArray subs) @nogc
@@ -1333,7 +1333,7 @@ if (is(BranchPattern : SeqM) ||
             root.show(Format(fmt.indentDepth + 1));
         showChars(" ;\n");
     }
-@safe nothrow:
+nothrow:
     void diagnoseDirectLeftRecursion(const scope ref GxLexer lexer)
     {
         void checkLeft(const scope Pattern root) @safe nothrow
@@ -1434,7 +1434,7 @@ if (is(BranchPattern : SeqM) ||
  */
 @safe final class FragmentRule : Rule
 {
-@safe nothrow:
+nothrow:
     this(Token head, Pattern root, bool skipFlag) @nogc
     {
         super(head, root, skipFlag);
@@ -1650,7 +1650,7 @@ nothrow:
 }
 
 /// Unary match combinator.
-abstract class UnaryOpPattern : Pattern
+@safe abstract class UnaryOpPattern : Pattern
 {
     final override void show(in Format fmt = Format.init) const
     {
@@ -1659,7 +1659,7 @@ abstract class UnaryOpPattern : Pattern
         putchar(')');
         showToken(head, fmt);
     }
-@safe nothrow:
+nothrow:
     this(Token head, Pattern sub) @nogc
     {
         debug assert(head.input.ptr);
@@ -1682,7 +1682,7 @@ abstract class UnaryOpPattern : Pattern
 /// Don't match an instance of type `sub`.
 @safe final class NotPattern : UnaryOpPattern
 {
-@safe nothrow:
+nothrow:
     this(Token head, Pattern sub) @nogc
     {
         super(head, sub);
@@ -1708,7 +1708,7 @@ abstract class UnaryOpPattern : Pattern
 /// Match (greedily) zero or one instances of type `sub`.
 @safe final class GreedyZeroOrOne : UnaryOpPattern
 {
-@safe nothrow:
+nothrow:
     this(Token head, Pattern sub) @nogc
     {
         super(head, sub);
@@ -1740,7 +1740,7 @@ abstract class UnaryOpPattern : Pattern
 /// Match (greedily) zero or more instances of type `sub`.
 @safe final class GreedyZeroOrMore : UnaryOpPattern
 {
-@safe nothrow:
+nothrow:
     this(Token head, Pattern sub) @nogc
     {
         super(head, sub);
@@ -1772,7 +1772,7 @@ abstract class UnaryOpPattern : Pattern
 /// Match (greedily) one or more instances of type `sub`.
 @safe final class GreedyOneOrMore : UnaryOpPattern
 {
-@safe nothrow:
+nothrow:
     this(Token head, Pattern sub) @nogc
     {
         super(head, sub);
@@ -1806,9 +1806,9 @@ abstract class UnaryOpPattern : Pattern
     }
 }
 
-abstract class TerminatedUnaryOpPattern : UnaryOpPattern
+@safe abstract class TerminatedUnaryOpPattern : UnaryOpPattern
 {
-@safe nothrow:
+nothrow:
     this(Token head, Pattern sub, Pattern terminator = null) @nogc
     {
         debug assert(head.input.ptr);
@@ -1821,7 +1821,7 @@ abstract class TerminatedUnaryOpPattern : UnaryOpPattern
 /// Match (non-greedily) zero or one instances of type `sub`.
 @safe final class NonGreedyZeroOrOne : TerminatedUnaryOpPattern
 {
-@safe nothrow:
+nothrow:
     this(Token head, Pattern sub, Pattern terminator = null) @nogc
     {
         super(head, sub, terminator);
@@ -1863,7 +1863,7 @@ abstract class TerminatedUnaryOpPattern : UnaryOpPattern
 /// Match (non-greedily) zero or more instances of type `sub`.
 @safe final class NonGreedyZeroOrMore : TerminatedUnaryOpPattern
 {
-@safe nothrow:
+nothrow:
     this(Token head, Pattern sub, Pattern terminator = null) @nogc
     {
         debug assert(head.input.ptr);
@@ -1910,7 +1910,7 @@ abstract class TerminatedUnaryOpPattern : UnaryOpPattern
 /// Match (non-greedily) one or more instances of type `sub`.
 @safe final class NonGreedyOneOrMore : TerminatedUnaryOpPattern
 {
-@safe nothrow:
+nothrow:
     this(Token head, Pattern sub, Pattern terminator = null) @nogc
     {
         super(head, sub, terminator);
@@ -1953,7 +1953,7 @@ abstract class TerminatedUnaryOpPattern : UnaryOpPattern
 /// Match `count` number of instances of type `sub`.
 @safe final class GreedyCount : UnaryOpPattern
 {
-@safe nothrow:
+nothrow:
     this(Token head, Pattern sub) @nogc
     {
         super(head, sub);
@@ -1988,7 +1988,7 @@ abstract class TerminatedUnaryOpPattern : UnaryOpPattern
 
 @safe final class RewriteSyntacticPredicate : UnaryOpPattern
 {
-@safe nothrow:
+nothrow:
     this(Token head, Pattern sub) @nogc
     {
         super(head, sub);
@@ -2023,7 +2023,7 @@ abstract class TerminatedUnaryOpPattern : UnaryOpPattern
     {
         showToken(head, fmt);
     }
-@safe nothrow:
+nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2043,7 +2043,7 @@ abstract class TerminatedUnaryOpPattern : UnaryOpPattern
     {
         showToken(head, fmt);
     }
-@safe nothrow:
+nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2072,7 +2072,7 @@ abstract class TerminatedUnaryOpPattern : UnaryOpPattern
 
 @safe final class LeftParenSentinel : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2081,7 +2081,7 @@ abstract class TerminatedUnaryOpPattern : UnaryOpPattern
 
 @safe final class PipeSentinel : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2090,7 +2090,7 @@ abstract class TerminatedUnaryOpPattern : UnaryOpPattern
 
 @safe final class DotDotSentinel : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2099,7 +2099,7 @@ abstract class TerminatedUnaryOpPattern : UnaryOpPattern
 
 @safe final class TildeSentinel : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2108,7 +2108,7 @@ abstract class TerminatedUnaryOpPattern : UnaryOpPattern
 
 @safe final class AnyClass : Pattern
 {
-@safe nothrow:
+nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2173,9 +2173,9 @@ private uint isUnicodeCharacterLiteral(scope Input x) pure nothrow @nogc
     return u;
 }
 
-abstract class Pattern : TokenNode
+@safe abstract class Pattern : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2186,7 +2186,7 @@ abstract class Pattern : TokenNode
 
 @safe final class StrLiteral : Pattern
 {
-@safe nothrow:
+nothrow:
     this(Token head) @nogc
     {
         assert(head.input.length >= 2);
@@ -2315,7 +2315,7 @@ void putStringLiteralBackQuoted(scope ref Output sink,
 
 @safe final class AltCharLiteral : Pattern
 {
-@safe nothrow:
+nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2424,7 +2424,7 @@ bool needsWrapping(const scope Node[] subs) @safe pure nothrow @nogc
 }
 
 /// Binary pattern combinator.
-abstract class BinaryOpPattern : Pattern
+@safe abstract class BinaryOpPattern : Pattern
 {
     override void show(in Format fmt = Format.init) const
     {
@@ -2435,7 +2435,7 @@ abstract class BinaryOpPattern : Pattern
         putchar(' ');
         subs[1].show(fmt);
     }
-@safe nothrow:
+nothrow:
     this(Token head, Pattern[2] subs) @nogc
     {
         assert(subs[0]);
@@ -2621,7 +2621,7 @@ Pattern parseCharAltM(const CharAltM alt,
 
 @safe final class CharAltM : Pattern
 {
-@safe nothrow:
+nothrow:
 
     this(Token head) @nogc
     {
@@ -2782,7 +2782,7 @@ Pattern parseCharAltM(const CharAltM alt,
 
 @safe final class LineComment : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2791,7 +2791,7 @@ Pattern parseCharAltM(const CharAltM alt,
 
 @safe final class BlockComment : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2829,7 +2829,7 @@ nothrow:
 /// Lexer grammar named `name`.
 @safe final class LexerGrammar : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head, Input name) @nogc
     {
         super(head);
@@ -2844,7 +2844,7 @@ nothrow:
  */
 @safe final class ParserGrammar : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head, Input name) @nogc
     {
         super(head);
@@ -2880,7 +2880,7 @@ nothrow:
 
 @safe final class Mode : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head, Input name) @nogc
     {
         super(head);
@@ -2891,7 +2891,7 @@ nothrow:
 
 @safe final class Options : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head, Token code) @nogc
     {
         super(head);
@@ -2903,7 +2903,7 @@ nothrow:
 
 @safe final class Header : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head, Token name, Token code) @nogc
     {
         super(head);
@@ -2916,7 +2916,7 @@ nothrow:
 
 @safe final class ScopeSymbolAction : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head,
          Input name,
          Token code) @nogc
@@ -2931,7 +2931,7 @@ nothrow:
 
 @safe final class ScopeSymbol : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head,
          Input name) @nogc
     {
@@ -2974,7 +2974,7 @@ nothrow:
 
 @safe final class Action : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2998,7 +2998,7 @@ nothrow:
 
 @safe final class Channels : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head, Token code) @nogc
     {
         super(head);
@@ -3009,7 +3009,7 @@ nothrow:
 
 @safe final class Tokens : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head, Token code) @nogc
     {
         super(head);
@@ -3023,7 +3023,7 @@ nothrow:
 
 @safe final class Class : TokenNode
 {
-@safe nothrow:
+nothrow:
     this(Token head, Input name, Input baseName) @nogc
     {
         super(head);
@@ -3044,7 +3044,6 @@ alias SymbolRefs = DynamicArray!(SymbolRef, null, uint);
  */
 @safe class GxParserByStatement
 {
-@safe:
     this(Input input,
          const string path = null,
          in bool includeComments = false)
