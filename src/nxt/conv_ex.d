@@ -90,20 +90,16 @@ if (isCharArray!S)
 {
     import std.conv: to;
     try
-    {
         return value.to!U;
-    }
     catch (Exception e)
     {
+        import std.uni: toLower;
         try
-        {
-            import std.uni: toLower;
             if (tryToLower)
                 return value.toLower.tolerantTo!U(tryStrippingPluralS,
                                                   false,
                                                   tryLevenshtein,
                                                   levenshteinMaxDistance);
-        }
         catch (Exception e)
         {
             import nxt.array_algorithm : endsWith;
