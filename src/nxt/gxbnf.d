@@ -3417,7 +3417,7 @@ alias SymbolRefs = DynamicArray!(SymbolRef, null, uint);
             rule.diagnoseDirectLeftRecursion(_lexer);
 
         // insert rule
-        const warnDuplicateRulePattern = false; // this is normally not an error
+        const warnDuplicateRulePattern = false; // this is normally not an error, for instance, in `oncrpcv2.g4`
         if (warnDuplicateRulePattern)
             foreach (const existingRule; rules)
             {
