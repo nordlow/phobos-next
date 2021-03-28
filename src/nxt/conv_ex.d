@@ -119,7 +119,6 @@ if (isCharArray!S)
     }
 
     static if (is(U == enum))
-    {
         if (tryLevenshtein)
         {
             import std.traits: EnumMembers;
@@ -135,7 +134,6 @@ if (isCharArray!S)
                               .minPos!"a[0] < b[0]".front[1];
             }
         }
-    }
 
     return U.init;
 }
