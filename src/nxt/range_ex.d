@@ -107,7 +107,7 @@ version(unittest)
     assert(x.frontPop() == V(21, 22)); assert(x == []);
 }
 
-ElementType!R* frontPtr(R)(auto ref R r) @system
+ElementType!R* frontPtr(R)(R r) @system
 if (isInputRange!R)
 {
     import std.range.primitives: empty, front;
@@ -119,9 +119,21 @@ if (isInputRange!R)
 @trusted pure unittest
 {
     auto x = [11, 22];
-    bool hit;
-    if (const y = x.frontPtr)
+    if (auto y = x.frontPtr)
+    {
+        static assert(is(typeof(y) == int*));
         assert(*y == 11);
+    }
+}
+
+@trusted pure unittest
+{
+    const x = [11, 22];
+    if (auto y = x.frontPtr)
+    {
+        static assert(is(typeof(y) == const(int)*));
+        assert(*y == 11);
+    }
 }
 
 /** Steal back from $(D r) destructively and return it.
