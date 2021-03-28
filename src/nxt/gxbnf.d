@@ -15,7 +15,7 @@
     TODO:
 
     - Emacs click on link in `compilation-mode` doesn't navigate to correct
-      offset on lines containing tabs before offset
+      offset on lines containing tabs before offset.
 
     - Add Syntax Tree Nodes as structs with members being sub-nodes. Composition
       over inheritance. If we use structs over classes more languages, such as
