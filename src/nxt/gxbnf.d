@@ -115,10 +115,6 @@
     - Avoid casts and instead compare against `head.tok` for `isA!NodeType`
     - use `RuleAltN(uint n)` in `makeAlt`
     - use `SeqN(uint n)` in `makeSeq`
-
-    - Might be fixed: Emacs click on link in `compilation-mode` doesn't navigate
-      to correct offset on lines containing tabs before offset. Tell Emacs to
-      move cursor to character column i
 */
 module nxt.gxbnf;
 
