@@ -68,8 +68,6 @@
 
     - Use `TOK.tokenSpecOptions` in parsing. Ignored for now.
 
-    - Add properties for uint, uint lengthRng()
-
     - Sort `AltM` subs by descending minLength. Should we match minimum or maximum first?
 
     - Essentially, Packrat parsing just means caching whether sub-expressions
