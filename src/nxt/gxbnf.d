@@ -289,13 +289,13 @@ static bool isSymbolStart(in dchar ch) pure nothrow @safe @nogc
 
     @disable this(this);
 
-    @property bool empty() const nothrow scope @nogc
+    @property bool empty() const pure nothrow scope @nogc
     {
         version(D_Coverage) {} else version(Do_Inline) pragma(inline, true);
         return _endOfFile;
     }
 
-    inout(Token) front() inout scope return nothrow @nogc
+    inout(Token) front() inout pure scope return nothrow @nogc
     {
         version(D_Coverage) {} else version(Do_Inline) pragma(inline, true);
         assert(!empty);
@@ -368,42 +368,42 @@ static bool isSymbolStart(in dchar ch) pure nothrow @safe @nogc
 private:
 
     /// Peek next `char` in input.
-    dchar peek0() const scope nothrow @nogc
+    dchar peek0() const pure scope nothrow @nogc
     {
         version(D_Coverage) {} else version(Do_Inline) pragma(inline, true);
         return _input[_offset]; // TODO: decode `dchar`
     }
 
     /// Peek next next `char` in input.
-    dchar peek1() const scope nothrow @nogc
+    dchar peek1() const pure scope nothrow @nogc
     {
         version(D_Coverage) {} else version(Do_Inline) pragma(inline, true);
         return _input[_offset + 1]; // TODO: decode `dchar`
     }
 
     /// Peek `n`-th next `char` in input.
-    dchar peekN(in size_t n) const scope nothrow @nogc
+    dchar peekN(in size_t n) const pure scope nothrow @nogc
     {
         version(D_Coverage) {} else version(Do_Inline) pragma(inline, true);
         return _input[_offset + n]; // TODO: decode `dchar`
     }
 
     /// Drop next byte in input.
-    void drop1() nothrow @nogc
+    void drop1() pure nothrow @nogc
     {
         version(D_Coverage) {} else version(Do_Inline) pragma(inline, true);
         _offset += 1;
     }
 
     /// Drop next `n` bytes in input.
-    void dropN(in size_t n) nothrow @nogc
+    void dropN(in size_t n) pure nothrow @nogc
     {
         version(D_Coverage) {} else version(Do_Inline) pragma(inline, true);
         _offset += n;           // TODO: decode `dchar`
     }
 
     /// Skip over `n` bytes in input.
-    Input skipOverN(in size_t n) return nothrow @nogc
+    Input skipOverN(in size_t n) pure return nothrow @nogc
     {
         version(D_Coverage) {} else pragma(inline);
         const part = _input[_offset .. _offset + n]; // TODO: decode `dchar`
@@ -412,28 +412,28 @@ private:
     }
 
     /// Skip over next `char`.
-    Input skipOver1() return nothrow @nogc
+    Input skipOver1() pure return nothrow @nogc
     {
         version(D_Coverage) {} else pragma(inline);
         return _input[_offset .. ++_offset]; // TODO: decode `dchar`
     }
 
     /// Skip over next two `char`s.
-    Input skipOver2() return nothrow @nogc
+    Input skipOver2() pure return nothrow @nogc
     {
         version(D_Coverage) {} else pragma(inline);
         return _input[_offset .. (_offset += 2)]; // TODO: decode `dchar`
     }
 
     /// Skip line comment.
-    void skipLineComment() scope nothrow @nogc
+    void skipLineComment() pure scope nothrow @nogc
     {
         while (!peek0().among!('\0', endOfLineChars))
             _offset += 1;       // TODO: decode `dchar`
     }
 
     /// Skip line comment.
-    Input getLineComment() return nothrow @nogc
+    Input getLineComment() pure return nothrow @nogc
     {
         size_t i;
         while (!peekN(i).among!('\0', endOfLineChars))
@@ -458,7 +458,7 @@ private:
     }
 
     /// Get symbol.
-    Input getSymbol() return nothrow @nogc
+    Input getSymbol() pure return nothrow @nogc
     {
         import std.uni : isAlphaNum; // TODO: decode `dchar`
         size_t i;
@@ -486,7 +486,7 @@ private:
     }
 
     /// Get number.
-    Input getNumber() return nothrow @nogc
+    Input getNumber() pure return nothrow @nogc
     {
         import std.ascii : isDigit;
         size_t i;
@@ -495,7 +495,7 @@ private:
         return skipOverN(i);
     }
 
-    Input getWhitespace() return nothrow @nogc
+    Input getWhitespace() pure return nothrow @nogc
     {
         size_t i;
         while (peekN(i).among!(whiteChars)) // NOTE this is faster than `src[i].isWhite`
