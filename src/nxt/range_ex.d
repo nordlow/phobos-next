@@ -60,7 +60,7 @@ ElementType!R frontPop(R)(ref R r)
 if (isInputRange!R &&
     hasStealableElements!R)
 {
-    import std.range: moveFront, popFront;
+    import std.range.primitives : moveFront, popFront;
     /* scope(success) r.popFront(); */
     /* return r.moveFront(); */
     auto e = r.moveFront();
@@ -105,6 +105,24 @@ version(unittest)
               V(21, 22)];
     assert(x.frontPop() == V(11, 12)); assert(x == [V(21, 22)]);
     assert(x.frontPop() == V(21, 22)); assert(x == []);
+}
+
+ElementType!R peekFront(R)(ref R r, out bool hit)
+if (isInputRange!R)
+{
+    import std.range.primitives: empty, front;
+    if (r.empty)
+        return typeof(return).init;
+    hit = true;
+    return r.front;
+}
+
+@safe pure unittest
+{
+    auto x = [11, 22];
+    bool hit;
+    assert(x.peekFront(hit) == 11);
+    assert(hit);
 }
 
 /** Steal back from $(D r) destructively and return it.
