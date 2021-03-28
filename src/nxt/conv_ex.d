@@ -30,15 +30,11 @@ if (!is(T == enum) &&
     }
     else                        // non-@nogc:
     {
+        import std.conv : to;
         try
-        {
-            import std.conv : to;
             return value.to!T;
-        }
         catch (Exception e) // assume `ConvException`. TODO: can we capture `ConvException` instead make it inferred `nothrow`
-        {
             return defaultValue;
-        }
     }
 }
 /// ditto
