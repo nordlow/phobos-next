@@ -69,7 +69,8 @@
     - Use `TOK.tokenSpecOptions` in parsing. Ignored for now.
 
     - Add properties for uint, uint lengthRng()
-    - Sort `AltM` subs by descending minLength
+
+    - Sort `AltM` subs by descending minLength. Should we match minimum or maximum first?
 
     - Deal with differences between `import` and `tokenVocab`.
       See: https://stackoverflow.com/questions/28829049/antlr4-any-difference-between-import-and-tokenvocab
