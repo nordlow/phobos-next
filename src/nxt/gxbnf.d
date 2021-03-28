@@ -20,8 +20,6 @@
       extern(C++) classes. Sub-node pointers should be defined as unique
       pointers with deterministic destruction.
 
-    - Allocated nodes using region allocator copied from Vox source code.
-
     - Should be allowed instead of warning:
     grammars-v4/lua/Lua.g4(329,5): Warning: missing left-hand side, token (leftParen) at offset 5967
 
@@ -55,8 +53,7 @@
 
     - Use to detect conflicting rules with `import` and `tokenVocab`
 
-    - Ask on forums for AST node allocation patterns. Use region allocator of
-      immutable. Size can be predicate.
+    - Allocated nodes using region allocator copied from Vox source code.
 
     - `not(...)`'s implementation needs to be adjusted. often used in conjunction with `altN`?
 
