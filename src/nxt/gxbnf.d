@@ -14,6 +14,10 @@
 
     TODO:
 
+    - Add errors for duplicated rule definitions in same file
+    - Use just defined `Pattern.opEquals`
+    - Simplest to start with lexer rules
+
     - Add Syntax Tree Nodes as structs with members being sub-nodes. Composition
       over inheritance. If we use structs over classes more languages, such as
       Vox, can be supported in the code generation phase. Optionally use
@@ -21,10 +25,6 @@
       pointers with deterministic destruction.
 
     - Allocated nodes using region allocator copied from vox source code.
-
-    - Add errors for duplicated rule definitions in same file
-      - Use just defined `Pattern.opEquals`
-      - Simplest to start with lexer rules
 
     - Should be allowed instead of warning:
 
