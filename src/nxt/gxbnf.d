@@ -3417,14 +3417,16 @@ alias SymbolRefs = DynamicArray!(SymbolRef, null, uint);
             rule.diagnoseDirectLeftRecursion(_lexer);
 
         // insert rule
-        foreach (const existingRule; rules)
-        {
-            if (rule.root.opEquals(existingRule.root))
+        const warnDuplicateRulePattern = false; // this is normally not an error
+        if (warnDuplicateRulePattern)
+            foreach (const existingRule; rules)
             {
-                _lexer.warningAtToken(rule.head, "rule with same root pattern"); // TODO: error
-                _lexer.warningAtToken(existingRule.head, "existing definition here"); // TODO: errorSupplemental
+                if (rule.root.opEquals(existingRule.root))
+                {
+                    _lexer.warningAtToken(rule.head, "rule with same root pattern"); // TODO: error
+                    _lexer.warningAtToken(existingRule.head, "existing definition here"); // TODO: errorSupplemental
+                }
             }
-        }
         rules.insertBack(rule);
         rulesByName.update(rule.head.input,        // See_Also: https://dlang.org/spec/hash-map.html#advanced_updating
                            {
