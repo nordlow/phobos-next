@@ -264,9 +264,7 @@ if (isSomeString!Range ||
     }
 
     static if (isInfinite!R)
-    {
         enum bool empty = false;  // propagate infiniteness
-    }
     else
     {
         @property bool empty() const
@@ -620,16 +618,12 @@ auto adjacentTuples(size_t N, R)(R r)
         {
             this._source = r;
             foreach (i; 0 .. M)
-            {
                 if (!empty)
                     popFront();
-            }
         }
 
         static if (isInfinite!R)
-        {
             enum bool empty = false;  // propagate infiniteness
-        }
         else
         {
             bool empty() @property // TODO: can't empty be const when R is a MapResult?
@@ -728,8 +722,8 @@ if (isInputRange!R)
 }
 
 auto rangify(T)(T range)
-    if (__traits(hasMember, T, "length") &&
-        __traits(hasMember, T, "opIndex"))
+if (__traits(hasMember, T, "length") &&
+    __traits(hasMember, T, "opIndex"))
 {
     struct Range
     {
@@ -810,13 +804,9 @@ if (isInputRange!Range)
     import std.range : SortedRange;
     import std.functional : binaryFun;
     static if (is(Range : SortedRange!P, P...))
-    {
         alias sortingPredicate = binaryFun!(P[1]);
-    }
     else
-    {
         alias sortingPredicate = binaryFun!fallbackPred;
-    }
 }
 
 ///
