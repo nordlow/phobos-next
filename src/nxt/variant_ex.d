@@ -65,13 +65,9 @@ struct WordVariant(Types...)
             case i + 1:
                 // TODO: improve this to look more like D-code:
                 static if (isPointer!T)
-                {
                     return T.stringof ~ `@` ~ as!T.to!string; // TODO: ~ `:` ~ (*as!T).to!string;
-                }
                 else
-                {
                     return T.stringof ~ `@` ~ as!T.to!string;
-                }
             }
         }
     }
@@ -120,7 +116,8 @@ pragma(inline):
 
     @property inout(Ref!T) peek(T)() inout @trusted if (canStore!T)
     {
-        if (!ofType!T) { return typeof(return).init; }
+        if (!ofType!T)
+            return typeof(return).init;
         return typeof(return)(_raw, true);
     }
 
@@ -135,9 +132,15 @@ pragma(inline):
         return x && *x == that; // and is equal to it
     }
 
-    bool isNull() const { return _raw == S.init; }
+    bool isNull() const
+    {
+        return _raw == S.init;
+    }
 
-    bool opCast(T : bool)() const { return !isNull; }
+    bool opCast(T : bool)() const
+    {
+        return !isNull;
+    }
 
     private void initialize(T)(T that) @trusted
     {
@@ -168,7 +171,8 @@ pragma(inline):
 
     private bool ofType(T)() const if (canStore!T)
     {
-        return !isNull && typeIndex == indexOf!T + 1;
+        return (!isNull &&
+                typeIndex == indexOf!T + 1);
     }
 
     inout(T) as(T)() inout @trusted if (canStore!T)
@@ -191,7 +195,10 @@ pragma(inline):
         return ((_raw & typeMask) >> typeShift);
     }
 
-    private S rawValue() const { return _raw & ~typeMask; }
+    private S rawValue() const
+    {
+        return _raw & ~typeMask;
+    }
 
     private S _raw;             // raw untyped word
 
@@ -242,7 +249,11 @@ pure nothrow unittest
     alias V = WordVariant!Types;
     V v;
 
-    try { assert(v.toString == "null"); } catch (Exception e) { }
+    try
+    {
+        assert(v.toString == "null");
+    }
+    catch (Exception e) {}
 
     assert(v.isNull);
     v = null;
@@ -280,9 +291,7 @@ pure nothrow unittest
                 assert(v.as!Up == &a);
             }
             else
-            {
                 assert(!v.peek!Up);
-            }
         }
 
         // assignment from heap pointer
@@ -303,9 +312,7 @@ pure nothrow unittest
                 assert(*(v.peek!Up) == b);
             }
             else
-            {
                 assert(!v.peek!Up);
-            }
         }
 
     }
@@ -357,33 +364,58 @@ struct VariantPointerTo(Types...)
     @nogc:
 
     /// Construction from `value`.
-    this(T)(T* value) if (canStorePointerTo!T) { init(value); }
+    this(T)(T* value)
+    if (canStorePointerTo!T)
+    {
+        init(value);
+    }
     /// ditto
     this(typeof(null) value) { /* null is the default */ }
 
     /// Assignment from `that`.
-    auto ref opAssign(T)(T* that) if (canStorePointerTo!T) { init(that); return this; }
+    auto ref opAssign(T)(T* that)
+    if (canStorePointerTo!T)
+    {
+        init(that);
+        return this;
+    }
     /// ditto
-    auto ref opAssign(typeof(null) that) { _raw = S.init; return this; }
+    auto ref opAssign(typeof(null) that)
+    {
+        _raw = S.init;
+        return this;
+    }
 
-    @property inout(void)* ptr() inout @trusted { return cast(void*)(_raw & ~typeMask); }
+    @property inout(void)* ptr() inout @trusted
+    {
+        return cast(void*)(_raw & ~typeMask);
+    }
 
     @property inout(T)* peek(T)() inout @trusted if (canStorePointerTo!T)
     {
-        static if (is(T == void)) static assert(canStorePointerTo!T, `Cannot store a ` ~ T.stringof ~ ` in a ` ~ name);
-        if (!pointsTo!T) { return null; }
+        static if (is(T == void))
+            static assert(canStorePointerTo!T, `Cannot store a ` ~ T.stringof ~ ` in a ` ~ name);
+        if (!pointsTo!T)
+            return null;
         return cast(inout T*)ptr;
     }
 
     bool opEquals(T)(T* that) const @trusted
     {
         auto x = peek!T; // if `this` contains pointer of to instance of type `T`
-        return x && x == that; // and is equal to it
+        return (x &&
+                x == that); // and is equal to it
     }
 
-    bool isNull() const { return ptr is null; }
+    bool isNull() const
+    {
+        return ptr is null;
+    }
 
-    bool opCast(T : bool)() const { return ptr !is null; }
+    bool opCast(T : bool)() const
+    {
+        return ptr !is null;
+    }
 
     private void init(T)(T* that)
     {
@@ -446,9 +478,7 @@ pure nothrow unittest
                 assert(*(v.peek!U) == a);
             }
             else
-            {
                 assert(!v.peek!U);
-            }
         }
 
         // assignment from heap pointer
@@ -468,9 +498,7 @@ pure nothrow unittest
                 assert(*(v.peek!U) == *b);
             }
             else
-            {
                 assert(!v.peek!U);
-            }
         }
 
     }
