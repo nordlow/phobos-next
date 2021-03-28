@@ -241,10 +241,10 @@ enum TOK
 }
 
 /// Gx rule.
-struct Token
+@safe struct Token
 {
-@safe pure nothrow:
-    this(in TOK tok, Input input = null) @nogc
+@safe nothrow:
+    this(in TOK tok, Input input = null) @nogc pure
     {
         this.tok = tok;
         this.input = input;
@@ -266,11 +266,9 @@ static bool isSymbolStart(in dchar ch) pure nothrow @safe @nogc
  *
  * See_Also: `ANTLRv4Lexer.g4`
  */
-struct GxLexer
+@safe struct GxLexer
 {
     import std.algorithm.comparison : among;
-
-@safe pure:
 
     this(const Input input,
          const string path = null,
@@ -964,14 +962,16 @@ private:
         const lc = offsetLineColumn(_input, offset);
         import nxt.conv_ex : toDefaulted;
         const tokString = token.tok.toDefaulted!string("unknown");
-        debug printf("%.*s(%u,%u): %s: %.*s, `%.*s` (%.*s) at offset %llu\n", // Move this outputter
-               cast(int)path.length, &path[0],
-               lc.line + 1, lc.column + 1,
-               &tag[0],
-               cast(int)msg.length, &msg[0],
-               cast(int)token.input.length, &token.input[0],
-               cast(int)tokString.length, &tokString[0],
-               offset);
+        () @trusted {
+            printf("%.*s(%u,%u): %s: %.*s, `%.*s` (%.*s) at offset %llu\n", // move this to a member
+                   cast(int)path.length, &path[0],
+                   lc.line + 1, lc.column + 1,
+                   &tag[0],
+                   cast(int)msg.length, &msg[0],
+                   cast(int)token.input.length, &token.input[0],
+                   cast(int)tokString.length, &tokString[0],
+                   offset);
+        } ();
     }
 
     // TODO: into warning(const char* format...) like in `dmd` and put in `nxt.parsing` and reuse here and in lispy.d
@@ -1041,7 +1041,7 @@ enum Layout : ubyte
 
 enum indentStep = 4;        ///< Indentation size in number of spaces.
 
-struct Format
+@safe struct Format
 {
     uint indentDepth;           ///< Indentation depth.
     Layout layout;
@@ -1093,7 +1093,7 @@ private void showToken(Token token,
 
 /** Lower and upper limit of `dchar` count.
  */
-struct DcharCountSpan
+@safe struct DcharCountSpan
 {
 @safe pure nothrow:
     @disable this();       // be explicit for now as default init is not obvious
@@ -1118,7 +1118,7 @@ struct DcharCountSpan
     {
         this(length, length);
     }
-    this(in size_t length) @safe pure nothrow @nogc
+    this(in size_t length) @safe nothrow @nogc
     {
         this(length, length);
     }
@@ -1129,10 +1129,9 @@ struct DcharCountSpan
 /// AST node.
 private abstract class Node
 {
-@safe:
     abstract void show(in Format fmt = Format.init) const;
-pure nothrow:
-    abstract bool equals(const Node o) const @nogc;
+nothrow:
+    abstract bool equals(const Node o) const pure @nogc;
     abstract void toMatchInSource(scope ref Output sink, const scope GxParserByStatement parser) const;
     this() @nogc {}
 }
@@ -1154,7 +1153,7 @@ bool equalsAll(const scope Node[] a,
 /// N-ary expression.
 abstract class NaryOpPattern : Pattern
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, PatternArray subs) @nogc
     {
         super(head);
@@ -1182,9 +1181,8 @@ abstract class NaryOpPattern : Pattern
  * A `Sequence` is empty in case when a rule provides an empty alternative.
  * Such cases `() | ...` should be rewritten to `(...)?` in `makeAlt`.
  */
-final class SeqM : NaryOpPattern
+@safe final class SeqM : NaryOpPattern
 {
-@safe:
     override void show(in Format fmt = Format.init) const
     {
         fmt.showIndent();
@@ -1195,7 +1193,7 @@ final class SeqM : NaryOpPattern
             sub.show();
         }
     }
-pure nothrow:
+nothrow:
     this(Token head) @nogc
     {
         super(head, PatternArray.init);
@@ -1219,7 +1217,7 @@ pure nothrow:
         }
         sink.put(")");
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         assert(!subs.empty);
         auto lr = typeof(return)(0, uint.max);
@@ -1257,7 +1255,7 @@ pure nothrow:
 
 Pattern makeSeq(PatternArray subs,
                 const ref GxLexer lexer,
-                in bool rewriteFlag = true) pure nothrow
+                in bool rewriteFlag = true) nothrow
 {
     subs = flattenSubs!SeqM(subs.move());
     if (subs.length == 1)
@@ -1279,22 +1277,22 @@ Pattern makeSeq(PatternArray subs,
     return new SeqM(subs.move());
 }
 
-Pattern makeSeq(Pattern[] subs,
+Pattern makeSeq(scope Pattern[] subs,
                 const ref GxLexer lexer,
-                in bool rewriteFlag = true) pure nothrow
+                in bool rewriteFlag = true) nothrow
 {
     return makeSeq(PatternArray(subs), lexer, rewriteFlag);
 }
 
-Pattern makeSeq(Node[] subs,
+Pattern makeSeq(scope Node[] subs,
                 const ref GxLexer lexer,
-                in bool rewriteFlag = true) pure nothrow
+                in bool rewriteFlag = true) nothrow
 {
     return makeSeq(checkedCastSubs(subs, lexer), lexer, rewriteFlag);
 }
 
-private PatternArray checkedCastSubs(Node[] subs,
-                                     const ref GxLexer lexer) pure nothrow
+private PatternArray checkedCastSubs(scope Node[] subs,
+                                     const ref GxLexer lexer) nothrow
 {
     auto psubs = typeof(return).withLength(subs.length);
     foreach (const i, sub; subs)
@@ -1325,9 +1323,8 @@ if (is(BranchPattern : SeqM) ||
 }
 
 /// Rule.
-class Rule : Node
+@safe class Rule : Node
 {
-@safe:
     override void show(in Format fmt = Format.init) const
     {
         showToken(head, fmt);
@@ -1336,10 +1333,10 @@ class Rule : Node
             root.show(Format(fmt.indentDepth + 1));
         showChars(" ;\n");
     }
-@safe pure nothrow:
+@safe nothrow:
     void diagnoseDirectLeftRecursion(const scope ref GxLexer lexer)
     {
-        void checkLeft(const scope Pattern root) @safe pure nothrow
+        void checkLeft(const scope Pattern root) @safe nothrow
         {
             if (const alt = cast(const AltM)root) // common case
                 foreach (const sub; alt.subs[]) // all alternatives
@@ -1435,9 +1432,9 @@ class Rule : Node
 
   See_Also: https://sodocumentation.net/antlr/topic/3271/lexer-rules-in-v4#fragments
  */
-final class FragmentRule : Rule
+@safe final class FragmentRule : Rule
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Pattern root, bool skipFlag) @nogc
     {
         super(head, root, skipFlag);
@@ -1448,9 +1445,8 @@ final class FragmentRule : Rule
     }
 }
 
-final class AltM : NaryOpPattern
+@safe final class AltM : NaryOpPattern
 {
-@safe:
     override void show(in Format fmt = Format.init) const
     {
         const wrapFlag = needsWrapping(subs[]);
@@ -1474,7 +1470,7 @@ final class AltM : NaryOpPattern
             }
         }
     }
-pure nothrow:
+nothrow:
     this(Token head, PatternArray subs) @nogc
     {
         assert(!subs.empty);
@@ -1560,7 +1556,7 @@ pure nothrow:
         if (allSubChars)
             sink.put("()");
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         return dcharCountSpanOf(subs[]);
     }
@@ -1596,7 +1592,7 @@ DcharCountSpan dcharCountSpanOf(const scope Pattern[] subs) @safe pure nothrow @
 
 Pattern makeAltA(Token head,
                  PatternArray subs,
-                 in bool rewriteFlag = true) pure nothrow
+                 in bool rewriteFlag = true) nothrow
 {
     subs = flattenSubs!AltM(subs.move());
     switch (subs.length)
@@ -1612,32 +1608,31 @@ Pattern makeAltA(Token head,
 
 Pattern makeAltM(Token head,
                  Pattern[] subs,
-                 in bool rewriteFlag = true) pure nothrow
+                 in bool rewriteFlag = true) nothrow
 {
     return makeAltA(head, PatternArray(subs), rewriteFlag);
 }
 
 Pattern makeAltN(uint n)(Token head,
                          Pattern[n] subs,
-                         in bool rewriteFlag = true) pure nothrow
-    if (n >= 2)
-    {
-        return makeAltA(head, PatternArray(subs), rewriteFlag);
-    }
-
-class TokenNode : Node
+                         in bool rewriteFlag = true) nothrow
+if (n >= 2)
 {
-@safe:
+    return makeAltA(head, PatternArray(subs), rewriteFlag);
+}
+
+@safe class TokenNode : Node
+{
     override void show(in Format fmt = Format.init) const
     {
         showToken(head, fmt);
     }
-pure nothrow:
+nothrow:
     this(Token head) @nogc
     {
         this.head = head;
     }
-    override bool equals(const Node o) const @nogc
+    override bool equals(const Node o) const pure @nogc
     {
         if (this is o)
             return true;
@@ -1657,7 +1652,6 @@ pure nothrow:
 /// Unary match combinator.
 abstract class UnaryOpPattern : Pattern
 {
-@safe:
     final override void show(in Format fmt = Format.init) const
     {
         putchar('(');
@@ -1665,7 +1659,7 @@ abstract class UnaryOpPattern : Pattern
         putchar(')');
         showToken(head, fmt);
     }
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Pattern sub) @nogc
     {
         debug assert(head.input.ptr);
@@ -1686,9 +1680,9 @@ abstract class UnaryOpPattern : Pattern
 }
 
 /// Don't match an instance of type `sub`.
-final class NotPattern : UnaryOpPattern
+@safe final class NotPattern : UnaryOpPattern
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Pattern sub) @nogc
     {
         super(head, sub);
@@ -1699,7 +1693,7 @@ final class NotPattern : UnaryOpPattern
         sub.toMatchInSource(sink, parser);
         sink.put(")");
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         return sub.dcharCountSpan();
     }
@@ -1712,9 +1706,9 @@ final class NotPattern : UnaryOpPattern
 }
 
 /// Match (greedily) zero or one instances of type `sub`.
-final class GreedyZeroOrOne : UnaryOpPattern
+@safe final class GreedyZeroOrOne : UnaryOpPattern
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Pattern sub) @nogc
     {
         super(head, sub);
@@ -1731,7 +1725,7 @@ final class GreedyZeroOrOne : UnaryOpPattern
         sub.toMatchInSource(sink, parser);
         sink.put(")");
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         return typeof(return)(0, sub.dcharCountSpan.upper);
     }
@@ -1744,9 +1738,9 @@ final class GreedyZeroOrOne : UnaryOpPattern
 }
 
 /// Match (greedily) zero or more instances of type `sub`.
-final class GreedyZeroOrMore : UnaryOpPattern
+@safe final class GreedyZeroOrMore : UnaryOpPattern
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Pattern sub) @nogc
     {
         super(head, sub);
@@ -1763,7 +1757,7 @@ final class GreedyZeroOrMore : UnaryOpPattern
         sub.toMatchInSource(sink, parser);
         sink.put(")");
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         return typeof(return).full();
     }
@@ -1776,9 +1770,9 @@ final class GreedyZeroOrMore : UnaryOpPattern
 }
 
 /// Match (greedily) one or more instances of type `sub`.
-final class GreedyOneOrMore : UnaryOpPattern
+@safe final class GreedyOneOrMore : UnaryOpPattern
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Pattern sub) @nogc
     {
         super(head, sub);
@@ -1799,7 +1793,7 @@ final class GreedyOneOrMore : UnaryOpPattern
         sub.toMatchInSource(sink, parser);
         sink.put(")");
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         return typeof(return)(sub.dcharCountSpan.lower,
                               typeof(return).upper.max);
@@ -1814,7 +1808,7 @@ final class GreedyOneOrMore : UnaryOpPattern
 
 abstract class TerminatedUnaryOpPattern : UnaryOpPattern
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Pattern sub, Pattern terminator = null) @nogc
     {
         debug assert(head.input.ptr);
@@ -1825,9 +1819,9 @@ abstract class TerminatedUnaryOpPattern : UnaryOpPattern
 }
 
 /// Match (non-greedily) zero or one instances of type `sub`.
-final class NonGreedyZeroOrOne : TerminatedUnaryOpPattern
+@safe final class NonGreedyZeroOrOne : TerminatedUnaryOpPattern
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Pattern sub, Pattern terminator = null) @nogc
     {
         super(head, sub, terminator);
@@ -1851,7 +1845,7 @@ final class NonGreedyZeroOrOne : TerminatedUnaryOpPattern
             parser._lexer.warningAtToken(head, "no terminator after non-greedy");
         sink.put(")");
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         return typeof(return)(0, sub.dcharCountSpan.upper);
     }
@@ -1867,9 +1861,9 @@ final class NonGreedyZeroOrOne : TerminatedUnaryOpPattern
 }
 
 /// Match (non-greedily) zero or more instances of type `sub`.
-final class NonGreedyZeroOrMore : TerminatedUnaryOpPattern
+@safe final class NonGreedyZeroOrMore : TerminatedUnaryOpPattern
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Pattern sub, Pattern terminator = null) @nogc
     {
         debug assert(head.input.ptr);
@@ -1898,7 +1892,7 @@ final class NonGreedyZeroOrMore : TerminatedUnaryOpPattern
         }
         sink.put(")");
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         return typeof(return).full();
     }
@@ -1914,9 +1908,9 @@ final class NonGreedyZeroOrMore : TerminatedUnaryOpPattern
 }
 
 /// Match (non-greedily) one or more instances of type `sub`.
-final class NonGreedyOneOrMore : TerminatedUnaryOpPattern
+@safe final class NonGreedyOneOrMore : TerminatedUnaryOpPattern
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Pattern sub, Pattern terminator = null) @nogc
     {
         super(head, sub, terminator);
@@ -1940,7 +1934,7 @@ final class NonGreedyOneOrMore : TerminatedUnaryOpPattern
             parser._lexer.warningAtToken(head, "no terminator after non-greedy");
         sink.put(")");
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         return typeof(return)(sub.dcharCountSpan.lower,
                               typeof(return).upper.max);
@@ -1957,9 +1951,9 @@ final class NonGreedyOneOrMore : TerminatedUnaryOpPattern
 }
 
 /// Match `count` number of instances of type `sub`.
-final class GreedyCount : UnaryOpPattern
+@safe final class GreedyCount : UnaryOpPattern
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Pattern sub) @nogc
     {
         super(head, sub);
@@ -1976,7 +1970,7 @@ final class GreedyCount : UnaryOpPattern
         sub.toMatchInSource(sink, parser);
         sink.put(")");
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         const ss = sub.dcharCountSpan;
         return typeof(return)(ss.lower == uint.max ? uint.max : ss.lower * count,
@@ -1992,9 +1986,9 @@ final class GreedyCount : UnaryOpPattern
     ulong count;
 }
 
-final class RewriteSyntacticPredicate : UnaryOpPattern
+@safe final class RewriteSyntacticPredicate : UnaryOpPattern
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Pattern sub) @nogc
     {
         super(head, sub);
@@ -2011,7 +2005,7 @@ final class RewriteSyntacticPredicate : UnaryOpPattern
         sub.toMatchInSource(sink, parser);
         sink.put(")");
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         return sub.dcharCountSpan;
     }
@@ -2023,14 +2017,13 @@ final class RewriteSyntacticPredicate : UnaryOpPattern
     }
 }
 
-final class OtherSymbol : TokenNode
+@safe final class OtherSymbol : TokenNode
 {
-@safe:
     override void show(in Format fmt = Format.init) const
     {
         showToken(head, fmt);
     }
-@safe pure nothrow:
+@safe nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2044,14 +2037,13 @@ final class OtherSymbol : TokenNode
     }
 }
 
-final class SymbolRef : Pattern
+@safe final class SymbolRef : Pattern
 {
-@safe:
     override void show(in Format fmt = Format.init) const
     {
         showToken(head, fmt);
     }
-@safe pure nothrow:
+@safe nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2065,7 +2057,7 @@ final class SymbolRef : Pattern
             head.input !in parser.rulesByName)
             parser._lexer.warningAtToken(head, "No rule for symbol");
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         assert(false);
         // return typeof(return).init;
@@ -2078,45 +2070,45 @@ final class SymbolRef : Pattern
     }
 }
 
-final class LeftParenSentinel : TokenNode
+@safe final class LeftParenSentinel : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head) @nogc
     {
         super(head);
     }
 }
 
-final class PipeSentinel : TokenNode
+@safe final class PipeSentinel : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head) @nogc
     {
         super(head);
     }
 }
 
-final class DotDotSentinel : TokenNode
+@safe final class DotDotSentinel : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head) @nogc
     {
         super(head);
     }
 }
 
-final class TildeSentinel : TokenNode
+@safe final class TildeSentinel : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head) @nogc
     {
         super(head);
     }
 }
 
-final class AnyClass : Pattern
+@safe final class AnyClass : Pattern
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2125,7 +2117,7 @@ final class AnyClass : Pattern
     {
         sink.put(`any()`);
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         return typeof(return)(1);
     }
@@ -2183,18 +2175,18 @@ private uint isUnicodeCharacterLiteral(scope Input x) pure nothrow @nogc
 
 abstract class Pattern : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head) @nogc
     {
         super(head);
     }
-    abstract DcharCountSpan dcharCountSpan() const @nogc;
+    abstract DcharCountSpan dcharCountSpan() const pure @nogc;
     abstract bool opEquals(const scope Pattern that) const @nogc;
 }
 
-final class StrLiteral : Pattern
+@safe final class StrLiteral : Pattern
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head) @nogc
     {
         assert(head.input.length >= 2);
@@ -2238,7 +2230,7 @@ final class StrLiteral : Pattern
             }
         }
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         const inp = unquotedInput; // skipping single-quotes
         size_t cnt;
@@ -2263,7 +2255,7 @@ final class StrLiteral : Pattern
             return head.input == that_.head.input;
         return false;
     }
-    Input unquotedInput() const scope return @nogc
+    Input unquotedInput() const pure scope return @nogc
     {
         return head.input[1 .. $ - 1];
     }
@@ -2321,9 +2313,9 @@ void putStringLiteralBackQuoted(scope ref Output sink,
     }
 }
 
-final class AltCharLiteral : Pattern
+@safe final class AltCharLiteral : Pattern
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2350,7 +2342,7 @@ final class AltCharLiteral : Pattern
         sink.putCharLiteral(head.input);
         sink.put(`)`);
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         return DcharCountSpan(1, 1);
         // if (head.input.isASCIICharacterLiteral)
@@ -2434,7 +2426,6 @@ bool needsWrapping(const scope Node[] subs) @safe pure nothrow @nogc
 /// Binary pattern combinator.
 abstract class BinaryOpPattern : Pattern
 {
-@safe:
     override void show(in Format fmt = Format.init) const
     {
         fmt.showIndent();
@@ -2444,7 +2435,7 @@ abstract class BinaryOpPattern : Pattern
         putchar(' ');
         subs[1].show(fmt);
     }
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Pattern[2] subs) @nogc
     {
         assert(subs[0]);
@@ -2465,9 +2456,8 @@ abstract class BinaryOpPattern : Pattern
 }
 
 /// Match value range between `limits[0]` and `limits[1]`.
-final class Range : BinaryOpPattern
+@safe final class Range : BinaryOpPattern
 {
-@safe:
     override void show(in Format fmt = Format.init) const
     {
         const wrapFlag = needsWrapping(subs[]);
@@ -2480,7 +2470,7 @@ final class Range : BinaryOpPattern
         if (wrapFlag)
             putchar(')');
     }
-pure nothrow:
+nothrow:
     this(Token head, Pattern[2] limits) @nogc
     {
         assert(limits[0]);
@@ -2513,7 +2503,7 @@ pure nothrow:
 
         sink.put(")");
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         return dcharCountSpanOf(subs[]);
     }
@@ -2528,7 +2518,7 @@ pure nothrow:
  }
 
 Pattern parseCharAltM(const CharAltM alt,
-                      const scope ref GxLexer lexer) @safe pure nothrow
+                      const scope ref GxLexer lexer) @safe nothrow
 {
     const Input inp = alt.unquotedInput;
 
@@ -2629,9 +2619,9 @@ Pattern parseCharAltM(const CharAltM alt,
     return makeAltA(alt.head, subs.move()); // potentially flatten
 }
 
-final class CharAltM : Pattern
+@safe final class CharAltM : Pattern
 {
-@safe pure nothrow:
+@safe nothrow:
 
     this(Token head) @nogc
     {
@@ -2778,7 +2768,7 @@ final class CharAltM : Pattern
         }
         return sink;
     }
-    override DcharCountSpan dcharCountSpan() const @nogc
+    override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         return typeof(return)(1);
     }
@@ -2790,18 +2780,18 @@ final class CharAltM : Pattern
     }
 }
 
-final class LineComment : TokenNode
+@safe final class LineComment : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head) @nogc
     {
         super(head);
     }
 }
 
-final class BlockComment : TokenNode
+@safe final class BlockComment : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head) @nogc
     {
         super(head);
@@ -2809,9 +2799,8 @@ final class BlockComment : TokenNode
 }
 
 /// Grammar named `name`.
-final class Grammar : TokenNode
+@safe final class Grammar : TokenNode
 {
-@safe:
     override void show(in Format fmt = Format.init) const
     {
         showToken(head, fmt);
@@ -2819,7 +2808,7 @@ final class Grammar : TokenNode
         showChars(name);
         showChars(";\n");
     }
-pure nothrow:
+nothrow:
     this(Token head, Input name) @nogc
     {
         super(head);
@@ -2838,9 +2827,9 @@ pure nothrow:
 }
 
 /// Lexer grammar named `name`.
-final class LexerGrammar : TokenNode
+@safe final class LexerGrammar : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Input name) @nogc
     {
         super(head);
@@ -2853,9 +2842,9 @@ final class LexerGrammar : TokenNode
  *
  * See_Also: https://theantlrguy.atlassian.net/wiki/spaces/ANTLR3/pages/2687210/Quick+Starter+on+Parser+Grammars+-+No+Past+Experience+Required
  */
-final class ParserGrammar : TokenNode
+@safe final class ParserGrammar : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Input name) @nogc
     {
         super(head);
@@ -2865,9 +2854,8 @@ final class ParserGrammar : TokenNode
 }
 
 /// Import of `modules`.
-final class Import : TokenNode
+@safe final class Import : TokenNode
 {
-@safe:
     override void show(in Format fmt = Format.init) const
     {
         showToken(head, fmt);
@@ -2881,7 +2869,7 @@ final class Import : TokenNode
         putchar(';');
         putchar('\n');
     }
-pure nothrow:
+nothrow:
     this(Token head, DynamicArray!(Input) modules) @nogc
     {
         super(head);
@@ -2890,9 +2878,9 @@ pure nothrow:
     DynamicArray!(Input) modules;
 }
 
-final class Mode : TokenNode
+@safe final class Mode : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Input name) @nogc
     {
         super(head);
@@ -2901,9 +2889,9 @@ final class Mode : TokenNode
     Input name;
 }
 
-final class Options : TokenNode
+@safe final class Options : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Token code) @nogc
     {
         super(head);
@@ -2913,9 +2901,9 @@ final class Options : TokenNode
     Token code;
 }
 
-final class Header : TokenNode
+@safe final class Header : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Token name, Token code) @nogc
     {
         super(head);
@@ -2926,9 +2914,9 @@ final class Header : TokenNode
     Token code;
 }
 
-final class ScopeSymbolAction : TokenNode
+@safe final class ScopeSymbolAction : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head,
          Input name,
          Token code) @nogc
@@ -2941,9 +2929,9 @@ final class ScopeSymbolAction : TokenNode
     Token code;
 }
 
-final class ScopeSymbol : TokenNode
+@safe final class ScopeSymbol : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head,
          Input name) @nogc
     {
@@ -2953,14 +2941,13 @@ final class ScopeSymbol : TokenNode
     Input name;
 }
 
-final class ScopeAction : TokenNode
+@safe final class ScopeAction : TokenNode
 {
-@safe:
     override void show(in Format fmt = Format.init) const
     {
         showToken(head, fmt);
     }
-pure nothrow:
+nothrow:
     this(Token head,
          Token code) @nogc
     {
@@ -2970,14 +2957,13 @@ pure nothrow:
     Token code;
 }
 
-final class AttributeSymbol : TokenNode
+@safe final class AttributeSymbol : TokenNode
 {
-@safe:
     override void show(in Format fmt = Format.init) const
     {
         showToken(head, fmt);
     }
-pure nothrow:
+nothrow:
     this(Token head, Token code) @nogc
     {
         super(head);
@@ -2986,23 +2972,22 @@ pure nothrow:
     Token code;
 }
 
-final class Action : TokenNode
+@safe final class Action : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head) @nogc
     {
         super(head);
     }
 }
 
-final class ActionSymbol : TokenNode
+@safe final class ActionSymbol : TokenNode
 {
-@safe:
     override void show(in Format fmt = Format.init) const
     {
         showToken(head, fmt);
     }
-pure nothrow:
+nothrow:
     this(Token head, Token code) @nogc
     {
         super(head);
@@ -3011,9 +2996,9 @@ pure nothrow:
     Token code;
 }
 
-final class Channels : TokenNode
+@safe final class Channels : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Token code) @nogc
     {
         super(head);
@@ -3022,9 +3007,9 @@ final class Channels : TokenNode
     Token code;
 }
 
-final class Tokens : TokenNode
+@safe final class Tokens : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Token code) @nogc
     {
         super(head);
@@ -3036,9 +3021,9 @@ final class Tokens : TokenNode
     Token code;
 }
 
-final class Class : TokenNode
+@safe final class Class : TokenNode
 {
-@safe pure nothrow:
+@safe nothrow:
     this(Token head, Input name, Input baseName) @nogc
     {
         super(head);
@@ -3057,9 +3042,9 @@ alias SymbolRefs = DynamicArray!(SymbolRef, null, uint);
  *
  * See: `ANTLRv4Parser.g4`
  */
-class GxParserByStatement
+@safe class GxParserByStatement
 {
-@safe pure:
+@safe:
     this(Input input,
          const string path = null,
          in bool includeComments = false)
@@ -3849,9 +3834,8 @@ string toPathModuleName(string path)
 }
 
 /// Gx filer parser.
-class GxFileParser : GxParserByStatement
+@safe class GxFileParser : GxParserByStatement
 {
-@safe:
     this(string path,
          GxFileParser[string] cachedParsersByModuleName)
     {
@@ -4011,7 +3995,7 @@ class GxFileParser : GxParserByStatement
 static immutable parserSourceBegin =
 `alias Input = const(char)[];
 
-struct Match
+@safe struct Match
 {
 @safe pure nothrow @nogc:
     static Match zero()
@@ -4042,9 +4026,8 @@ struct Match
 /// https://forum.dlang.org/post/zcvjwdetohmklaxriswk@forum.dlang.org
 version(none) alias Matcher = Match function(lazy Matcher[] matchers...);
 
-struct Parser
+@safe struct Parser
 {
-@safe:
     Input inp;                  ///< Input.
     size_t off;                 ///< Current offset into inp.
 
@@ -4453,10 +4436,9 @@ static immutable parserSourceEnd =
 `} // struct Parser
 `;
 
-struct GxFileReader
+@safe struct GxFileReader
 {
     GxFileParser fp;
-@safe:
     this(string path, GxFileParser[string] cachedParsersByModuleName)
     {
         fp = new GxFileParser(path, cachedParsersByModuleName);
@@ -4479,7 +4461,7 @@ struct GxFileReader
     ~this() @nogc {}
 }
 
-struct SourceFile
+@safe struct SourceFile
 {
     this(string name, scope const(char)[] stdioOpenmode = "rb") @safe
     {
@@ -4489,7 +4471,7 @@ struct SourceFile
     alias _file this;
 }
 
-struct ObjectFile
+@safe struct ObjectFile
 {
     this(string name, scope const(char)[] stdioOpenmode = "rb") @safe
     {
@@ -4499,7 +4481,7 @@ struct ObjectFile
     alias _file this;
 }
 
-struct ExecutableFile
+@safe struct ExecutableFile
 {
     this(string name, scope const(char)[] stdioOpenmode = "rb") @safe
     {
@@ -4639,7 +4621,7 @@ void lexAllInDirTree(scope ref BuildCtx bcx) @system
 }
 
 /// Build Context
-struct BuildCtx
+@safe struct BuildCtx
 {
     string rootDirPath;
     File outFile;
