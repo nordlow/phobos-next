@@ -3420,8 +3420,8 @@ alias SymbolRefs = DynamicArray!(SymbolRef, null, uint);
                            },
                            (const scope ref Rule existingRule)
                            {
-                               _lexer.warningAtToken(rule.head, "rule with same name already exists");
-                               _lexer.warningAtToken(existingRule.head, "existing definition here");
+                               _lexer.warningAtToken(rule.head, "rule with same name already exists"); // TODO: error
+                               _lexer.errorAtToken(existingRule.head, "existing definition here"); // TODO: errorSupplemental
                                return rule;
                            });
 
