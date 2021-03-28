@@ -42,7 +42,7 @@
 
     - Add errors for missing symbols during code generation
 
-    - Warng about string literals, such as str(`...`), that are equal to tokens such `ELLIPSIS` in `Python3.g4`
+    - Warn about string literals, such as str(`...`), that are equal to tokens such `ELLIPSIS` in `Python3.g4`
 
     - Make `Rule.root` be of type `Matcher` and make
       - `dcharCountSpan` and
