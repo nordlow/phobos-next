@@ -3774,16 +3774,15 @@ alias SymbolRefs = DynamicArray!(SymbolRef, null, uint);
 
     /** Tag all referenced rules.
      */
-    void tagReferencedRules()
+    void tagReferencedRules() nothrow
     {
         foreach (const symbolRef; symbolRefs)
         {
             auto hit = symbolRef.head.input in rulesByName;
             if (hit)
                 hit.hasRef = true;
-            else
-                enforce(symbolRef.head.input == "EOF",
-                        "No symbol named `" ~ symbolRef.head.input ~ "`");
+            else if (symbolRef.head.input != "EOF")
+                _lexer.warningAtToken(symbolRef.head, "No symbol named `" ~ symbolRef.head.input ~ "`");
         }
     }
 
