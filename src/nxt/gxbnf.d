@@ -22,10 +22,6 @@
 
     - Allocated nodes using region allocator copied from vox source code.
 
-    - Add errors for duplicated rule definitions in same file
-      - Use just defined `Pattern.opEquals`
-      - Simplest to start with lexer rules
-
     - Should be allowed instead of warning:
 
     grammars-v4/lua/Lua.g4(329,5): Warning: missing left-hand side, token (leftParen) at offset 5967
@@ -3411,17 +3407,24 @@ alias SymbolRefs = DynamicArray!(SymbolRef, null, uint);
         if (_lexer._diagnoseLeftRecursion)
             rule.diagnoseDirectLeftRecursion(_lexer);
 
+        // insert rule
+        foreach (const existingRule; rules)
+        {
+            if (rule.root.opEquals(existingRule.root))
+            {
+                _lexer.warningAtToken(rule.head, "rule with same root pattern"); // TODO: error
+                _lexer.warningAtToken(existingRule.head, "existing definition here"); // TODO: errorSupplemental
+            }
+        }
         rules.insertBack(rule);
-
-        // See_Also: https://dlang.org/spec/hash-map.html#advanced_updating
-        rulesByName.update(rule.head.input,
+        rulesByName.update(rule.head.input,        // See_Also: https://dlang.org/spec/hash-map.html#advanced_updating
                            {
                                return rule;
                            },
                            (const scope ref Rule existingRule)
                            {
                                _lexer.warningAtToken(rule.head, "rule with same name already exists"); // TODO: error
-                               _lexer.errorAtToken(existingRule.head, "existing definition here"); // TODO: errorSupplemental
+                               _lexer.warningAtToken(existingRule.head, "existing definition here"); // TODO: errorSupplemental
                                return rule;
                            });
 
