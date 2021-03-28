@@ -2849,7 +2849,7 @@ nothrow:
     {
         showToken(head, fmt);
         putchar(' ');
-        foreach (const i, const m ; modules)
+        foreach (const i, const m ; moduleNames)
         {
             if (i)
                 putchar(',');
@@ -2859,12 +2859,12 @@ nothrow:
         putchar('\n');
     }
 nothrow:
-    this(Token head, DynamicArray!(Input) modules) @nogc
+    this(Token head, DynamicArray!(Input) moduleNames) @nogc
     {
         super(head);
-        move(modules, this.modules);
+        move(moduleNames, this.moduleNames);
     }
-    DynamicArray!(Input) modules;
+    DynamicArray!(Input) moduleNames;
 }
 
 @safe final class Mode : TokenNode
@@ -3740,52 +3740,6 @@ alias SymbolRefs = DynamicArray!(SymbolRef, null, uint);
         }
     }
 
-    /** Get root rule.
-     *
-     * See_Also: https://github.com/antlr/grammars-v4/issues/2097
-     * See_Also: https://stackoverflow.com/questions/29879626/antlr4-how-to-find-the-root-rules-in-a-gramar-which-maybe-used-to-find-the-star
-     */
-    @property Rule rootRule() nothrow
-    {
-        if (_rootRule)
-            return _rootRule;
-        tagReferencedRules();
-        foreach (Rule rule; rules)
-        {
-            if (rule.hasRef ||
-                rule.skipFlag)
-                continue;
-            else if (rule.isFragmentRule)
-                _lexer.warningAtToken(rule.head, "unused fragment rule");
-            else if (rule.isLexerTokenRule)
-                _lexer.warningAtToken(rule.head, "unused (lexical) lexer token rule"); // TODO: don't warn about skipped rules -> skip
-            else if (_rootRule)
-            {
-                _lexer.warningAtToken(rule.head, "second root rule defined");
-                _lexer.warningAtToken(_rootRule.head, "  existing root rule defined here");
-            }
-            else
-                _rootRule = rule;
-        }
-        if (!_rootRule)
-            _lexer.warningAtToken(grammar.head, "missing root rule, all rule symbols are referenced (cyclic grammar)");
-        return _rootRule;
-    }
-
-    /** Tag all referenced rules.
-     */
-    void tagReferencedRules() nothrow
-    {
-        foreach (const symbolRef; symbolRefs)
-        {
-            auto hit = symbolRef.head.input in rulesByName;
-            if (hit)
-                hit.hasRef = true;
-            else if (symbolRef.head.input != "EOF")
-                _lexer.warningAtToken(symbolRef.head, "No symbol named `" ~ symbolRef.head.input ~ "`");
-        }
-    }
-
     TokenNode grammar;
     DynamicArray!(Options) optionsSet;
     Imports imports;
@@ -3857,6 +3811,73 @@ string toPathModuleName(string path)
         output.put(parserSourceEnd);
 
         rootRule();      // TODO: use this
+    }
+
+    /** Get root rule.
+     *
+     * See_Also: https://github.com/antlr/grammars-v4/issues/2097
+     * See_Also: https://stackoverflow.com/questions/29879626/antlr4-how-to-find-the-root-rules-in-a-gramar-which-maybe-used-to-find-the-star
+     */
+    @property Rule rootRule()
+    {
+        if (_rootRule)
+            return _rootRule;
+        tagReferencedRules();
+        foreach (Rule rule; rules)
+        {
+            if (rule.hasRef ||
+                rule.skipFlag)
+                continue;
+            else if (rule.isFragmentRule)
+                _lexer.warningAtToken(rule.head, "unused fragment rule");
+            else if (rule.isLexerTokenRule)
+                _lexer.warningAtToken(rule.head, "unused (lexical) lexer token rule"); // TODO: don't warn about skipped rules -> skip
+            else if (_rootRule)
+            {
+                _lexer.warningAtToken(rule.head, "second root rule defined");
+                _lexer.warningAtToken(_rootRule.head, "  existing root rule defined here");
+            }
+            else
+                _rootRule = rule;
+        }
+        if (!_rootRule)
+            _lexer.warningAtToken(grammar.head, "missing root rule, all rule symbols are referenced (cyclic grammar)");
+        return _rootRule;
+    }
+
+    /** Tag all referenced rules.
+     */
+    void tagReferencedRules()
+    {
+        foreach (const symbolRef; symbolRefs) // TODO: need to traverse imported symbols
+        {
+            if (symbolRef.head.input == "EOF")
+                continue;
+            if (tagReferencedRule(symbolRef))
+                continue;
+            foreach (const Import import_; imports)
+                foreach (const Input moduleName; import_.moduleNames)
+                {
+                    const string path = _lexer.path;
+                    string cwd = path.dirName; // current working directory
+                    const string ext = path.extension;
+                    GxFileParser sub = findModuleUpwards(cwd, moduleName, ext, cachedParsersByModuleName);
+                    if (sub.tagReferencedRule(symbolRef))
+                        goto done;
+                }
+            _lexer.warningAtToken(symbolRef.head, "no symbol named `" ~ symbolRef.head.input ~ "`");
+        done:
+        }
+    }
+
+    bool tagReferencedRule(const scope SymbolRef symbolRef) nothrow @nogc
+    {
+        if (auto hit = symbolRef.head.input in rulesByName)
+        {
+            hit.hasRef = true;
+            return true;
+        }
+        return false;
     }
 
     void toMatchers(scope ref Output output)
@@ -3945,8 +3966,8 @@ string toPathModuleName(string path)
     void toMatchersForImports(scope ref RuleNames doneRuleNames, scope ref Output output) scope
     {
         foreach (const import_; imports)
-            foreach (const module_; import_.modules)
-                toMatchersForImportedModule(module_, doneRuleNames, output);
+            foreach (const moduleName; import_.moduleNames)
+                toMatchersForImportedModule(moduleName, doneRuleNames, output);
     }
 
     void toMatchersForOptionsTokenVocab(scope ref RuleNames doneRuleNames, scope ref Output output) scope
