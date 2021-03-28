@@ -3861,11 +3861,11 @@ string toPathModuleName(string path)
             rule.hasRef = false;
     }
 
-    /** Tag all referenced rules.
+    /** Tag all referenced rules in either `this` or imported modules.
      */
     void tagReferencedRules()
     {
-        foreach (const symbolRef; symbolRefs) // TODO: need to traverse imported symbols
+        foreach (const symbolRef; symbolRefs)
         {
             if (symbolRef.head.input == "EOF")
                 continue;
