@@ -88,6 +88,7 @@
     - Detect indirect mutual left-recursion. How? Simple-way in generated
       parsers: enters a non-literal rule again without offset change. Requires
       storing last offset for each non-literal rule.
+      Requires sub-classing `Rule` on `ParserRule` and `LexerTokenRule`.
 
     - non-pure diagnostics functions
 
