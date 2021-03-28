@@ -70,9 +70,7 @@ struct XXHash64
         {
             // just add new data
             while (length-- > 0)
-            {
                 _buffer[_bufferSize++] = *ptr++;
-            }
             return;
         }
 
@@ -85,9 +83,7 @@ struct XXHash64
         {
             // make sure temporary buffer is full (16 bytes)
             while (_bufferSize < bufferMaxSize)
-            {
                 _buffer[_bufferSize++] = *ptr++;
-            }
 
             // process these 32 bytes (4x8)
             process(_buffer.ptr, _state[0], _state[1], _state[2], _state[3]);
@@ -108,9 +104,7 @@ struct XXHash64
         // copy remainder to temporary buffer
         _bufferSize = end - ptr;
         foreach (const i; 0 .. _bufferSize)
-        {
             _buffer[i] = ptr[i];
-        }
     }
 
     /** Returns: the finished XXHash64 hash.
@@ -132,10 +126,8 @@ struct XXHash64
             result = (result ^ processSingle(0, _state[3])) * prime1 + prime4;
         }
         else
-        {
             // internal _state wasn't set in put(), therefore original seed is still stored in state2
             result = _state[2] + prime5;
-        }
 
         result += _totalLength;
 
@@ -147,22 +139,18 @@ struct XXHash64
 
         // at least 8 bytes left ? => eat 8 bytes per step
         for (; data + 8 <= end; data += 8)
-        {
             result = rotateLeft(result ^ processSingle(0, *cast(ulong*)data), 27) * prime1 + prime4;
-        }
 
         // 4 bytes left ? => eat those
         if (data + 4 <= end)
         {
             result = rotateLeft(result ^ (*cast(uint*)data) * prime1, 23) * prime2 + prime3;
-            data  += 4;
+            data += 4;
         }
 
         // take care of remaining 0..3 bytes, eat 1 byte per step
         while (data != end)
-        {
             result = rotateLeft(result ^ (*data++) * prime5, 11) * prime1;
-        }
 
         // mix bits
         result ^= result >> 33;
@@ -248,8 +236,7 @@ ulong xxhash64Of(in ubyte[] data, ulong seed = 0)
 
 /** Compute xxHash-64 of input string `data`, with optional seed `seed`.
  */
-ulong xxhash64Of(in char[] data, ulong seed = 0)
-    @trusted
+ulong xxhash64Of(in char[] data, ulong seed = 0) @trusted
 {
     return xxhash64Of(cast(ubyte[])data, seed);
 }
