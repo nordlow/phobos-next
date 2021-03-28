@@ -113,7 +113,7 @@ if (isInputRange!R)
     import std.range.primitives: empty, front;
     if (r.empty)
         return typeof(return).init;
-    return &r.front;
+    return &(r.front);
 }
 
 @trusted pure unittest
