@@ -53,7 +53,9 @@
 
     - Use to detect conflicting rules with `import` and `tokenVocab`
 
-    - Allocated nodes using region allocator copied from Vox source code.
+    - Use a region allocator on top of the GC to pre-allocate the nodes. Either
+    copied from std.allocator or Vox. Maybe one region for each file. Calculate the region size
+    from lexer statistics (number of operators, symbols and literals).
 
     - `not(...)`'s implementation needs to be adjusted. often used in conjunction with `altN`?
 
@@ -92,10 +94,6 @@
       See: `-fdiagnostics-print-source-range-info` at https://clang.llvm.org/docs/UsersManual.html.
       See: https://clang.llvm.org/diagnostics.html
       Use GNU-style formatting such as: fix-it:"test.c":{45:3-45:21}:"gtk_widget_show_all".
-
-    - Use a region allocator on top of the GC to pre-allocate the
-      nodes. Maybe one region for each file. Calculate the region size from lexer
-      statistics (number of operators, symbols and literals).
 
     - Use: `nxt.git` to scan parsing examples in `grammars-v4`
 
