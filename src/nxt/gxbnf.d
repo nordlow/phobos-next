@@ -86,7 +86,7 @@
       See: https://stackoverflow.com/questions/28829049/antlr4-any-difference-between-import-and-tokenvocab
 
     - Detect indirect mutual left-recursion. How? Simple-way in generated
-      parsers: enters a rule again without offset change.
+      parsers: enters a rule again without offset change. Requires storing last offset for each rule.
 
     - non-pure diagnostics functions
 
