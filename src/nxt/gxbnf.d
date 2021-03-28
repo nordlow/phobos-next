@@ -14,6 +14,8 @@
 
     TODO:
 
+    - Add Syntax Tree Nodes as structs with members being sub-nodes. Composition over inheritance.
+
     - Add errors for duplicated rule definitions in same file
       - Use just defined `Pattern.opEquals`
       - Simplest to start with lexer rules
