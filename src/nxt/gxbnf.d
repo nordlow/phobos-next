@@ -14,7 +14,9 @@
 
     TODO:
 
-    - Add Syntax Tree Nodes as structs with members being sub-nodes. Composition over inheritance.
+    - Add Syntax Tree Nodes as structs with members being sub-nodes. Composition
+      over inheritance. If we use structs over classes more languages, such as
+      Vox, can be supported in the code generation phase.
 
     - Add errors for duplicated rule definitions in same file
       - Use just defined `Pattern.opEquals`
