@@ -3822,7 +3822,7 @@ string toPathModuleName(string path)
     {
         if (_rootRule)
             return _rootRule;
-        tagReferencedRules();
+        retagReferencedRules();
         foreach (Rule rule; rules)
         {
             if (rule.hasRef ||
@@ -3843,6 +3843,22 @@ string toPathModuleName(string path)
         if (!_rootRule)
             _lexer.warningAtToken(grammar.head, "missing root rule, all rule symbols are referenced (cyclic grammar)");
         return _rootRule;
+    }
+
+    /** Retag all referenced rules.
+     */
+    void retagReferencedRules()
+    {
+        untagReferencedRules();
+        tagReferencedRules();
+    }
+
+    /** Untag all rules (as unreferenced).
+     */
+    void untagReferencedRules() nothrow
+    {
+        foreach (Rule rule; rulesByName.byValue)
+            rule.hasRef = false;
     }
 
     /** Tag all referenced rules.
