@@ -23,7 +23,6 @@
     - Allocated nodes using region allocator copied from vox source code.
 
     - Should be allowed instead of warning:
-
     grammars-v4/lua/Lua.g4(329,5): Warning: missing left-hand side, token (leftParen) at offset 5967
 
     - Parallelize grammar parsing and generation of parser files using https://dlang.org/phobos/std_parallelism.html#.parallel
@@ -45,8 +44,6 @@
       - `toMatchInSource`
       members of `Matcher`.
       - Remove `Symbol.toMatchInSource`
-
-    - Set `dcharCountSpan` internally upon construction
 
     - Support `tokens { INDENT_WS, DEDENT_WS, LINE_BREAK_WS }` to get
       Python3.g4` with TOK.whitespaceIndent, whitespaceDedent, whitespaceLineBreak useWhitespaceClassesFlag
