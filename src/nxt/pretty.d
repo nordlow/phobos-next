@@ -259,7 +259,7 @@ class Viz
             if (form == VizForm.HTML)
                 ppRaw("</body>\n</html>");
             _completed = true;
-            viz.outFile.flush();
+            this.outFile.flush();
         }
     }
 
