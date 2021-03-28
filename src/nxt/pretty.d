@@ -215,9 +215,9 @@ tr:nth-child(2n+1) { background: #` ~ SolarizedLightColorTheme_hexstring.base3 ~
  */
 class Viz
 {
-    import std.stdio : ioFile = File;
+    import std.stdio : IOFile = File;
 
-    ioFile outFile;
+    IOFile outFile;
     Terminal* term;
 
     bool treeFlag;
@@ -233,7 +233,7 @@ class Viz
 
     bool _completed = false;
 
-    this(ioFile outFile,
+    this(IOFile outFile,
          Terminal* term,
          VizForm form = VizForm.textAsciiDocUTF8,
          bool treeFlag = true,
