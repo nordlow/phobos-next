@@ -54,8 +54,9 @@
     - Use to detect conflicting rules with `import` and `tokenVocab`
 
     - Use a region allocator on top of the GC to pre-allocate the nodes. Either
-    copied from std.allocator or Vox. Maybe one region for each file. Calculate the region size
-    from lexer statistics (number of operators, symbols and literals).
+    copied from std.allocator or Vox. Maybe one region for each file. Calculate
+    the region size from lexer statistics (number of operators, symbols and
+    literals).
 
     - `not(...)`'s implementation needs to be adjusted. often used in conjunction with `altN`?
 
