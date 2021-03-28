@@ -965,13 +965,13 @@ private:
         import nxt.conv_ex : toDefaulted;
         const string tokString = token.tok.toDefaulted!string("unknown");
         debug printf("%.*s(%u,%u): %s: %.*s, `%.*s` (%.*s) at offset %llu\n",
-                     cast(int)path.length, path.ptr,
-                     lc.line + 1, lc.column + 1,
-                     tag.ptr,
-                     cast(int)msg.length, msg.ptr,
-                     cast(int)token.input.length, token.input.ptr,
-                     cast(int)tokString.length, tokString.ptr,
-                     offset);
+               cast(int)path.length, &path[0],
+               lc.line + 1, lc.column + 1,
+               &tag[0],
+               cast(int)msg.length, &msg[0],
+               cast(int)token.input.length, &token.input[0],
+               cast(int)tokString.length, &tokString[0],
+               offset);
     }
 
     // TODO: into warning(const char* format...) like in `dmd` and put in `nxt.parsing` and reuse here and in lispy.d
