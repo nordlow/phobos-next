@@ -35,8 +35,6 @@
 
     - Use: https://forum.dlang.org/post/zcvjwdetohmklaxriswk@forum.dlang.org
 
-    - Use: `nxt.git` to scan parsing examples in `grammars-v4`
-
     - Rewriting (X+)? as X* in ANTLR grammars and commit to grammars-v4. See https://stackoverflow.com/questions/64706408/rewriting-x-as-x-in-antlr-grammars
 
     - Add errors for missing symbols during code generation
@@ -98,6 +96,8 @@
     - Use a region allocator on top of the GC to pre-allocate the
       nodes. Maybe one region for each file. Calculate the region size from lexer
       statistics (number of operators, symbols and literals).
+
+    - Use: `nxt.git` to scan parsing examples in `grammars-v4`
 
     - Emacs click on link in `compilation-mode` doesn't navigate to correct offset on lines containing tabs before offset
 
