@@ -14,6 +14,8 @@
 
     TODO:
 
+    - Emacs click on link in `compilation-mode` doesn't navigate to correct offset on lines containing tabs before offset
+
     - Add Syntax Tree Nodes as structs with members being sub-nodes. Composition
       over inheritance. If we use structs over classes more languages, such as
       Vox, can be supported in the code generation phase. Optionally use
@@ -98,8 +100,6 @@
       statistics (number of operators, symbols and literals).
 
     - Use: `nxt.git` to scan parsing examples in `grammars-v4`
-
-    - Emacs click on link in `compilation-mode` doesn't navigate to correct offset on lines containing tabs before offset
 
     - If performance is needed:
     - Avoid casts and instead compare against `head.tok` for `isA!NodeType`
