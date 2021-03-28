@@ -1094,6 +1094,11 @@ private void showToken(Token token,
 {
 pure nothrow:
     @disable this();       // be explicit for now as default init is not obvious
+    static typeof(this) start() @nogc
+    {
+        return typeof(this)(this.lower.min,
+                            this.upper.max);
+    }
     static typeof(this) full() @nogc
     {
         return typeof(this)(this.lower.min,
@@ -1217,22 +1222,22 @@ nothrow:
     override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         assert(!subs.empty);
-        auto lr = typeof(return)(0, uint.max);
+        auto result = typeof(return)(0, uint.max);
         foreach (const sub; subs)
         {
             const sublr = sub.dcharCountSpan;
-            if (lr.lower == uint.max ||
+            if (result.lower == uint.max ||
                 sublr.lower == uint.max)
-                lr.lower = uint.max;
+                result.lower = uint.max;
             else
-                lr.lower += sublr.lower;
-            if (lr.upper == uint.max ||
+                result.lower += sublr.lower;
+            if (result.upper == uint.max ||
                 sublr.upper == uint.max)
-                lr.upper = uint.max;
+                result.upper = uint.max;
             else
-                lr.upper += sublr.upper;
+                result.upper += sublr.upper;
         }
-        return lr;
+        return result;
     }
     override bool opEquals(const scope Pattern that) const @nogc
     {
@@ -1577,14 +1582,14 @@ DcharCountSpan dcharCountSpanOf(const scope Pattern[] subs) @safe pure nothrow @
 {
     if (subs.length == 0)
         return typeof(return)(0, 0);
-    auto lr = typeof(return)(uint.max, 0);
+    auto result = typeof(return).start();
     foreach (const sub; subs)
     {
         const sublr = sub.dcharCountSpan;
-        lr.lower = min(lr.lower, sublr.lower);
-        lr.upper = max(lr.upper, sublr.upper);
+        result.lower = min(result.lower, sublr.lower);
+        result.upper = max(result.upper, sublr.upper);
     }
-    return lr;
+    return result;
 }
 
 Pattern makeAltA(Token head,
@@ -1970,8 +1975,8 @@ nothrow:
     override DcharCountSpan dcharCountSpan() const pure @nogc
     {
         const ss = sub.dcharCountSpan;
-        return typeof(return)(ss.lower == uint.max ? uint.max : ss.lower * count,
-                              ss.upper == uint.max ? uint.max : ss.upper * count);
+        return typeof(return)(ss.lower == ss.lower.max ? ss.lower.max : ss.lower * count,
+                              ss.upper == ss.upper.max ? ss.upper.max : ss.upper * count);
     }
     override bool opEquals(const scope Pattern that) const @nogc
     {
