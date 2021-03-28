@@ -85,9 +85,16 @@
     - Deal with differences between `import` and `tokenVocab`.
       See: https://stackoverflow.com/questions/28829049/antlr4-any-difference-between-import-and-tokenvocab
 
-    - Detect indirect mutual left-recursion. How? Simple-way in generated
+    - Add `Rule` in generated code that defines opApply for matching that overrides
+    - Detect indirect mutual left-recursion by check if `Rule.lastOffset` (in
+      generated code) is same as current parser offset. Simple-way in generated
       parsers: enters a rule again without offset change. Requires storing last
       offset for each non-literal rule.
+      ** Last offset during parsing.
+      *
+      * Used to detect infinite recursion, `size_t.max` indicates no last offset
+      * yet defined for `this` rule. *
+      size_t lastOffset = size_t.max;
 
     - non-pure diagnostics functions
 
@@ -1411,11 +1418,6 @@ class Rule : Node
         WS : [\r\n]+ -> skip ;
      */
     const bool skipFlag;
-    /** Last offset during parsing.
-     *
-     * Used to detect infinite recursion, `size_t.max` indicates no last offset
-     * yet defined for `this` rule. */
-    size_t lastOffset = size_t.max;
 }
 
 /** A reusable part of a lexer rule that doesn't match (a token) on its own.
