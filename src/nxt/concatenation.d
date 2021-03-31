@@ -10,30 +10,20 @@ if (A.length)
         static if (isType!(A[0]))
         {
             static if (__traits(isStaticArray, A[0]))
-            {
                 enum sumOfLengths = A[0].length;
-            }
             else
-            {
                 enum sumOfLengths = 1;
-            }
         }
         else
         {
             static if (__traits(isStaticArray, typeof(A[0])))
-            {
                 enum sumOfLengths = A[0].length;
-            }
             else
-            {
                 enum sumOfLengths = 1;
-            }
         }
     }
     else
-    {
         enum sumOfLengths = A[0].length + sumOfLengths!(A[1 .. $]);
-    }
 }
 
 /** Is `true` iff `T` is a type. */
@@ -59,21 +49,13 @@ StaticArrayElementType!(Args[0])[sumOfLengths!Args] concatenate(Args...)(const a
     foreach (const i, arg; args)
     {
         static if (i == 0)
-        {
             enum offset = 0;
-        }
         else
-        {
             enum offset = sumOfLengths!(args[0 .. i]);
-        }
         static if (__traits(isStaticArray, typeof(arg)))
-        {
             result[offset .. offset + arg.length] = arg[];
-        }
         else
-        {
             result[offset] = arg;
-        }
     }
     return result;
 }
