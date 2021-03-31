@@ -3877,7 +3877,8 @@ string toPathModuleName(string path)
                     const string path = _lexer.path;
                     string cwd = path.dirName; // current working directory
                     const string ext = path.extension;
-                    GxFileParser sub = findModuleUpwards(cwd, moduleName, ext, cachedParsersByModuleName);
+                    typeof(this) sub = findModuleUpwards(cwd, moduleName, ext, cachedParsersByModuleName);
+                    //debug writeln("sub: ", sub);
                     if (sub.tryTagReferencedRule(symbolRef))
                         goto done;
                 }
@@ -3886,8 +3887,13 @@ string toPathModuleName(string path)
         }
     }
 
-    bool tryTagReferencedRule(const scope SymbolRef symbolRef) nothrow @nogc
+    bool tryTagReferencedRule(const SymbolRef symbolRef) nothrow @nogc
     {
+        debug writeln("path: ", _lexer.path,
+                      " symbolRef.head: ", symbolRef.head,
+                      " rulesByName.length: ", rulesByName.length,
+                      " rules: ", rules.length);
+        assert(rulesByName.length);
         if (auto hit = symbolRef.head.input in rulesByName)
         {
             hit.hasRef = true;
