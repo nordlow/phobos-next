@@ -38,13 +38,12 @@ private template isType(alias T) { enum isType = false; }
     static assert(sumOfLengths!(x, y, z, w) == 7);
 }
 
-pragma(inline, true):           // must be inlineable
-
 /** Returns: concatenation of the static arrays `Args` as a static array.
  * Move to Phobos's std.array.
  */
 StaticArrayElementType!(Args[0])[sumOfLengths!Args] concatenate(Args...)(const auto ref Args args)
 {
+    pragma(inline, true);         // must be inlineable
     typeof(return) result = void; // @trusted
     foreach (const i, arg; args)
     {
@@ -80,6 +79,7 @@ import core.internal.traits : Unqual;
 Unqual!T[n + 1] concatenate(T, size_t n)(auto ref T[n] a, T b)
 if (!hasElaborateDestructor!T)
 {
+    pragma(inline, true);         // must be inlineable
     typeof(return) c = void;
     c[0 .. n] = a;
     c[n] = b;
