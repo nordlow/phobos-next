@@ -1,6 +1,5 @@
 module nxt.ixes;
 
-import std.algorithm : commonPrefix;
 import std.meta : allSatisfy;
 import std.range.primitives : isInputRange, isBidirectionalRange;
 
@@ -11,6 +10,7 @@ auto commonPrefixLength(alias pred = "a == b", Rs...)(Rs rs)
     if (rs.length >= 2 &&
         allSatisfy!(isInputRange, Rs))
 {
+    import std.algorithm.searching : commonPrefix;
     static if (rs.length == 2)
         return commonPrefix!pred(rs[0], rs[1]).length;
     else
@@ -91,7 +91,7 @@ auto commonPrefixCount(alias pred = "a == b", Rs...)(Rs rs)
     if (rs.length == 2 &&
         allSatisfy!(isInputRange, Rs))
 {
-    import std.algorithm.searching : count;
+    import std.algorithm.searching : commonPrefix, count;
     import std.traits : isNarrowString;
     static if (isNarrowString!(typeof(rs[0])) &&
                isNarrowString!(typeof(rs[1])))
@@ -122,6 +122,7 @@ auto commonSuffix(Rs...)(Rs rs)
     import std.range : retro;
     import std.conv : to;
     import std.array : array;
+    import std.algorithm.searching : commonPrefix;
     return commonPrefix(rs[0].retro,
                         rs[1].retro).array.retro;
 }
