@@ -809,9 +809,7 @@ unittest
 void doTimes(uint n, lazy void expr)
 {
     while (n--)
-    {
         expr();
-    }
 }
 
 /** Execute Expression `expr` $(I inline) the same way `n` times.
@@ -820,9 +818,7 @@ void doTimes(uint n, lazy void expr)
 void doTimes(uint n)(lazy void expr)
 {
     static foreach (i; 0 .. n)
-    {
         expr();
-    }
 }
 
 ///
@@ -865,11 +861,9 @@ unittest
 private string genNaryFun(string fun, V...)()
 {
     string code;
-    import std.string: format;
+    import std.string : format;
     foreach (n, v; V)
-    {
         code ~= "alias values[%d] %s;".format(n, cast(char)('a'+n));
-    }
     code ~= `return ` ~ fun ~ `;`;
     return code;
 }
@@ -1043,14 +1037,20 @@ if (isIntLike!T)
     static struct Result
     {
         T a, b;
-        T front() { return b; }
+        inout(T) front() inout
+        {
+            return b;
+        }
         void popFront()
         {
             T c = a+b;
             a = b;
             b = c;
         }
-        bool empty() const { return false; }
+        bool empty() const
+        {
+            return false;
+        }
     }
     return nth == 0 ? Result(0, 1) : Result(1, 1);
 }
@@ -1387,8 +1387,10 @@ if (isForwardRange!R1 &&
 {
     import std.range.primitives : empty;
 
-    if (needle.empty) { return haystack[0 .. 0]; } // contextual empty hit
-    if (haystack.empty) { return R1.init; }
+    if (needle.empty)
+        return haystack[0 .. 0]; // contextual empty hit
+    if (haystack.empty)
+        return R1.init;
 
     import std.algorithm.searching : findSplitBefore;
     if (auto split = findSplitBefore!pred(haystack, needle)) // TODO: If which case are empty and what return value should they lead to?
@@ -1429,8 +1431,10 @@ if (isForwardRange!R1 &&
 {
     import std.range.primitives : empty;
 
-    if (needle.empty) { return haystack[0 .. 0]; } // contextual empty hit
-    if (haystack.empty) { return R1.init; }
+    if (needle.empty)
+        return haystack[0 .. 0]; // contextual empty hit
+    if (haystack.empty)
+        return R1.init;
 
     import std.algorithm.searching : findSplitAfter;
     auto split = findSplitAfter!pred(haystack, needle);// TODO: use new interface to findSplitAfter
@@ -2059,7 +2063,7 @@ auto splicerN(uint N, T)(T[] x) @trusted
     }
 }
 
-/** Specialization of `splicerN` to N=2. */
+/** Specialization of `splicerN` to `N` being 2. */
 auto splicer2(T)(T[] x) @trusted
 {
     static struct Result        // Voldemort type
@@ -2068,10 +2072,16 @@ auto splicer2(T)(T[] x) @trusted
         pragma(inline) @trusted pure nothrow @nogc:
 
         /// Returns: first part of splice.
-        @property inout(T)[] first() inout { return _.ptr[0 .. _.length/count]; } // can be @trusted
+        @property inout(T)[] first() inout
+        {
+            return _.ptr[0 .. _.length/count]; // can be @trusted
+        }
 
         /// Returns: second part of splice.
-        @property inout(T)[] second() inout { return _.ptr[_.length/count .. _.length]; } // can be @trusted
+        @property inout(T)[] second() inout
+        {
+            return _.ptr[_.length/count .. _.length]; // can be @trusted
+        }
 
         inout(T)[] at(uint i)() inout
         {
@@ -2098,7 +2108,7 @@ auto splicer2(T)(T[] x) @trusted
     assert(y.at!1.equal(x[3 .. $]));
 }
 
-/** Specialization of `splicerN` to N=3. */
+/** Specialization of `splicerN` to `N` being 3. */
 auto splicer3(T)(T[] x) @trusted
 {
     static struct Result        // Voldemort type
@@ -2107,13 +2117,22 @@ auto splicer3(T)(T[] x) @trusted
         pragma(inline) @trusted pure nothrow @nogc:
 
         /// Returns: first part of splice.
-        @property inout(T)[] first() inout { return _.ptr[0 .. _.length/count]; } // can be @trusted
+        @property inout(T)[] first() inout
+        {
+            return _.ptr[0 .. _.length/count];  // can be @trusted
+        }
 
         /// Returns: second part of splice.
-        @property inout(T)[] second() inout { return _.ptr[_.length/count .. 2*_.length/count]; } // can be @trusted
+        @property inout(T)[] second() inout
+        {
+            return _.ptr[_.length/count .. 2*_.length/count];  // can be @trusted
+        }
 
         /// Returns: third part of splice.
-        @property inout(T)[] third() inout { return _.ptr[2*_.length/count .. _.length]; } // can be @trusted
+        @property inout(T)[] third() inout
+        {
+            return _.ptr[2*_.length/count .. _.length]; // can be @trusted
+        }
 
         private T[] _;
     }
