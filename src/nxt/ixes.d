@@ -12,9 +12,7 @@ auto commonPrefixLength(alias pred = "a == b", Rs...)(Rs rs)
         allSatisfy!(isInputRange, Rs))
 {
     static if (rs.length == 2)
-    {
         return commonPrefix!pred(rs[0], rs[1]).length;
-    }
     else
     {
         static assert("TODO");
@@ -62,10 +60,8 @@ auto commonSuffixLength(Rs...)(Rs rs)
                                   rs[1].representation.retro);
     }
     else
-    {
         return commonPrefixLength(rs[0].retro,
                                   rs[1].retro);
-    }
 }
 
 @safe pure unittest
@@ -105,9 +101,7 @@ auto commonPrefixCount(alias pred = "a == b", Rs...)(Rs rs)
                                  rs[1].byDchar).count;
     }
     else
-    {
         return commonPrefix!pred(rs[0], rs[1]).count;
-    }
 }
 
 @safe pure unittest
