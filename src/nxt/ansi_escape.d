@@ -23,13 +23,9 @@ struct Attrs
     {
         setSGRs(sink, sgrs);
         if (useForegroundColor)
-        {
             setForegroundColorRGB8(sink, foregroundColor);
-        }
         if (useBackgroundColor)
-        {
             setBackgroundColorRGB8(sink, backgroundColor);
-        }
     }
 
     void reset(scope void delegate(scope const(char)[]) @safe sink)
@@ -111,9 +107,7 @@ void setSGRs(scope void delegate(scope const(char)[]) @safe sink,
     {
         setSGR(sink, sgr);      // needs to be first
         if (index != n - 1)     // if not last
-        {
             sink(";");          // separator
-        }
     }
     sink("m");
 }
