@@ -22,15 +22,18 @@ module nxt.array_algorithm;
 bool startsWith(T)(scope const T[] haystack,
                    scope const T[] needle) @trusted
 {
-    if (haystack.length < needle.length) { return false; }
+    if (haystack.length < needle.length)
+        return false;
     return haystack.ptr[0 .. needle.length] == needle;
 }
 /// ditto
 bool startsWith(T)(scope const T[] haystack,
                    scope const T needle) @trusted
 {
-    static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
-    if (haystack.length == 0) { return false; }
+    static if (is(T == char))
+        assert(needle < 128); // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
+    if (haystack.length == 0)
+        return false;
     return haystack.ptr[0] == needle;
 }
 
@@ -47,14 +50,11 @@ bool startsWith(T)(scope const T[] haystack,
 bool all(T)(scope const T[] haystack,
             scope const T needle) @trusted
 {
-    static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
+    static if (is(T == char))
+        assert(needle < 128); // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
     foreach (const offset; 0 .. haystack.length)
-    {
         if (haystack.ptr[offset] != needle)
-        {
             return false;
-        }
-    }
     return true;
 }
 
@@ -70,14 +70,11 @@ bool all(T)(scope const T[] haystack,
 bool any(T)(scope const T[] haystack,
             scope const T needle) @trusted
 {
-    static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
+    static if (is(T == char))
+        assert(needle < 128); // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
     foreach (const offset; 0 .. haystack.length)
-    {
         if (haystack.ptr[offset] == needle)
-        {
             return true;
-        }
-    }
     return false;
 }
 
@@ -94,15 +91,18 @@ bool any(T)(scope const T[] haystack,
 bool endsWith(T)(scope const T[] haystack,
                  scope const T[] needle) @trusted
 {
-    if (haystack.length < needle.length) { return false; }
+    if (haystack.length < needle.length)
+        return false;
     return haystack.ptr[haystack.length - needle.length .. haystack.length] == needle;
 }
 /// ditto
 bool endsWith(T)(scope const T[] haystack,
                  scope const T needle) @trusted
 {
-    static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
-    if (haystack.length == 0) { return false; }
+    static if (is(T == char))
+        assert(needle < 128); // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
+    if (haystack.length == 0)
+        return false;
     return haystack.ptr[haystack.length - 1] == needle;
 }
 
@@ -305,7 +305,8 @@ auto findLastSkip(T)(scope ref inout(T)[] haystack,
 bool skipOver(T)(scope ref inout(T)[] haystack,
                  scope const T[] needle) @trusted
 {
-    if (!startsWith(haystack, needle)) { return false; }
+    if (!startsWith(haystack, needle))
+        return false;
     haystack = haystack.ptr[needle.length .. haystack.length];
     return true;
 }
@@ -313,7 +314,8 @@ bool skipOver(T)(scope ref inout(T)[] haystack,
 bool skipOver(T)(scope ref inout(T)[] haystack,
                  scope const T needle) @trusted
 {
-    if (!startsWith(haystack, needle)) { return false; }
+    if (!startsWith(haystack, needle))
+        return false;
     haystack = haystack.ptr[1 .. haystack.length];
     return true;
 }
@@ -355,7 +357,8 @@ bool skipOver(T)(scope ref inout(T)[] haystack,
 bool skipOverBack(T)(scope ref inout(T)[] haystack,
                      scope const T[] needle) @trusted
 {
-    if (!endsWith(haystack, needle)) { return false; }
+    if (!endsWith(haystack, needle))
+        return false;
     haystack = haystack.ptr[0 .. haystack.length - needle.length];
     return true;
 }
@@ -363,7 +366,8 @@ bool skipOverBack(T)(scope ref inout(T)[] haystack,
 bool skipOverBack(T)(scope ref inout(T)[] haystack,
                      scope const T needle) @trusted
 {
-    if (!endsWith(haystack, needle)) { return false; }
+    if (!endsWith(haystack, needle))
+        return false;
     haystack = haystack.ptr[0 .. haystack.length - 1];
     return true;
 }
@@ -383,7 +387,8 @@ bool skipOverAround(T)(scope ref inout(T)[] haystack,
                        scope const T[] needleBack) @trusted
 {
     if (!startsWith(haystack, needleFront) ||
-        !endsWith(haystack, needleBack)) { return false; }
+        !endsWith(haystack, needleBack))
+        return false;
     haystack = haystack.ptr[needleFront.length .. haystack.length - needleBack.length];
     return true;
 }
@@ -393,7 +398,8 @@ bool skipOverAround(T)(scope ref inout(T)[] haystack,
                        scope const T needleBack) @trusted
 {
     if (!startsWith(haystack, needleFront) ||
-        !endsWith(haystack, needleBack)) { return false; }
+        !endsWith(haystack, needleBack))
+        return false;
     haystack = haystack.ptr[1 .. haystack.length - 1];
     return true;
 }
@@ -415,13 +421,12 @@ bool skipOverAround(T)(scope ref inout(T)[] haystack,
 inout(T)[] stripLeft(T)(scope return inout(T)[] haystack,
                         scope const T needle) @trusted
 {
-    static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
+    static if (is(T == char))
+        assert(needle < 128); // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
     size_t offset = 0;
     while (offset != haystack.length &&
            haystack.ptr[offset] == needle) // TODO: elide range-check
-    {
         offset += 1;
-    }
     return haystack.ptr[offset .. haystack.length];
 }
 /// ditto
@@ -452,13 +457,12 @@ inout(char)[] stripLeft()(scope return inout(char)[] haystack) @safe pure nothro
 inout(T)[] stripRight(T)(scope return inout(T)[] haystack,
                          scope const T needle) @trusted
 {
-    static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
+    static if (is(T == char))
+        assert(needle < 128); // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
     size_t offset = haystack.length;
     while (offset != 0 &&
            haystack.ptr[offset - 1] == needle) // TODO: elide range-check
-    {
         offset -= 1;
-    }
     return haystack.ptr[0 .. offset];
 }
 /// ditto
@@ -489,21 +493,18 @@ inout(char)[] stripRight()(scope return inout(char)[] haystack) @safe pure nothr
 inout(T)[] strip(T)(scope return inout(T)[] haystack,
                     scope const T needle) @trusted
 {
-    static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
+    static if (is(T == char))
+        assert(needle < 128); // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
 
     size_t leftOffset = 0;
     while (leftOffset != haystack.length &&
            haystack.ptr[leftOffset] == needle) // TODO: elide range-check
-    {
         leftOffset += 1;
-    }
 
     size_t rightOffset = haystack.length;
     while (rightOffset != leftOffset &&
            haystack.ptr[rightOffset - 1] == needle) // TODO: elide range-check
-    {
         rightOffset -= 1;
-    }
 
     return haystack.ptr[leftOffset .. rightOffset];
 }
@@ -546,29 +547,24 @@ bool canFind(T)(scope const T[] haystack,
 {
     // enum largeNeedleLength = 4;
     assert(needle.length, "Cannot count occurrences of an empty range");
-    if (haystack.length < needle.length) { return false; }
+    if (haystack.length < needle.length)
+        return false;
     foreach (const offset; 0 .. haystack.length - needle.length + 1)
-    {
         if (haystack.ptr[offset .. offset + needle.length] == needle)
-        {
             return true;
-        }
-    }
     return false;
 }
 /// ditto
 bool canFind(T)(scope const T[] haystack,
                 scope const T needle) @trusted
 {
-    static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
-    if (haystack.length == 0) { return false; }
+    static if (is(T == char))
+        assert(needle < 128); // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
+    if (haystack.length == 0)
+        return false;
     foreach (const ref element; haystack)
-    {
         if (element == needle)
-        {
             return true;
-        }
-    }
     return false;
 }
 
@@ -604,23 +600,21 @@ size_t count(T)(scope const T[] haystack,
 {
     assert(needle.length, "Cannot count occurrences of an empty range");
     size_t result = 0;
-    if (haystack.length < needle.length) { return false; }
+    if (haystack.length < needle.length)
+        return false;
     foreach (const offset; 0 .. haystack.length - needle.length + 1)
-    {
         result += haystack.ptr[offset .. offset + needle.length] == needle ? 1 : 0;
-    }
     return result;
 }
 /// ditto
 size_t count(T)(scope const T[] haystack,
                 scope const T needle)
 {
-    static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
+    static if (is(T == char))
+        assert(needle < 128); // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
     size_t result;
     foreach (const ref element; haystack)
-    {
         result += element == needle ? 1 : 0;
-    }
     return result;
 }
 
@@ -670,28 +664,22 @@ ptrdiff_t indexOf(T)(scope inout(T)[] haystack,
                      scope const(T)[] needle) @trusted
 {
     // enum largeNeedleLength = 4;
-    if (haystack.length < needle.length) { return -1; }
+    if (haystack.length < needle.length)
+        return -1;
     foreach (const offset; 0 .. haystack.length - needle.length + 1)
-    {
         if (haystack.ptr[offset .. offset + needle.length] == needle)
-        {
             return offset;
-        }
-    }
     return -1;
 }
 /// ditto
 ptrdiff_t indexOf(T)(scope inout(T)[] haystack,
                      scope const T needle)
 {
-    static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
+    static if (is(T == char))
+        assert(needle < 128); // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
     foreach (const offset, const ref element; haystack)
-    {
         if (element == needle)
-        {
             return offset;
-        }
-    }
     return -1;
 }
 
@@ -1021,7 +1009,8 @@ auto findLastSplit(T)(scope return inout(T)[] haystack,
         }
     }
 
-    static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
+    static if (is(T == char))
+        assert(needle < 128); // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
     const index = haystack.lastIndexOf(needle);
     if (index >= 0)
         return inout(Result)(haystack, index);
