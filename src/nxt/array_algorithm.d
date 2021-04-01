@@ -745,7 +745,8 @@ ptrdiff_t indexOfEither(T)(scope inout(T)[] haystack,
 ptrdiff_t lastIndexOf(T)(scope inout(T)[] haystack,
                          scope const(T)[] needle) @trusted
 {
-    if (haystack.length < needle.length) { return -1; }
+    if (haystack.length < needle.length)
+        return -1;
     foreach_reverse (const offset; 0 .. haystack.length - needle.length + 1)
         if (haystack.ptr[offset .. offset + needle.length] == needle)
             return offset;
@@ -755,14 +756,11 @@ ptrdiff_t lastIndexOf(T)(scope inout(T)[] haystack,
 ptrdiff_t lastIndexOf(T)(scope inout(T)[] haystack,
                          scope const T needle)
 {
-    static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
+    static if (is(T == char))
+        assert(needle < 128); // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
     foreach_reverse (const offset, const ref element; haystack)
-    {
         if (element == needle)
-        {
             return offset;
-        }
-    }
     return -1;
 }
 
@@ -827,9 +825,7 @@ auto findSplit(T)(scope return inout(T)[] haystack,
     assert(needle.length, "Cannot find occurrence of an empty range");
     const index = haystack.indexOf(needle);
     if (index >= 0)
-    {
         return inout(Result)(haystack, index, needle.length);
-    }
     return inout(Result)(haystack, haystack.length, 0); // miss
 }
 /// ditto
@@ -848,13 +844,15 @@ auto findSplit(T)(scope return inout(T)[] haystack,
 
         inout(T)[] separator() @trusted inout
         {
-            if (empty) { return _haystack[$ .. $]; }
+            if (empty)
+                return _haystack[$ .. $];
             return _haystack.ptr[_offset .. _offset + 1];
         }
 
         inout(T)[] post() @trusted inout
         {
-            if (empty) { return _haystack[$ .. $]; }
+            if (empty)
+                return _haystack[$ .. $];
             return _haystack.ptr[_offset + 1 .. _haystack.length];
         }
 
@@ -869,12 +867,11 @@ auto findSplit(T)(scope return inout(T)[] haystack,
         }
     }
 
-    static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
+    static if (is(T == char))
+        assert(needle < 128); // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
     const index = haystack.indexOf(needle);
     if (index >= 0)
-    {
         return inout(Result)(haystack, index);
-    }
     return inout(Result)(haystack, haystack.length);
 }
 
@@ -1001,13 +998,15 @@ auto findLastSplit(T)(scope return inout(T)[] haystack,
 
         inout(T)[] separator() @trusted inout
         {
-            if (empty) { return _haystack[$ .. $]; }
+            if (empty)
+                return _haystack[$ .. $];
             return _haystack.ptr[_offset .. _offset + 1];
         }
 
         inout(T)[] post() @trusted inout
         {
-            if (empty) { return _haystack[$ .. $]; }
+            if (empty)
+                return _haystack[$ .. $];
             return _haystack.ptr[_offset + 1 .. _haystack.length];
         }
 
@@ -1025,9 +1024,7 @@ auto findLastSplit(T)(scope return inout(T)[] haystack,
     static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
     const index = haystack.lastIndexOf(needle);
     if (index >= 0)
-    {
         return inout(Result)(haystack, index);
-    }
     return inout(Result)(haystack, haystack.length);
 }
 
@@ -1106,7 +1103,8 @@ auto findSplitBefore(T)(scope return inout(T)[] haystack,
 
         inout(T)[] post() @trusted inout
         {
-            if (empty) { return _haystack[$ .. $]; }
+            if (empty)
+                return _haystack[$ .. $];
             return _haystack.ptr[_offset .. _haystack.length];
         }
 
@@ -1121,14 +1119,11 @@ auto findSplitBefore(T)(scope return inout(T)[] haystack,
         }
     }
 
-    static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
+    static if (is(T == char))
+        assert(needle < 128); // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
     foreach (const offset, const ref element; haystack)
-    {
         if (element == needle)
-        {
             return inout(Result)(haystack, offset);
-        }
-    }
     return inout(Result)(haystack, haystack.length);
 }
 
@@ -1198,7 +1193,8 @@ auto findSplitBefore(alias needlePred, T)(scope return inout(T)[] haystack)
 
         inout(T)[] post() @trusted inout
         {
-            if (empty) { return _haystack[$ .. $]; }
+            if (empty)
+                return _haystack[$ .. $];
             return _haystack.ptr[_offset .. _haystack.length];
         }
 
@@ -1214,12 +1210,8 @@ auto findSplitBefore(alias needlePred, T)(scope return inout(T)[] haystack)
     }
 
     foreach (const offset, const ref element; haystack)
-    {
         if (needlePred(element))
-        {
             return inout(Result)(haystack, offset);
-        }
-    }
     return inout(Result)(haystack, haystack.length);
 }
 
@@ -1303,13 +1295,15 @@ auto findSplitAfter(T)(scope return inout(T)[] haystack,
 
         inout(T)[] pre() @trusted inout
         {
-            if (empty) { return _haystack[$ .. $]; }
+            if (empty)
+                return _haystack[$ .. $];
             return _haystack.ptr[0 .. _offset + 1];
         }
 
         inout(T)[] post() @trusted inout
         {
-            if (empty) { return _haystack[0 .. $]; }
+            if (empty)
+                return _haystack[0 .. $];
             return _haystack.ptr[_offset + 1 .. _haystack.length];
         }
 
@@ -1324,14 +1318,11 @@ auto findSplitAfter(T)(scope return inout(T)[] haystack,
         }
     }
 
-    static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
+    static if (is(T == char))
+        assert(needle < 128); // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
     foreach (const offset, const ref element; haystack)
-    {
         if (element == needle)
-        {
             return inout(Result)(haystack, offset);
-        }
-    }
     return inout(Result)(haystack, haystack.length);
 }
 
@@ -1390,13 +1381,15 @@ auto findLastSplitAfter(T)(scope return inout(T)[] haystack,
 
         inout(T)[] pre() @trusted inout
         {
-            if (empty) { return _haystack[$ .. $]; }
+            if (empty)
+                return _haystack[$ .. $];
             return _haystack.ptr[0 .. _offset + 1];
         }
 
         inout(T)[] post() @trusted inout
         {
-            if (empty) { return _haystack[0 .. $]; }
+            if (empty)
+                return _haystack[0 .. $];
             return _haystack.ptr[_offset + 1 .. _haystack.length];
         }
 
@@ -1411,12 +1404,11 @@ auto findLastSplitAfter(T)(scope return inout(T)[] haystack,
         }
     }
 
-    static if (is(T == char)) { assert(needle < 128); } // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
+    static if (is(T == char))
+        assert(needle < 128); // See_Also: https://forum.dlang.org/post/sjirukypxmmcgdmqbcpe@forum.dlang.org
     const index = haystack.lastIndexOf(needle);
     if (index >= 0)
-    {
         return inout(Result)(haystack, index);
-    }
     return inout(Result)(haystack, haystack.length); // miss
 }
 
