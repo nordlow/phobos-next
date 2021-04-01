@@ -14,6 +14,8 @@
 
     TODO:
 
+    - Use import std.algorithm.searching : commonPrefix; in alternatives
+
     - Add Syntax Tree Nodes as structs with members being sub-nodes. Composition
       over inheritance. If we use structs over classes more languages, such as
       Vox, can be supported in the code generation phase. Optionally use
