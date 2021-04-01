@@ -232,7 +232,8 @@ template isAllZeroBits(T, T value)
                 // Use index so this works when T.length is 0.
                 static foreach (i; 0 .. T.length)
                 {
-                    if (!isAllZeroBits!(typeof(value[i]), value[i])) { return false; }
+                    if (!isAllZeroBits!(typeof(value[i]), value[i]))
+                        return false;
                 }
                 return true;
             }();
@@ -244,15 +245,14 @@ template isAllZeroBits(T, T value)
             {
                 static foreach (e; value.tupleof)
                 {
-                    if (!isAllZeroBits!(typeof(e), e)) { return false; }
+                    if (!isAllZeroBits!(typeof(e), e))
+                        return false;
                 }
                 return true;
             }();
         }
         else
-        {
             enum isAllZeroBits = false;
-        }
     }
 }
 
@@ -305,7 +305,8 @@ template isAllOneBits(T, T value)
             static foreach (i; 0 .. T.length)
             {
                 b &= isAllOneBits!(typeof(value[i]), value[i]);
-                if (b == false) return b;
+                if (b == false)
+                    return b;
             }
 
             return b;
@@ -320,7 +321,8 @@ template isAllOneBits(T, T value)
             static foreach (e; value.tupleof)
             {
                 b &= isAllOneBits!(typeof(e), e);
-                if (b == false) return b;
+                if (b == false)
+                    return b;
                 fieldSizeSum += typeof(e).sizeof;
             }
             // If fieldSizeSum == T.sizeof then there can be no gaps
