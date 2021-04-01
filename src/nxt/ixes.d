@@ -120,7 +120,6 @@ auto commonSuffix(Rs...)(Rs rs)
         allSatisfy!(isBidirectionalRange, Rs))
 {
     import std.range : retro;
-    import std.conv : to;
     import std.array : array;
     import std.algorithm.searching : commonPrefix;
     return commonPrefix(rs[0].retro,
