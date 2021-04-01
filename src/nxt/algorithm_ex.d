@@ -120,9 +120,7 @@ if (T.length != 0)
     foreach (result; parts) // evaluate each part
     {
         if (result)
-        {
             results ~= result;
-        }
         else
         {
             all = false;
@@ -130,9 +128,7 @@ if (T.length != 0)
         }
     }
     if (all)
-    {
         return results;        // ok that whole has been changed in caller scope
-    }
     else
     {
         whole = wholeBackup; // restore whole in caller scope if any failed
@@ -294,10 +290,8 @@ bool isPalindrome(R)(R range,
 if (isBidirectionalRange!(R))
 {
     static if (isRandomAccessRange!R) // arrays excluding `char[]` and `wchar[]`
-    {
         if (range.length < minLength)
             return false;
-    }
     size_t i = 0;
     // TODO: reuse `isSymmetric`
     import std.range.primitives : empty;
@@ -404,10 +398,8 @@ if (isInputRange!R1 &&
 
         // check histograms
         foreach (const ref e; hist) // TODO: nothrow
-        {
             if (e[0] != e[1])
                 return false;
-        }
         return true;
     }
 }
@@ -569,9 +561,7 @@ if (isInputRange!R)
 
     // allocate runs
     foreach (ref run; runs)
-    {
         run.length = x.length;
-    }
 
     /* string toString() @property @trusted const { */
     /*     typeof(return) y; */
@@ -585,15 +575,11 @@ if (isInputRange!R)
     /* size_t[nBits] counts; */
 
     import nxt.static_bitarray : StaticBitArray;
+    import nxt.bitop_ex: testBit;
     foreach (eltIx, elt; x)
-    {
         /* StaticBitArray!nBits bits; */
         foreach (bitIndex; 0..nBits)
-        {
-            import nxt.bitop_ex: testBit;
             runs[bitIndex][eltIx] = elt.testBit(bitIndex);
-        }
-    }
     return runs;
 }
 alias packBPRL = packBitParallelRunLengths;
@@ -633,8 +619,8 @@ if (isInputRange!R)
         D _front;
         bool _initialized = false;
 
-        this(R range) in { assert(!range.empty); }
-        do
+        this(R range)
+        in(!range.empty)
         {
             auto tmp = range;
             if (tmp.dropOne.empty) // TODO: This may be an unneccesary cost but is practical to remove extra logic
