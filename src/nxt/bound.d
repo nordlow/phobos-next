@@ -183,9 +183,7 @@ if (isCTBound!low &&
                 else { alias BoundsType = CommonType!(LowType, HighType); }
             }
             else
-            {
                 alias BoundsType = CommonType!(LowType, HighType);
-            }
         }
         else                    // positive
         {
@@ -198,30 +196,20 @@ if (isCTBound!low &&
                 else { alias BoundsType = CommonType!(LowType, HighType); }
             }
             else
-            {
                 alias BoundsType = CommonType!(LowType, HighType);
-            }
         }
     }
     else static if (isFloatingPoint!LowType &&
                     isFloatingPoint!HighType)
-    {
         alias BoundsType = CommonType!(LowType, HighType);
-    }
     else static if (isSomeChar!LowType &&
                     isSomeChar!HighType)
-    {
         alias BoundsType = CommonType!(LowType, HighType);
-    }
     else static if (isBoolean!LowType &&
                     isBoolean!HighType)
-    {
         alias BoundsType = CommonType!(LowType, HighType);
-    }
     else
-    {
         static assert(0, "Cannot construct a bound using types " ~ LowType.stringof ~ " and " ~ HighType.stringof);
-    }
 }
 
 unittest
@@ -293,16 +281,20 @@ if (isBoundable!V)
                   "Requirement not fulfilled: low < high, low = " ~
                   to!string(low) ~ " and high = " ~ to!string(high));
     static if (optional)
-    {
         static assert(high + 1 == V.max,
                       "high + 1 cannot equal V.max");
-    }
 
     /** Get low inclusive bound. */
-    static auto min() @property @safe pure nothrow { return low; }
+    static auto min() @property @safe pure nothrow
+    {
+        return low;
+    }
 
     /** Get high inclusive bound. */
-    static auto max() @property @safe pure nothrow { return optional ? high - 1 : high; }
+    static auto max() @property @safe pure nothrow
+    {
+        return optional ? high - 1 : high;
+    }
 
     static if (isIntegral!V && low >= 0)
     {
@@ -392,8 +384,10 @@ if (isBoundable!V)
     {
         return q{
             asm { jo overflow; }
-            if (value < min) goto overflow;
-            if (value > max) goto overflow;
+            if (value < min)
+                goto overflow;
+            if (value > max)
+                goto overflow;
             goto ok;
           // underflow:
           //   immutable uMsg = "Underflow at " ~ file ~ ":" ~ to!string(line) ~ " (payload: " ~ to!string(value) ~ ")";
@@ -411,8 +405,10 @@ if (isBoundable!V)
     /** Check that assignment from `rhs` is ok. */
     void checkAssign(U, string file = __FILE__, int line = __LINE__)(U rhs)
     {
-        if (rhs < min) goto overflow;
-        if (rhs > max) goto overflow;
+        if (rhs < min)
+            goto overflow;
+        if (rhs > max)
+            goto overflow;
         goto ok;
     overflow:
         throw new BoundOverflowException("Overflow at " ~ file ~ ":" ~ to!string(line) ~ " (payload: " ~ to!string(rhs) ~ ")");
@@ -788,13 +784,9 @@ version(none)
     auto doIt(ubyte x)
     {
         if (x >= 0)
-        {
             return x.bound!(0, 2);
-        }
         else
-        {
             return x.bound!(0, 1);
-        }
     }
 
     unittest
