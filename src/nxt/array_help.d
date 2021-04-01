@@ -26,9 +26,7 @@ import core.internal.traits : Unqual;
 Unqual!T[n] staticArray(T, size_t n)(T[n] x...) @trusted
 {
     static if (__traits(isCopyable, T))  // TODO: remove when compiler does move for us
-    {
         return x[];
-    }
     else                      // TODO: remove `move` when compiler does it for us
     {
         // TODO: remove `move` when compiler does it for us:
@@ -82,7 +80,7 @@ auto staticArrayAlternative() @property @safe
             foreach (index,item; items)
                 arr[index] = item;
 
-            return (values) { return values; }(arr);//s!(T[0], n)(arr);
+            return (values) { return values; } (arr);//s!(T[0], n)(arr);
         }
     }
     return _staticArray();
@@ -155,9 +153,7 @@ if (T.sizeof % E.sizeof == 0)
     immutable ushort x = 17;
     auto y = x.asN!ubyte;
     version(LittleEndian)
-    {
         assert(y == [17, 0].s);
-    }
 }
 
 private enum wordBytes = size_t.sizeof;
@@ -197,9 +193,7 @@ size_t* makeZeroedBitArray(alias Allocator)(size_t bitCount) @trusted pure nothr
         return cast(typeof(return))Allocator.instance.allocateZeroed(byteCount);
     }
     else
-    {
         static assert(0, "use allocate plus memset");
-    }
 }
 
 /** Returns: `input` reallocated to contain `newBitCount` number of bits. New bits
@@ -249,9 +243,7 @@ if (__traits(hasMember, Allocator, "reallocate"))
 
         // check contents
         foreach (immutable bitIndex; 0 .. bitCount)
-        {
             assert(bt(y, bitIndex) == 0);
-        }
     }
     Allocator.instance.deallocate(cast(void[])(y[0 .. wordCountOfBitCount(bitCount)]));
 }
