@@ -1,7 +1,7 @@
 import std.stdio;
 
 // See_Also: https://forum.dlang.org/post/omfkmlsqamxjtktnaqic@forum.dlang.org
-int main(string[] args)
+@safe unittest
 {
 	const(char)[] x = "hello ";
     string y = "world";
@@ -14,6 +14,4 @@ int main(string[] args)
 
     writeln(z1);
     writeln(z2);
-
-    return 0;
 }
