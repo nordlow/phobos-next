@@ -14,4 +14,18 @@ import std.stdio;
 
     writeln(z1);
     writeln(z2);
+
+    char[2] a, b;
+    char[] _ = a;
+    immutable char[4] c = a ~ b;
+}
+
+struct S { immutable(T)* t; }
+struct T { immutable(S)* s; }
+
+@safe pure unittest
+{
+    immutable(S)[] a;
+    const(S)[] b;
+    auto c = a ~ b;
 }
