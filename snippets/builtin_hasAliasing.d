@@ -1,4 +1,4 @@
-alias hasAliasing(T) = __traits(hasAliasing, T);
+enum hasAliasing(T...) = __traits(hasAliasing, T);
 
 ///
 @safe unittest
