@@ -11,10 +11,7 @@ alias hasAliasing(T) = __traits(hasAliasing, T);
     static assert(!__traits(hasAliasing, S2));
     static assert(!__traits(hasAliasing, S3));
     static assert(!__traits(hasAliasing, S4));
-}
 
-@safe unittest
-{
     static assert( __traits(hasAliasing, uint[uint]));
     static assert(!__traits(hasAliasing, immutable(uint[uint])));
     static assert( __traits(hasAliasing, void delegate()));
