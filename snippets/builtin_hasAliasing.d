@@ -1,5 +1,12 @@
 enum hasAliasing(T...) = __traits(hasAliasing, T);
 
+static assert(!hasAliasing!(int, short));
+static assert(hasAliasing!(int, int*));
+static assert(!hasAliasing!(int, immutable(int)*));
+static assert(hasAliasing!(int*));
+static assert(!hasAliasing!(immutable(int)*));
+static assert(!hasAliasing!(int));
+
 ///
 @safe unittest
 {
