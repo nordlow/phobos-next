@@ -1,5 +1,4 @@
-enum hasAliasing(T...) = __traits(hasAliasing, T);
-
+// enum hasAliasing(T...) = __traits(hasAliasing, T);
 // static assert(!hasAliasing!(int, short));
 // static assert(hasAliasing!(int, int*));
 // static assert(!hasAliasing!(int, immutable(int)*));
