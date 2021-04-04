@@ -26,30 +26,30 @@ static assert(!hasAliasing!(int));
 
     static assert( __traits(hasAliasing, uint[uint]));
     static assert(!__traits(hasAliasing, immutable(uint[uint])));
-    // static assert( __traits(hasAliasing, void delegate()));
-    // static assert( __traits(hasAliasing, void delegate() const));
-    // static assert(!__traits(hasAliasing, void delegate() immutable));
-    // static assert( __traits(hasAliasing, void delegate() shared));
-    // static assert( __traits(hasAliasing, void delegate() shared const));
-    // static assert( __traits(hasAliasing, const(void delegate())));
-    // static assert( __traits(hasAliasing, const(void delegate() const)));
-    // static assert(!__traits(hasAliasing, const(void delegate() immutable)));
-    // static assert( __traits(hasAliasing, const(void delegate() shared)));
-    // static assert( __traits(hasAliasing, const(void delegate() shared const)));
-    // static assert(!__traits(hasAliasing, immutable(void delegate())));
-    // static assert(!__traits(hasAliasing, immutable(void delegate() const)));
-    // static assert(!__traits(hasAliasing, immutable(void delegate() immutable)));
-    // static assert(!__traits(hasAliasing, immutable(void delegate() shared)));
-    // static assert(!__traits(hasAliasing, immutable(void delegate() shared const)));
-    // static assert( __traits(hasAliasing, shared(const(void delegate()))));
-    // static assert( __traits(hasAliasing, shared(const(void delegate() const))));
-    // static assert(!__traits(hasAliasing, shared(const(void delegate() immutable))));
-    // static assert( __traits(hasAliasing, shared(const(void delegate() shared))));
-    // static assert( __traits(hasAliasing, shared(const(void delegate() shared const))));
+    static assert( __traits(hasAliasing, void delegate()));
+    static assert( __traits(hasAliasing, void delegate() const));
+    static assert(!__traits(hasAliasing, void delegate() immutable));
+    static assert( __traits(hasAliasing, void delegate() shared));
+    static assert( __traits(hasAliasing, void delegate() shared const));
+    static assert( __traits(hasAliasing, const(void delegate())));
+    static assert( __traits(hasAliasing, const(void delegate() const)));
+    static assert(!__traits(hasAliasing, const(void delegate() immutable)));
+    static assert( __traits(hasAliasing, const(void delegate() shared)));
+    static assert( __traits(hasAliasing, const(void delegate() shared const)));
+    static assert(!__traits(hasAliasing, immutable(void delegate())));
+    static assert(!__traits(hasAliasing, immutable(void delegate() const)));
+    static assert(!__traits(hasAliasing, immutable(void delegate() immutable)));
+    static assert(!__traits(hasAliasing, immutable(void delegate() shared)));
+    static assert(!__traits(hasAliasing, immutable(void delegate() shared const)));
+    static assert( __traits(hasAliasing, shared(const(void delegate()))));
+    static assert( __traits(hasAliasing, shared(const(void delegate() const))));
+    static assert(!__traits(hasAliasing, shared(const(void delegate() immutable))));
+    static assert( __traits(hasAliasing, shared(const(void delegate() shared))));
+    static assert( __traits(hasAliasing, shared(const(void delegate() shared const))));
     // static assert(!__traits(hasAliasing, void function()));
 
-    // interface I;
-    // static assert( __traits(hasAliasing, I));
+    interface I;
+    static assert( __traits(hasAliasing, I));
 
     // import std.typecons : Rebindable;
     // static assert( __traits(hasAliasing, Rebindable!(const Object)));
@@ -68,24 +68,24 @@ static assert(!hasAliasing!(int));
     // static assert(!__traits(hasAliasing, S5));
     // static assert( __traits(hasAliasing, S6));
 
-    // struct S7 { void delegate() a; int b; Object c; }
+    struct S7 { void delegate() a; int b; Object c; }
     class S8 { int a; int b; }
     class S9 { typeof(S8.tupleof) a; }
     class S10 { typeof(S8.tupleof) a; int* b; }
-    // static assert( __traits(hasAliasing, S7));
+    static assert( __traits(hasAliasing, S7));
     static assert( __traits(hasAliasing, S8));
     static assert( __traits(hasAliasing, S9));
     static assert( __traits(hasAliasing, S10));
-    // struct S11 {}
-    // class S12 {}
-    // interface S13 {}
-    // union S14 {}
-    // static assert(!__traits(hasAliasing, S11));
-    // static assert( __traits(hasAliasing, S12));
-    // static assert( __traits(hasAliasing, S13));
-    // static assert(!__traits(hasAliasing, S14));
+    struct S11 {}
+    class S12 {}
+    interface S13 {}
+    union S14 {}
+    static assert(!__traits(hasAliasing, S11));
+    static assert( __traits(hasAliasing, S12));
+    static assert( __traits(hasAliasing, S13));
+    static assert(!__traits(hasAliasing, S14));
 
-    // class S15 { S15[1] a; }
-    // static assert( __traits(hasAliasing, S15));
-    // static assert(!__traits(hasAliasing, immutable(S15)));
+    class S15 { S15[1] a; }
+    static assert( __traits(hasAliasing, S15));
+    static assert(!__traits(hasAliasing, immutable(S15)));
 }
