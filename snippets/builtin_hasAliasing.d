@@ -1,15 +1,17 @@
 enum hasAliasing(T...) = __traits(hasAliasing, T);
 
-static assert(!hasAliasing!(int, short));
-static assert(hasAliasing!(int, int*));
-static assert(!hasAliasing!(int, immutable(int)*));
-static assert(hasAliasing!(int*));
-static assert(!hasAliasing!(immutable(int)*));
-static assert(!hasAliasing!(int));
+// static assert(!hasAliasing!(int, short));
+// static assert(hasAliasing!(int, int*));
+// static assert(!hasAliasing!(int, immutable(int)*));
+// static assert(hasAliasing!(int*));
+// static assert(!hasAliasing!(immutable(int)*));
+// static assert(!hasAliasing!(int));
 
 ///
 @safe unittest
 {
+    static assert(!__traits(hasAliasing, void function()));
+
     struct S1 { int a; Object b; }
     struct S2 { string a; }
     struct S3 { int a; immutable Object b; }
@@ -46,7 +48,6 @@ static assert(!hasAliasing!(int));
     static assert(!__traits(hasAliasing, shared(const(void delegate() immutable))));
     static assert( __traits(hasAliasing, shared(const(void delegate() shared))));
     static assert( __traits(hasAliasing, shared(const(void delegate() shared const))));
-    // static assert(!__traits(hasAliasing, void function()));
 
     interface I;
     static assert( __traits(hasAliasing, I));
