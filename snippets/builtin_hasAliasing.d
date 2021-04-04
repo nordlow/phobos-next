@@ -14,15 +14,15 @@ static assert(!hasAliasing!(int));
     struct S2 { string a; }
     struct S3 { int a; immutable Object b; }
     struct S4 { float[3] vals; }
-    struct S5 { int*[3] vals; }
-    struct S6 { immutable(int)*[3] vals; }
+    struct S41 { int*[3] vals; }
+    struct S42 { immutable(int)*[3] vals; }
 
     static assert( __traits(hasAliasing, S1));
     static assert(!__traits(hasAliasing, S2));
     static assert(!__traits(hasAliasing, S3));
     static assert(!__traits(hasAliasing, S4));
-    static assert( __traits(hasAliasing, S5));
-    static assert(!__traits(hasAliasing, S6));
+    static assert( __traits(hasAliasing, S41));
+    static assert(!__traits(hasAliasing, S42));
 
     static assert( __traits(hasAliasing, uint[uint]));
     static assert(!__traits(hasAliasing, immutable(uint[uint])));
@@ -57,16 +57,16 @@ static assert(!hasAliasing!(int));
     // static assert( __traits(hasAliasing, Rebindable!(shared Object)));
     // static assert( __traits(hasAliasing, Rebindable!Object));
 
-    // struct S5
-    // {
-    //     void delegate() immutable b;
-    //     shared(void delegate() immutable) f;
-    //     immutable(void delegate() immutable) j;
-    //     shared(const(void delegate() immutable)) n;
-    // }
-    // struct S6 { typeof(S5.tupleof) a; void delegate() p; }
-    // static assert(!__traits(hasAliasing, S5));
-    // static assert( __traits(hasAliasing, S6));
+    struct S5
+    {
+        void delegate() immutable b;
+        shared(void delegate() immutable) f;
+        immutable(void delegate() immutable) j;
+        shared(const(void delegate() immutable)) n;
+    }
+    struct S6 { typeof(S5.tupleof) a; void delegate() p; }
+    static assert(!__traits(hasAliasing, S5));
+    static assert( __traits(hasAliasing, S6));
 
     struct S7 { void delegate() a; int b; Object c; }
     class S8 { int a; int b; }
