@@ -10,6 +10,7 @@ enum hasAliasing(T...) = __traits(hasAliasing, T);
 ///
 @safe unittest
 {
+    static assert(__traits(hasAliasing, void*));
     static assert(!__traits(hasAliasing, void function()));
 
     struct S1 { int a; Object b; }
@@ -52,11 +53,11 @@ enum hasAliasing(T...) = __traits(hasAliasing, T);
     interface I;
     static assert( __traits(hasAliasing, I));
 
-    // import std.typecons : Rebindable;
-    // static assert( __traits(hasAliasing, Rebindable!(const Object)));
-    // static assert(!__traits(hasAliasing, Rebindable!(immutable Object)));
-    // static assert( __traits(hasAliasing, Rebindable!(shared Object)));
-    // static assert( __traits(hasAliasing, Rebindable!Object));
+    import std.typecons : Rebindable;
+    static assert( __traits(hasAliasing, Rebindable!(const Object)));
+    static assert(!__traits(hasAliasing, Rebindable!(immutable Object)));
+    static assert( __traits(hasAliasing, Rebindable!(shared Object)));
+    static assert( __traits(hasAliasing, Rebindable!Object));
 
     struct S5
     {
