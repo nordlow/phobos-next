@@ -1,4 +1,5 @@
 import std.stdio;
+import std.traits : hasAliasing;
 
 // See_Also: https://forum.dlang.org/post/omfkmlsqamxjtktnaqic@forum.dlang.org
 @safe unittest
