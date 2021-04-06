@@ -1975,8 +1975,8 @@ class GStats
                                                      "dynamic_cast",
                                                      "else",
                                                      "enum",
-                                                     "enum class"
-                                                     "enum struct"
+                                                     "enum class",
+                                                     "enum struct",
                                                      "event",
                                                      "explicit",
                                                      "extern",
@@ -2113,7 +2113,7 @@ class GStats
                                           "constraint", "do", "done", "downto", "else",
                                           "end", "exception", "external", "false", "for",
                                           "fun", "function", "functor", "if", "in",
-                                          "include", "inherit", "inherit!", "initializer"
+                                          "include", "inherit", "inherit!", "initializer",
                                           "lazy", "let", "match", "method", "method!",
                                           "module", "mutable", "new", "object", "of",
                                           "open", "or",
