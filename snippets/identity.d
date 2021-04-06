@@ -1,4 +1,4 @@
-// See: https://forum.dlang.org/post/uhwjlhxojafhahby// yoms@forum.dlang.org
+// See_Also: https://forum.dlang.org/post/uhwjlhxojafhahby// yoms@forum.dlang.org
 
 auto ref T identity(T)(auto ref T arg)
 {
