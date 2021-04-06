@@ -4,7 +4,7 @@
 
 auto ref T identity(T)(auto ref T arg) @trusted
 {
-    return arg;
+    return arg;                 // fails because the compiler cannot do move here
 }
 
 auto ref T identity_fwd(T)(auto ref T arg) @trusted
