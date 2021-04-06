@@ -6,7 +6,7 @@ import std.traits, std.meta, std.range, std.algorithm, std.stdio;
 
 struct A
 {
-    this(int x)
+    this(int x)                 // ctor
     {
         this.x = x;
     }
