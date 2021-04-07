@@ -55,10 +55,8 @@ private string getoptHelp(T...)(T opts)
     static if (opts.length)
     {
         static if (is(typeof(opts[0]) : config))
-        {
             // it's a configuration flag, skip it
             return getoptHelp(opts[1 .. $]);
-        }
         else
         {
             // it's an option string
@@ -68,7 +66,5 @@ private string getoptHelp(T...)(T opts)
         }
     }
     else
-    {
         return to!(string)("\n");
-    }
 }
