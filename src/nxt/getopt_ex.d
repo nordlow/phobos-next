@@ -37,23 +37,17 @@ private template GetoptEx(TList...)
     static if (TList.length)
     {
         static if (is(typeof(TList[0]) : config))
-        {
             // it's a configuration flag, lets move on
             alias AliasSeq!(TList[0],
                             GetoptEx!(TList[1 .. $])) GetoptEx;
-        }
         else
-        {
             // it's an option string, eat help string
             alias AliasSeq!(TList[0],
                             TList[2],
                             GetoptEx!(TList[3 .. $])) GetoptEx;
-        }
     }
     else
-    {
         alias TList GetoptEx;
-    }
 }
 
 private string getoptHelp(T...)(T opts)
