@@ -99,9 +99,7 @@ module nxt.datetime_ex;
                     this(cast(byte)hour, 0);
                 }
                 catch (Exception E)
-                {
                     _initializedFlag = false;
-                }
             }
         }
 
@@ -315,27 +313,17 @@ pragma(inline):
     int opCmp(in typeof(this) that) const nothrow @nogc
     {
         if (this.year < that.year)
-        {
             return -1;
-        }
         else if (this.year > that.year)
-        {
             return +1;
-        }
         else
         {
             if (this.month < that.month)
-            {
                 return -1;
-            }
             else if (this.month > that.month)
-            {
                 return +1;
-            }
             else
-            {
                 return 0;
-            }
         }
     }
 }
