@@ -35,9 +35,7 @@ module nxt.datetime_ex;
             sink(minute);
         }
         else
-        {
             sink("<Uninitialized UTCOffset>");
-        }
     }
 
     @property string toString() const @trusted pure
@@ -46,7 +44,7 @@ module nxt.datetime_ex;
         return assumePure(&toStringUnpure)(); // TODO: can we avoid this?
     }
 
-    string toStringUnpure() const @safe
+    string toStringUnpure() const
     {
         import std.conv : to;
         return to!string(this);
