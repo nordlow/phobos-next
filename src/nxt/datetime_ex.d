@@ -1,10 +1,12 @@
 module nxt.datetime_ex;
 
+@safe:
+
 /** UTC Offset.
     See_Also: https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
     See_Also: http://forum.dlang.org/post/csurwdcdyfocrotojons@forum.dlang.org
 */
-struct UTCOffset
+@safe struct UTCOffset
 {
     enum minHour = -12, maxHour = +14;
     enum minMinute = 0, maxMinute = 45;
@@ -38,8 +40,6 @@ struct UTCOffset
         }
     }
 
-    @safe:
-
     @property string toString() const @trusted pure
     {
         import nxt.assuming : assumePure;
@@ -52,7 +52,7 @@ struct UTCOffset
         return to!string(this);
     }
 
-    @safe pure:
+    pure:
 
     this(scope const(char)[] code, bool strictFormat = false)
     {
@@ -254,7 +254,7 @@ unittest
     If month is specified we probably aren't interested in years before 0 so
     store only years 0 .. 2^12-1 (4095). This makes this struct fit in 2 bytes.
  */
-struct YearMonth
+@safe struct YearMonth
 {
     import std.datetime : Month;
 
@@ -262,8 +262,7 @@ struct YearMonth
     mixin(bitfields!(ushort, "year", 12,
                      Month, "month", 4));
 
-    pragma(inline) this(int year, Month month)
-        @safe pure nothrow @nogc
+    pragma(inline) this(int year, Month month) pure nothrow @nogc
     {
         assert(0 <= year && year <= 2^^12 - 1); // assert within range
         this.year = cast(ushort)year;
@@ -271,9 +270,9 @@ struct YearMonth
     }
 
     /// No explicit destruction needed.
-    ~this() @safe pure nothrow @nogc {} // needed for @nogc use
+    ~this() pure nothrow @nogc {} // needed for @nogc use
 
-    @safe pure:
+    pure:
 
     this(scope const(char)[] s)
     {
