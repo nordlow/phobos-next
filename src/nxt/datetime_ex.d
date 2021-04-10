@@ -16,7 +16,6 @@ module nxt.datetime_ex;
                                   `+01`, `+02`, `+03`, `+04`, `+05`, `+06`, `+07`, `+08`, `+09`, `+10`, `+11`, `+12`,
                                   `+13`, `+14`];
 
-    static immutable quarterValues = [00, 15, 30, 45];
     static immutable quarterNames = ["00", "15", "30", "45"];
 
     @property void toString(scope void delegate(scope const(char)[]) sink) const @trusted
