@@ -30,7 +30,8 @@ if (args.length != 0)
     }
     else                        // TODO: only when all `args' has length
     {
-        static size_t estimateLength(Args args)
+        /// Returns: sum of lengths of `args`.
+        static size_t totalLength(scope Args args)
         {
             import std.traits : isArray;
             import std.range.primitives : hasLength;
@@ -53,7 +54,7 @@ if (args.length != 0)
         import std.range: appender;
         auto app = appender!(R)(data);
 
-        app.reserve(data.length + estimateLength(args));
+        app.reserve(data.length + totalLength(args));
 
         foreach (arg; args)
             app.put(arg);
