@@ -28,7 +28,7 @@ if (args.length != 0)
         foreach (i, arg; args)
             data[$ - args.length + i] = arg;
     }
-    else                        // TODO: only when all args has length
+    else                        // TODO: only when all `args' has length
     {
         static size_t estimateLength(Args args)
         {
@@ -57,6 +57,7 @@ if (args.length != 0)
 
         foreach (arg; args)
             app.put(arg);
+
         data = app.data;
     }
 
