@@ -21,38 +21,34 @@ if (args.length != 0)
     {
         data ~= args[0];
     }
-    else static if (isRandomAccessRange!R &&
+    else static if (isRandomAccessRange!R && // TODO: generalize to is(typeof(data.length += 0))
                     allSatisfy!(isElementType, Args))
     {
         data.length += args.length;
         foreach (i, arg; args)
             data[$ - args.length + i] = arg;
     }
-    else
+    else                        // TODO: only when all args has length
     {
         static size_t estimateLength(Args args)
         {
-            size_t result;
             import std.traits : isArray;
+            import std.range.primitives : hasLength;
+            size_t result;
             foreach (arg; args)
             {
-                alias A = typeof(arg);
-                import std.range.primitives : hasLength;
-                static if (isArray!A &&
-                           is(E == ElementType!A) &&
-                           hasLength!A)
-                {
+                alias Arg = typeof(arg);
+                static if (isArray!Arg && // TODO: generalize to hasIndexing
+                           is(E == ElementType!Arg) &&
+                           hasLength!Arg)
                     result += arg.length;
-                }
                 else
-                {
                     result += 1;
-                }
             }
-            // import std.stdio;
-            // writeln(args, ` : `, result);
             return result;
         }
+
+        // TODO: add case for when data += length
 
         import std.range: appender;
         auto app = appender!(R)(data);
