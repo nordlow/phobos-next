@@ -8,12 +8,12 @@ ref R append(R, Args...)(ref R data,
                          auto ref Args args)
 if (args.length != 0)
 {
-    import std.range.primitives : ElementType, isRandomAccessRange;
+    import std.range.primitives : ElementType, isRandomAccessRange, isInputRange;
 
     alias E = ElementType!R;
 
     import std.traits : isAssignable;
-    enum isElementType(U) = isAssignable!(E, U);
+    enum isScalarAssignable(U) = isAssignable!(E, U);
 
     import std.meta : allSatisfy;
 
@@ -22,7 +22,7 @@ if (args.length != 0)
         data ~= args[0];
     }
     else static if (isRandomAccessRange!R && // TODO: generalize to is(typeof(data.length += 0))
-                    allSatisfy!(isElementType, Args))
+                    allSatisfy!(isScalarAssignable, Args))
     {
         data.length += args.length;
         foreach (i, arg; args)
@@ -36,15 +36,21 @@ if (args.length != 0)
             import std.traits : isArray;
             import std.range.primitives : hasLength;
             size_t result;
-            foreach (arg; args)
+            foreach (i, arg; args)
             {
                 alias Arg = typeof(arg);
-                static if (isArray!Arg && // TODO: generalize to hasIndexing
-                           is(E == ElementType!Arg) &&
-                           hasLength!Arg)
+                static if (isScalarAssignable!Arg)
+                    result += 1;
+                else static if (isArray!Arg && // TODO: generalize to hasIndexing
+                                is(E == ElementType!Arg) &&
+                                hasLength!Arg)
+                    result += arg.length;
+                else static if (isInputRange!Arg &&
+                                hasLength!Arg &&
+                                isAssignable!(E, ElementType!Arg))
                     result += arg.length;
                 else
-                    result += 1;
+                    static assert(0, i.stringof ~ ": cannot append arg of type " ~ Arg.stringof ~ " to " ~ R.stringof ~ " " ~ isScalarAssignable!Arg.stringof);
             }
             return result;
         }
