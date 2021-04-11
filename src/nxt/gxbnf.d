@@ -1071,8 +1071,7 @@ private void showChars(in const(char)[] chars) @trusted
     printf("%.*s", cast(uint)chars.length, chars.ptr);
 }
 
-private void showToken(Token token,
-                       in Format fmt)
+private void showToken(Token token, in Format fmt)
 {
     fmt.showIndent();
     showChars(token.input);
@@ -3893,9 +3892,9 @@ string toPathModuleName(string path)
     bool tryTagReferencedRule(const SymbolRef symbolRef) nothrow @nogc
     {
         debug writeln("path: ", _lexer.path,
-                      " symbolRef.head: ", symbolRef.head,
-                      " rulesByName.length: ", rulesByName.length,
-                      " rules: ", rules.length);
+                      " symbolRef.head=", symbolRef.head,
+                      " rulesByName.length=", rulesByName.length,
+                      " rules=", rules.length);
         assert(rulesByName.length);
         if (auto hit = symbolRef.head.input in rulesByName)
         {
