@@ -1,6 +1,6 @@
 module nxt.appending;
 
-/** Append arguments $(args) to `data`.
+/** Append arguments `args` to `data`.
  *
  * See_Also: http://forum.dlang.org/thread/mevnosveagdiswkxtbrv@forum.dlang.org?page=1
  */
