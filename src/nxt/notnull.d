@@ -23,15 +23,13 @@ enum isNullInitializable(T) = __traits(compiles, { T _ = null; });
 
    * Can never be assigned the null literal (compile time error).
 
-   * If assigned a `null` value at runtime to it, an exception will be thrown at
-     the point of assignment.
+   * If assigned a `null` value at runtime an exception will be thrown.
 
    `NotNull!T` can be substituted for `T` at any time, but `T` cannot become
    `NotNull` without some attention: either declaring `NotNull!T`, or using the
    convenience function, `enforceNotNull!T`.
 
-   Condition: T must be a reference type.
-   Instead of: __traits(compiles, { T t; assert(t is null); } ).
+   Condition: `T` must be a reference type.
 
    Examples:
    ---
