@@ -56,12 +56,12 @@ if (isNullAssignable!T)
         return this;
     }
 
-    /** Cast to bool. */
-    /* bool opCast(T : bool)() { return _value !is null; } */
-
-    /* NotNull!U opCast(U)() @safe pure nothrow if (isAssignable!(U, T)) { */
-    /*     return NotNull!_value; */
-    /* } */
+    version(none)               // TODO: activate
+    NotNull!U opCast(U)() @safe pure nothrow
+    if (isAssignable!(U, T))
+    {
+        return NotNull!_value;
+    }
 
     // this could arguably break the static type check because
     // you can assign it from a variable that is null.. but I
@@ -81,8 +81,6 @@ if (isNullAssignable!T)
 
     /** Disable null assignment. */
     @disable typeof(this) opAssign(typeof(null));
-
-    private T _value;
 
     /* See_Also: http://forum.dlang.org/thread/aprsozwvnpnchbaswjxd@forum.dlang.org#post-aprsozwvnpnchbaswjxd:40forum.dlang.org */
     version(none)        // NOTE: Disabled because it makes members inaccessible
@@ -106,15 +104,17 @@ if (isNullAssignable!T)
         }
     }
 
-    @property inout(T) _valueHelper() inout
+    @property inout(T) value() inout
     {
-        assert(_value !is null); // sanity check of invariant
+        assert(_value !is null);
         return _value;
     }
+    alias value this; /// this is substitutable for the regular (nullable) type
+
+    private T _value;
+
     // Apparently a compiler bug - the invariant being uncommented breaks all kinds of stuff.
     // invariant() { assert(_value !is null); }
-
-    alias _valueHelper this; /// this is substitutable for the regular (nullable) type
 
     /* void toMsgpack  (Packer)  (ref Packer packer) const { packer.pack(_value); } */
     /* void fromMsgpack(Unpacker)(auto ref Unpacker unpacker) { unpacker.unpack(_value); } */
