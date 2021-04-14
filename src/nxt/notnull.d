@@ -44,7 +44,9 @@ enum isNullInitializable(T) = __traits(compiles, { T _ = null; });
    ---
 */
 struct NotNull(T)
-if (isNullInitializable!T)      // TODO: perhaps change to class, pointer and union only
+if (is(T == class) ||
+    is(T == interface) ||
+    is(T == U*, U) && __traits(isScalar, T))
 {
     import std.traits: isAssignable;
 
@@ -126,7 +128,9 @@ if (isNullInitializable!T)      // TODO: perhaps change to class, pointer and un
     you know isn't null.
 */
 NotNull!T assumeNotNull(T)(T t)
-if (isNullInitializable!T)
+if (is(T == class) ||
+    is(T == interface) ||
+    is(T == U*, U) && __traits(isScalar, T))
 {
     return NotNull!T(t); // note the constructor asserts it is not null
 }
@@ -137,7 +141,9 @@ if (isNullInitializable!T)
     NotNull!T.
 */
 NotNull!T enforceNotNull(T, string file = __FILE__, size_t line = __LINE__)(T t)
-if (isNullInitializable!T)
+if (is(T == class) ||
+    is(T == interface) ||
+    is(T == U*, U) && __traits(isScalar, T))
 {
     import std.exception: enforce;
     enforce(t !is null, "t is null!", file, line);
