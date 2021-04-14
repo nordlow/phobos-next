@@ -1,5 +1,7 @@
 module nxt.notnull;
 
+import std.typecons : Nullable;
+
 enum isNullInitializable(T) = __traits(compiles, { T _ = null; });
 
 ///
@@ -111,12 +113,12 @@ if (is(T == class) ||
         }
     }
 
-    @property inout(T) value() inout
+    @property inout(T) get() inout @safe pure nothrow @nogc
     {
         assert(_value !is null);
         return _value;
     }
-    alias value this; /// this is substitutable for the regular (nullable) type
+    alias get this; /// this is substitutable for the regular (nullable) type
 
     private T _value;
 
