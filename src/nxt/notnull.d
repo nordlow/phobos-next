@@ -131,8 +131,10 @@ if (isNullAssignable!T)
     return NotNull!T(t); // note the constructor asserts it is not null
 }
 
-/** A convenience function to check for null $(D t). If you pass null to $(D t),
-    it will throw an exception. Otherwise, return NotNull!T.
+/** A convenience function to check for null $(D t).
+
+    If you pass null to $(D t), it will throw an exception. Otherwise, return
+    NotNull!T.
 */
 NotNull!T enforceNotNull(T, string file = __FILE__, size_t line = __LINE__)(T t)
 if (isNullAssignable!T)
