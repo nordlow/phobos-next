@@ -78,6 +78,7 @@ if (isNullAssignable!T)
 
     /** Disable null construction. */
     @disable this(typeof(null));
+
     /** Disable null assignment. */
     @disable typeof(this) opAssign(typeof(null));
 
