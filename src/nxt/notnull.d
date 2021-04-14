@@ -15,8 +15,6 @@ enum isNullInitializable(T) = __traits(compiles, { T _ = null; });
     static assert(!isNullInitializable!(T));
 }
 
-version(none):
-
 /**
    NotNull ensures a null value can never be stored.
 
