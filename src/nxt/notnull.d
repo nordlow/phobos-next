@@ -1,13 +1,12 @@
 module nxt.notnull;
 
-import std.traits: isAssignable;
-
 /** Note that `NotNull!T` is not `isNullAssignable`. */
 template isNullAssignable(T)
 {
-    import std.traits: isAssignable;
+    import std.traits : isAssignable;
     enum isNullAssignable = isAssignable!(T, typeof(null));
 }
+
 ///
 @safe pure nothrow @nogc unittest
 {
@@ -46,6 +45,8 @@ template isNullAssignable(T)
 struct NotNull(T)
 if (isNullAssignable!T)
 {
+    import std.traits: isAssignable;
+
     @disable this(); // Disallow default initialized (to null)
 
     /** Assignment from $(D NotNull) Inherited Class $(D rhs) to $(D NotNull) Base
