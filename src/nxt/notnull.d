@@ -1,22 +1,5 @@
 module nxt.notnull;
 
-import std.typecons : Nullable;
-
-enum isNullInitializable(T) = __traits(compiles, { T _ = null; });
-
-///
-@safe pure nothrow @nogc unittest
-{
-    struct S {}
-    struct T { int* _; }
-    static assert( isNullInitializable!(int*));
-    static assert(!isNullInitializable!(int));
-    static assert(isNullInitializable!(string));
-    static assert(!isNullInitializable!(float));
-    static assert(!isNullInitializable!(S));
-    static assert(!isNullInitializable!(T));
-}
-
 /** An of a reference type `T` never being `null`.
 
    * Must be initialized when declared.
@@ -227,4 +210,19 @@ unittest
     void f(NotNull!A a) {}
     NotNull!B b = assumeNotNull(new B);
     static assert(!__traits(compiles, { f(b); })); // TODO: I don't want this to fail.
+}
+
+enum isNullInitializable(T) = __traits(compiles, { T _ = null; }); // currently unused
+
+///
+@safe pure nothrow @nogc unittest
+{
+    struct S {}
+    struct T { int* _; }
+    static assert( isNullInitializable!(int*));
+    static assert(!isNullInitializable!(int));
+    static assert(isNullInitializable!(string));
+    static assert(!isNullInitializable!(float));
+    static assert(!isNullInitializable!(S));
+    static assert(!isNullInitializable!(T));
 }
