@@ -19,12 +19,12 @@ enum isNullInitializable(T) = __traits(compiles, { T _ = null; });
 
 /** An of a reference type `T` never being `null`.
 
-   * You must initialize it when declared
+   * Must be initialized when declared.
 
-   * You must never assign the null literal to it (this is a compile time error)
+   * Can never be assigned the null literal (compile time error).
 
-   * If you assign a null value at runtime to it, it will immediately throw an
-     exception at the point of assignment.
+   * If assigned a `null` value at runtime to it, an exception will be thrown at
+     the point of assignment.
 
    `NotNull!T` can be substituted for `T` at any time, but `T` cannot become
    `NotNull` without some attention: either declaring `NotNull!T`, or using the
