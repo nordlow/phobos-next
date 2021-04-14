@@ -117,9 +117,6 @@ if (isNullAssignable!T)
 
     // Apparently a compiler bug - the invariant being uncommented breaks all kinds of stuff.
     // invariant() { assert(_value !is null); }
-
-    /* void toMsgpack  (Packer)  (ref Packer packer) const { packer.pack(_value); } */
-    /* void fromMsgpack(Unpacker)(auto ref Unpacker unpacker) { unpacker.unpack(_value); } */
 }
 
 /** A convenience function to construct a NotNull value from something $(D t)
