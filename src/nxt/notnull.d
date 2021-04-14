@@ -58,7 +58,7 @@ if (isNullAssignable!T)
         return this;
     }
 
-    version(none)               // TODO: activate
+    version(none)            // TODO: activate with correct template restriction
     NotNull!U opCast(U)() @safe pure nothrow
     if (isAssignable!(U, T))
     {
