@@ -235,19 +235,3 @@ unittest
     NotNull!B b = assumeNotNull(new B);
     static assert(!__traits(compiles, { f(b); })); // TODO: I don't want this to fail.
 }
-
-/** by Andrej Mitrovic
-    See_Also: http://forum.dlang.org/thread/llezieyytpcbcaoqeajz@forum.dlang.org?page=6
-*/
-struct CheckNull(T)
-{
-   private T _payload;
-   auto opCast(X : bool)() { return _payload !is null; }
-   @property NotNull!T getNotNull() { return NotNull!T(_payload); }
-   alias getNotNull this;
-}
-
-CheckNull!T checkNull(T)(T obj)
-{
-   return CheckNull!T(obj);
-}
