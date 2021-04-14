@@ -44,7 +44,7 @@ enum isNullInitializable(T) = __traits(compiles, { T _ = null; });
    ---
 */
 struct NotNull(T)
-if (isNullInitializable!T)
+if (isNullInitializable!T)      // TODO: perhaps change to class, pointer and union only
 {
     import std.traits: isAssignable;
 
@@ -52,15 +52,17 @@ if (isNullInitializable!T)
 
     /** Assignment from $(D NotNull) Inherited Class $(D rhs) to $(D NotNull) Base
         Class $(D this). */
-    typeof(this) opAssign(U)(NotNull!U rhs) @safe pure nothrow
+    typeof(this) opAssign(U)(NotNull!U rhs) pure nothrow
     if (isAssignable!(T, U))
     {
         this._value = rhs._value;
         return this;
     }
 
+    bool opCast(T : bool)() { return _value !is null; }
+
     version(none)            // TODO: activate with correct template restriction
-    NotNull!U opCast(U)() @safe pure nothrow
+    NotNull!U opCast(U)() pure nothrow
     if (isAssignable!(U, T))
     {
         return NotNull!_value;
@@ -73,7 +75,7 @@ if (isNullInitializable!T)
     // for convenience of using with local variables.
 
     /// Constructs with a runtime not null check (via assert()).
-    this(T value) @safe pure nothrow
+    this(T value) pure nothrow
     {
         assert(value !is null);
         _value = value;
@@ -99,7 +101,7 @@ if (isNullInitializable!T)
         }
         else
         {
-            @property inout(T) _valueHelper() inout @safe pure nothrow
+            @property inout(T) _valueHelper() inout pure nothrow
             {
                 assert(_value !is null); // sanity check of invariant
                 return _value;
