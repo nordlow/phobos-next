@@ -47,7 +47,7 @@ if (isNullAssignable!T)
 {
     import std.traits: isAssignable;
 
-    @disable this(); // Disallow default initialized (to null)
+    @disable this(); // disallow default initialized (to null)
 
     /** Assignment from $(D NotNull) Inherited Class $(D rhs) to $(D NotNull) Base
         Class $(D this). */
