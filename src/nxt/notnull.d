@@ -1,18 +1,21 @@
 module nxt.notnull;
 
-/** Note that `NotNull!T` is not `isNullAssignable`. */
-template isNullAssignable(T)
-{
-    import std.traits : isAssignable;
-    enum isNullAssignable = isAssignable!(T, typeof(null));
-}
+enum isNullInitializable(T) = __traits(compiles, { T _ = null; });
 
 ///
 @safe pure nothrow @nogc unittest
 {
-    static assert( isNullAssignable!(int*));
-    static assert(!isNullAssignable!(int));
+    struct S {}
+    struct T { int* _; }
+    static assert( isNullInitializable!(int*));
+    static assert(!isNullInitializable!(int));
+    static assert(isNullInitializable!(string));
+    static assert(!isNullInitializable!(float));
+    static assert(!isNullInitializable!(S));
+    static assert(!isNullInitializable!(T));
 }
+
+version(none):
 
 /**
    NotNull ensures a null value can never be stored.
@@ -43,7 +46,7 @@ template isNullAssignable(T)
    ---
 */
 struct NotNull(T)
-if (isNullAssignable!T)
+if (isNullInitializable!T)
 {
     import std.traits: isAssignable;
 
@@ -123,7 +126,7 @@ if (isNullAssignable!T)
     you know isn't null.
 */
 NotNull!T assumeNotNull(T)(T t)
-if (isNullAssignable!T)
+if (isNullInitializable!T)
 {
     return NotNull!T(t); // note the constructor asserts it is not null
 }
@@ -134,7 +137,7 @@ if (isNullAssignable!T)
     NotNull!T.
 */
 NotNull!T enforceNotNull(T, string file = __FILE__, size_t line = __LINE__)(T t)
-if (isNullAssignable!T)
+if (isNullInitializable!T)
 {
     import std.exception: enforce;
     enforce(t !is null, "t is null!", file, line);
