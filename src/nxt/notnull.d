@@ -51,7 +51,9 @@ if (isNullAssignable!T)
 
     /** Assignment from $(D NotNull) Inherited Class $(D rhs) to $(D NotNull) Base
         Class $(D this). */
-    typeof(this) opAssign(U)(NotNull!U rhs) @safe pure nothrow if (isAssignable!(T, U)) {
+    typeof(this) opAssign(U)(NotNull!U rhs) @safe pure nothrow
+    if (isAssignable!(T, U))
+    {
         this._value = rhs._value;
         return this;
     }
