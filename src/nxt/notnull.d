@@ -17,24 +17,21 @@ enum isNullInitializable(T) = __traits(compiles, { T _ = null; });
     static assert(!isNullInitializable!(T));
 }
 
-/**
-   NotNull ensures a null value can never be stored.
+/** An of a reference type `T` never being `null`.
 
    * You must initialize it when declared
 
    * You must never assign the null literal to it (this is a compile time error)
 
-   * If you assign a null value at runtime to it, it will immediately throw an Error
-   at the point of assignment.
+   * If you assign a null value at runtime to it, it will immediately throw an
+     exception at the point of assignment.
 
-   NotNull!T can be substituted for T at any time, but T cannot become
-   NotNull without some attention: either declaring NotNull!T, or using
-   the convenience function, notNull.
+   `NotNull!T` can be substituted for `T` at any time, but `T` cannot become
+   `NotNull` without some attention: either declaring `NotNull!T`, or using the
+   convenience function, `enforceNotNull!T`.
 
    Condition: T must be a reference type.
    Instead of: __traits(compiles, { T t; assert(t is null); } ).
-
-   TODO: Merge with http://arsdnet.net/dcode/notnullsimplified.d
 
    Examples:
    ---
@@ -54,9 +51,9 @@ if (is(T == class) ||
 
     @disable this(); // disallow default initialized (to null)
 
-    /** Assignment from $(D NotNull) Inherited Class $(D rhs) to $(D NotNull) Base
-        Class $(D this). */
-    typeof(this) opAssign(U)(NotNull!U rhs) pure nothrow
+    /** Assignment from $(D NotNull) inherited class $(D rhs) to $(D NotNull) base
+        class $(D this). */
+    typeof(this) opAssign(U)(NotNull!U rhs) @safe pure nothrow @nogc
     if (isAssignable!(T, U))
     {
         this._value = rhs._value;
@@ -64,19 +61,6 @@ if (is(T == class) ||
     }
 
     bool opCast(T : bool)() { return _value !is null; }
-
-    version(none)            // TODO: activate with correct template restriction
-    NotNull!U opCast(U)() pure nothrow
-    if (isAssignable!(U, T))
-    {
-        return NotNull!_value;
-    }
-
-    // this could arguably break the static type check because
-    // you can assign it from a variable that is null.. but I
-    // think it is important that NotNull!Object = new Object();
-    // works, without having to say assumeNotNull(new Object())
-    // for convenience of using with local variables.
 
     /// Constructs with a runtime not null check (via assert()).
     this(T value) pure nothrow
@@ -91,9 +75,27 @@ if (is(T == class) ||
     /** Disable null assignment. */
     @disable typeof(this) opAssign(typeof(null));
 
-    /* See_Also: http://forum.dlang.org/thread/aprsozwvnpnchbaswjxd@forum.dlang.org#post-aprsozwvnpnchbaswjxd:40forum.dlang.org */
+    @property inout(T) get() inout @safe pure nothrow @nogc
+    {
+        assert(_value !is null);
+        return _value;
+    }
+    alias get this; /// this is substitutable for the regular (nullable) type
+
+    private T _value;
+
+    version(none):           // TODO: activate with correct template restriction
+        NotNull!U opCast(U)() pure nothrow
+        if (isAssignable!(U, T))
+        {
+            return NotNull!_value;
+        }
+
     version(none)        // NOTE: Disabled because it makes members inaccessible
     {
+        /* See_Also:
+         * http://forum.dlang.org/thread/aprsozwvnpnchbaswjxd@forum.dlang.org#post-aprsozwvnpnchbaswjxd:40forum.dlang.org
+         */
         import std.traits: BaseClassesTuple;
         static if (is(T == class) && !is(T == Object))
         {
@@ -112,15 +114,6 @@ if (is(T == class) ||
             }
         }
     }
-
-    @property inout(T) get() inout @safe pure nothrow @nogc
-    {
-        assert(_value !is null);
-        return _value;
-    }
-    alias get this; /// this is substitutable for the regular (nullable) type
-
-    private T _value;
 
     // Apparently a compiler bug - the invariant being uncommented breaks all kinds of stuff.
     // invariant() { assert(_value !is null); }
