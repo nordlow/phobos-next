@@ -3,6 +3,7 @@ module nxt.file_system;
 
 @safe:
 
+/// URL.
 struct URL
 {
     string value;
