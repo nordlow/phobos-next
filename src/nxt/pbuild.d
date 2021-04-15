@@ -1,3 +1,4 @@
+/// Software package builder.
 module nxt.pbuild;
 
 import std.path;
