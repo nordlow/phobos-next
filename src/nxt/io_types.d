@@ -3,12 +3,41 @@ module nxt.io_types;
 
 @safe:
 
-// TODO: make these strong sub-types of string
-alias URL = string;             ///< URL.
-alias Path = string;            ///< Path.
-alias DirName = string;         ///< Directory name.
-alias DirPath = string;         ///< Directory path.
-alias Name = string;            ///< Build name.
-alias Cmd = string;             ///< Commad (name or path).
-alias CmdFlag = string;         ///< Command line flag.
-alias DlangVersionName = string; ///< D `version` symbol.
+struct URL
+{
+    string value;
+    alias value this;
+}
+
+/// Computer Path.
+struct Path
+{
+    string value;
+    alias value this;
+}
+
+/// Directory Name.
+struct DirName
+{
+    string value;
+    alias value this;
+}
+
+/// Directory Path.
+struct DirPath                  // TOOD: public Path
+{
+    string value;
+    alias value this;
+}
+
+/// Build Name.
+alias Name = string;
+
+/// Commad (name or path).
+alias Cmd = string;
+
+/// Command line flag.
+alias CmdFlag = string;
+
+/// D `version` symbol.
+alias DlangVersionName = string;
