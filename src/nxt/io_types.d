@@ -29,15 +29,3 @@ struct DirPath                  // TOOD: public Path
     string value;
     alias value this;
 }
-
-/// Build Name.
-alias Name = string;
-
-/// Commad (name or path).
-alias Cmd = string;
-
-/// Command line flag.
-alias CmdFlag = string;
-
-/// D `version` symbol.
-alias DlangVersionName = string;
