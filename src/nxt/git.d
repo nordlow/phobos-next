@@ -66,23 +66,17 @@ string interpretGitStatus(GitStatus s) @safe pure
 GitStatus gitStatus(scope string filePath) @safe
 {
     //enforce(filePath.isFile, "'" ~ filePath ~ "' is not a file.");
-
     const gitRoot = getGitRootPathOfFileOrDir(filePath);
-
     const gitStatusResult = ["git", "status", "--porcelain=v1", filePath]
     .executeInDir(gitRoot);
-
     enforce(gitStatusResult.length >= "XY f".length);
-
     GitStatus result =
     {
     x: gitStatusResult[0].assertMemberOfEnum!GitStatusSingleSide,
     y: gitStatusResult[1].assertMemberOfEnum!GitStatusSingleSide
     };
-
     return result;
 }
-
 
 string toGitRelativePath(scope string path) @safe
 {
@@ -95,12 +89,10 @@ string toGitRelativePath(scope string path) @safe
 string getGitRootPathOfFileOrDir(scope string path_) @safe
 {
     auto path = path_.absolutePath;
-
     // Find the closest directory to the path that exists
     while (!path.exists ||
            !path.isDir)
         path = path.dirName;
-
     const gitRootPathResult = "git rev-parse --show-toplevel".executeInDir(path);
     return gitRootPathResult;
 }
@@ -124,7 +116,6 @@ in (workDir.isDir)
 {
     import std.process : Config, execute, executeShell;
     import std.string : stripRight;
-
     static if (is(Cmd : const char[]))
         const result = executeShell(
             cmd,
@@ -141,10 +132,8 @@ in (workDir.isDir)
             /* maxOutput: */ size_t.max,
             /* workDir: */ workDir
             ); // comments written in anticipation of DIP1030 ;)
-
     enforce(result.status == 0,
             "command: '%-s' failed.%s".format(cmd, "\n" ~ messageIfCommandFails));
-
     return result.output.stripRight;
 }
 
@@ -188,20 +177,19 @@ private void testMe(scope string[] args) @safe
     enforce(args.length == 2, "Usage:\n\tabs_to_rel_git_path <path>");
     const path = args[1];
     //enforce(path.isFile, "'" ~ path ~ "' is not a file.");
-
     static void hLine() @safe
     {
         import std.range : repeat;
         "%-(%s%)".writefln("-".repeat(20));
     }
-
     const gitRoot = path.getGitRootPathOfFileOrDir;
     const relativePath = path.toGitRelativePath;
     const status = path.gitStatus;
-
     hLine();
     writeln("Git repo: ", gitRoot);
     hLine();
-    writefln("File: %s\nStatus: %s", relativePath, status.interpretGitStatus);
+    writefln("File: %s\nStatus: %s",
+             relativePath,
+             status.interpretGitStatus);
     hLine();
 }
