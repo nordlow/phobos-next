@@ -211,13 +211,13 @@ private:
     bool _ok = true;
 }
 
-/// Insantiator for `Expected` from an expected value `expectedValue.`
+/// Instantiator for `Expected` from an expected value `expectedValue.`
 auto expected(T, E)(auto ref T expectedValue)
 {
     return Expected!(T, E)(expectedValue);
 }
 
-/// Insantiator for `Expected` from an unexpected value `unexpectedValue.`
+/// Instantiator for `Expected` from an unexpected value `unexpectedValue.`
 auto unexpected(T, E)(auto ref E unexpectedValue)
 {
     return Expected!(T, E)(Unexpected!E(unexpectedValue));
