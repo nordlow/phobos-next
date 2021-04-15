@@ -6,7 +6,7 @@ import std.stdio;
 import std.file;
 import std.process;
 
-import nxt.io_types;
+import nxt.file_system
 
 @safe:
 
@@ -14,6 +14,18 @@ import nxt.io_types;
 {
     buildN(["vox"]);     // TOOD: replace with `args`
 }
+
+/// Build Name.
+alias Name = string;
+
+/// Commad (name or path).
+alias Cmd = string;
+
+/// Command line flag.
+alias CmdFlag = string;
+
+/// D `version` symbol.
+alias DlangVersionName = string;
 
 int buildN(in string[] names)
 {
@@ -35,11 +47,11 @@ Build[Name] makeBuilds()
     {
         Build build =
         { name : "vox",
-          repoURL : "https://github.com/MrSmith33/vox.git",
+          repoURL : URL("https://github.com/MrSmith33/vox.git"),
           compiler : "ldc2",
           versionNames : ["cli"],
-          sourceFilePaths : ["main.d"],
-          outFilePath : "vox.out",
+          sourceFilePaths : [Path("main.d")],
+          outFilePath : Path("vox.out"),
           recurseSubModulesFlag : true,
         };
         builds[build.name] = build;
@@ -60,8 +72,8 @@ Build[Name] makeBuilds()
     bool recurseSubModulesFlag = true;
     void go() const
     {
-        const DirName dlDirName = "ware"; // TODO: change to `sw` later on
-        const DirPath dlDirPath = ("~/" ~ dlDirName).expandTilde;
+        const dlDirName = DirName("ware"); // TODO: change to `sw` later on
+        const dlDirPath = ("~/" ~ dlDirName).expandTilde;
 
         repoURL.gitCloneOrPullTo(dlDirPath.buildPath(name), recurseSubModulesFlag);
 
