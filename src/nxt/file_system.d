@@ -1,5 +1,5 @@
-/// Input output types.
-module nxt.io_types;
+/// File system types and operations.
+module nxt.file_system;
 
 @safe:
 
