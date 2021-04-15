@@ -11,6 +11,9 @@ import std.format : format;
 import std.file : exists, getcwd, isDir, isFile;
 import std.path : absolutePath, buildNormalizedPath, dirName, relativePath;
 import std.stdio : writeln, writefln;
+import std.process : execute;
+
+import nxt.file_system;
 
 /// Based on: https://git-scm.com/docs/git-status#_output
 enum GitStatusSingleSide : char
@@ -192,4 +195,40 @@ private void testMe(scope string[] args) @safe
              relativePath,
              status.interpretGitStatus);
     hLine();
+}
+
+auto gitCloneOrPullTo(in URL repoURL,
+                      in string destDir,
+                      in bool recurseSubModulesFlag)
+{
+    const destDirGit = destDir.buildNormalizedPath(".git");
+    if (destDirGit.exists &&
+        destDirGit.isDir)
+        return gitPullIn(repoURL, destDir); // TODO: respect `recurseSubModulesFlag`
+    else
+        return gitCloneTo(repoURL,
+                          destDir,
+                          recurseSubModulesFlag);
+}
+
+auto gitPullIn(in URL repoURL,
+               in string destDir)
+{
+    writeln("Pulling ", repoURL, " to ", destDir, " ...");
+    auto args = (["git", "-C", destDir, "pull"]);
+    const res = execute(args);
+    if (res[0])
+        writeln(args, " res:", res);
+    return res;
+}
+
+auto gitCloneTo(in URL repoURL,
+                in string destDir,
+                in bool recurseSubModulesFlag)
+{
+    writeln("Cloning ", repoURL, " to ", destDir, " ...");
+    auto args = (["git", "clone"] ~
+                 (recurseSubModulesFlag ? ["--recurse-submodules"] : []) ~
+                 [repoURL, destDir]);
+                 return execute(args);
 }
