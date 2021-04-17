@@ -31,7 +31,8 @@
 
     - Use: https://forum.dlang.org/post/zcvjwdetohmklaxriswk@forum.dlang.org
 
-    - Rewriting (X+)? as X* in ANTLR grammars and commit to grammars-v4. See https://stackoverflow.com/questions/64706408/rewriting-x-as-x-in-antlr-grammars
+    - Rewriting (X+)? as X* in ANTLR grammars and `commit` to `grammars-v4`.
+      See https://stackoverflow.com/questions/64706408/rewriting-x-as-x-in-antlr-grammars
 
     - Add errors for missing symbols during code generation
 
