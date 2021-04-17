@@ -10,7 +10,7 @@ copyright "Copyright © 2018, Per Nordlöw"
 authors "Per Nordlöw <per.nordlow@gmail.com>"
 
 dependency "arsd-official:terminal" version="~>8.2.0"
-dependency "silly" version="~>1.0.2"
+dependency "silly" version="*"
 
 buildRequirements "allowWarnings"
 
