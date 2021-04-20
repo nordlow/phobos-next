@@ -63,8 +63,7 @@ pragma(inline):
          * - initial length `length`,
          * - and value of all elements `elementValue`.
          */
-        static typeof(this) withLengthElementValue()(size_t length,
-                                                     T elementValue)
+        static typeof(this) withLengthElementValue()(size_t length, T elementValue)
         {
             version(D_Coverage) {} else pragma(inline, true);
             assert(length <= CapacityType.max);
@@ -79,9 +78,7 @@ pragma(inline):
      * - initial length `length`,
      * - and zeroing-flag `zero`.
      */
-    private static typeof(this) withCapacityLengthZero()(size_t capacity, // template-lazy
-                                                         size_t length,
-                                                         bool zero) @trusted
+    private static typeof(this) withCapacityLengthZero()(size_t capacity, size_t length, bool zero) @trusted // template-lazy
     {
         version(LDC) pragma(inline, true);
         assert(capacity >= length);
@@ -92,8 +89,7 @@ pragma(inline):
     }
 
     /** Emplace `thatPtr` with elements moved from `elements`. */
-    static ref typeof(this) emplaceWithMovedElements()(typeof(this)* thatPtr, // template-lazy
-                                                       T[] elements) @system
+    static ref typeof(this) emplaceWithMovedElements()(typeof(this)* thatPtr, T[] elements) @system // template-lazy
     {
         immutable length = elements.length;
         thatPtr._store.ptr = typeof(this).allocate(length, false);
@@ -105,8 +101,7 @@ pragma(inline):
     }
 
     /** Emplace `thatPtr` with elements copied from `elements`. */
-    static ref typeof(this) emplaceWithCopiedElements()(typeof(this)* thatPtr, // template-lazy
-                                                        const(T)[] elements) @system
+    static ref typeof(this) emplaceWithCopiedElements()(typeof(this)* thatPtr, const(T)[] elements) @system // template-lazy
     if (__traits(isCopyable, T))
     {
         immutable length = elements.length;
@@ -391,8 +386,7 @@ pragma(inline):
     {
         /** Allocate heap region with `initialCapacity` number of elements of type `T` all set to `elementValue`.
          */
-        private static MutableE* allocateWithValue(size_t initialCapacity,
-                                                   T elementValue) @trusted
+        private static MutableE* allocateWithValue(size_t initialCapacity, T elementValue) @trusted
         {
             immutable size_t numBytes = initialCapacity * T.sizeof;
 
