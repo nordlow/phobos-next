@@ -63,11 +63,10 @@ pragma(inline):
          * - initial length `length`,
          * - and value of all elements `elementValue`.
          */
-        static typeof(this) withLengthElementValue()(size_t length,
-                                                     T elementValue)
+        static typeof(this) withLengthElementValue()(size_t length, T elementValue)
+        in(length <= CapacityType.max)
         {
             version(D_Coverage) {} else pragma(inline, true);
-            assert(length <= CapacityType.max);
             return typeof(return)(Store(typeof(this).allocateWithValue(length, move(elementValue)),
                                         cast(CapacityType)length,
                                         cast(CapacityType)length));
@@ -79,21 +78,18 @@ pragma(inline):
      * - initial length `length`,
      * - and zeroing-flag `zero`.
      */
-    private static typeof(this) withCapacityLengthZero()(size_t capacity, // template-lazy
-                                                         size_t length,
-                                                         bool zero) @trusted
+    private static typeof(this) withCapacityLengthZero()(size_t capacity, size_t length, bool zero) @trusted // template-lazy
+    in(capacity >= length)
+    in(capacity <= CapacityType.max)
     {
         version(LDC) pragma(inline, true);
-        assert(capacity >= length);
-        assert(capacity <= CapacityType.max);
         return typeof(return)(Store(typeof(this).allocate(capacity, zero),
                                     cast(CapacityType)capacity,
                                     cast(CapacityType)length));
     }
 
     /** Emplace `thatPtr` with elements moved from `elements`. */
-    static ref typeof(this) emplaceWithMovedElements()(typeof(this)* thatPtr, // template-lazy
-                                                       T[] elements) @system
+    static ref typeof(this) emplaceWithMovedElements()(typeof(this)* thatPtr, T[] elements) @system // template-lazy
     {
         immutable length = elements.length;
         thatPtr._store.ptr = typeof(this).allocate(length, false);
@@ -105,8 +101,7 @@ pragma(inline):
     }
 
     /** Emplace `thatPtr` with elements copied from `elements`. */
-    static ref typeof(this) emplaceWithCopiedElements()(typeof(this)* thatPtr, // template-lazy
-                                                        const(T)[] elements) @system
+    static ref typeof(this) emplaceWithCopiedElements()(typeof(this)* thatPtr, const(T)[] elements) @system // template-lazy
     if (__traits(isCopyable, T))
     {
         immutable length = elements.length;
@@ -391,8 +386,7 @@ pragma(inline):
     {
         /** Allocate heap region with `initialCapacity` number of elements of type `T` all set to `elementValue`.
          */
-        private static MutableE* allocateWithValue(size_t initialCapacity,
-                                                   T elementValue) @trusted
+        private static MutableE* allocateWithValue(size_t initialCapacity, T elementValue) @trusted
         {
             immutable size_t numBytes = initialCapacity * T.sizeof;
 
@@ -741,9 +735,9 @@ pragma(inline):
     /** Remove last value fromm the end of the array.
      */
     void popBack()() @trusted   // template-lazy
+    in(!empty)
     {
         version(D_Coverage) {} else pragma(inline, true);
-        assert(!empty);
         _store.length -= 1;
         static if (hasElaborateDestructor!T)
             .destroy(_mptr[_store.length]);
@@ -756,8 +750,8 @@ pragma(inline):
      * See_Also: http://mir-algorithm.libmir.org/mir_appender.html#.ScopedBuffer.popBackN
      */
     void popBackN()(size_t n) @trusted   // template-lazy
+    in(length >= n)
     {
-        assert(length >= n);
         _store.length -= n;
         static if (hasElaborateDestructor!T)
             foreach (immutable index; 0 .. n)
@@ -774,9 +768,9 @@ pragma(inline):
      * https://stackoverflow.com/questions/12600330/pop-back-return-value.
      */
     T backPop()() @trusted      // template-lazy
+    in(!empty)
     {
         version(D_Coverage) {} else pragma(inline, true);
-        assert(!empty);
         _store.length -= 1;
         static if (needsMove!T)
             return move(_mptr[_store.length]);
@@ -791,10 +785,9 @@ pragma(inline):
     }
 
     /** Pop element at `index`. */
-    void popAt()(size_t index) @trusted // template-lazy
-        @("complexity", "O(length)")
+    void popAt()(size_t index) @trusted @("complexity", "O(length)") // template-lazy
+    in(index < this.length)
     {
-        assert(index < this.length);
         static if (hasElaborateDestructor!T)
             .destroy(_mptr[index]);
         else static if (mustAddGCRange!T)
@@ -804,10 +797,9 @@ pragma(inline):
     }
 
     /** Move element at `index` to return. */
-    T moveAt()(size_t index) @trusted // template-lazy
-        @("complexity", "O(length)")
+    T moveAt()(size_t index) @trusted @("complexity", "O(length)") // template-lazy
+    in(index < this.length)
     {
-        assert(index < this.length);
         auto value = move(_mptr[index]);
         shiftToFrontAt(index);
         _store.length -= 1;
