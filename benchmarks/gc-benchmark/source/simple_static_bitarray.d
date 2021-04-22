@@ -44,13 +44,9 @@ struct StaticBitArray(uint capacity)
     {
         version(D_Coverage) {} else pragma(inline, true);
         if (b)
-        {
             bts(_blocks.ptr, cast(size_t)idx);
-        }
         else
-        {
             btr(_blocks.ptr, cast(size_t)idx);
-        }
         return b;
     }
 
@@ -113,13 +109,9 @@ struct StaticBitArray(uint capacity)
     static void test(bool blockAlignedLength)()
     {
         static if (blockAlignedLength)
-        {
             const n = 2 * 8*DefaultBlock.sizeof;
-        }
         else
-        {
             const n = 2 * 8*DefaultBlock.sizeof + 1;
-        }
         alias BA = StaticBitArray!(n);
 
         auto a = BA();
@@ -139,13 +131,9 @@ struct StaticBitArray(uint capacity)
     static void test(bool blockAlignedLength)()
     {
         static if (blockAlignedLength)
-        {
             const n = 2 * 8*Block.sizeof;
-        }
         else
-        {
             const n = 2 * 8*DefaultBlock.sizeof + 1;
-        }
         alias BA = StaticBitArray!(n);
 
         auto a = BA();
