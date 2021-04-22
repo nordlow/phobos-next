@@ -9,25 +9,25 @@ collector for the D programming language.
 
 Inspired by Go's [Proposal: Dense mark bits and sweep-free
 allocation](https://github.com/golang/proposal/blob/master/design/12800-sweep-free-alloc.md)
-also reference [here](https://github.com/golang/go/issues/12800). This spec
-makes use of two continuous bitmaps, called `slotUsages` is used during
-allocation phase. During mark-phase an equally sized bitmap, `slotMarks`, is
-zero-initialized and filled in as pointers to slots are discovered to be
-referenced. When mark-phase is complete this new bitmap `slotMarks` is swapped
-with `slotUsages`. This may or may not work for pools of objects that have
-finalizers (TODO: find out).
+also referenced [here](https://github.com/golang/go/issues/12800). This spec
+makes use of two continuous bitmaps `slotUsages` and `slotMarks`. The
+`slotUsages` is used during allocation phase. During the mark-phase, the bitmap
+`slotMarks` is zero-initialized and filled in as pointers to slots are
+discovered to be referenced. When mark-phase is complete this new bitmap
+`slotMarks` is swapped with `slotUsages`. This may or may not work for pools of
+objects that have finalizers (TODO find out).
 
-When the allocator has grown too large it will be neccessary to indeed do
-sweeps to free pages. But such sweeps can be triggered by low memory and
+When the allocator has grown too large it will be neccessary to do sweeps to
+free pages. Such sweeps can be triggered by a low memory limit (ratio) and
 doesn't have to do a complete sweep if low latency is needed.
 
 ### Segregated by size class
 
 Opposite to D's current GC, different size classes are allocated in separate
 pools, called *segregated* allocation. This will lead to worse cache locality
-during consecutive allocation of different size classes. However, the
-implementation be significantly simpler to express in code especially when D's
-design by introspection via `static foreach` plus `mixin` to realize different
+during consecutive allocation of different size classes. The implementation is
+however significantly simpler to express in code especially when D's design by
+introspection via `static foreach` plus `mixin` is used to realize different
 pool types. This will likely lead to faster execution of the collect phase for
 some pool types, such as types containing no pointers, but this remains to be
 proven.
