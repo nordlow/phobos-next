@@ -625,10 +625,9 @@ class SegregatedGC : GC
         debug(PRINTF) printf("### %s: \n", __FUNCTION__.ptr);
     }
 
-    // TODO: what is this?
     bool inFinalizer() nothrow
     {
-        return false;
+        return typeof(return).init;
     }
 
     /**
@@ -653,6 +652,17 @@ class SegregatedGC : GC
         return typeof(return)();
     }
 
+    /**
+     * Returns the number of bytes allocated for the current thread
+     * since program start. It is the same as
+     * GC.stats().allocatedInCurrentThread, but faster.
+     */
+    ulong allocatedInCurrentThread() nothrow
+    {
+        debug(PRINTF) printf("### %s: \n", __FUNCTION__.ptr);
+        // TODO: fill in
+        return typeof(return).init;
+    }
 }
 
 private enum PowType
