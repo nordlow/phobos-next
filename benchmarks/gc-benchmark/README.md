@@ -129,6 +129,8 @@ allocator may do better to store this data separately, similar to the basic GC.
 
 1. [Inside D's GC](https://olshansky.me/gc/runtime/dlang/2017/06/14/inside-d-gc.html)
 
+1. [Inside D's GC on Hacker News](https://news.ycombinator.com/item?id=14592457)
+
 2. [DIP 46: Region Based Memory Allocation](https://wiki.dlang.org/DIP46)
 
 3. [Thread-local GC](https://forum.dlang.org/thread/xiaxgllobsiiuttavivb@forum.dlang.org)
