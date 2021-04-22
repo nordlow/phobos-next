@@ -7,9 +7,9 @@ module simple_static_bitarray;
 
 alias DefaultBlock = size_t;    ///< Default block type.
 
-struct StaticBitArray(uint capacity)
+@safe struct StaticBitArray(uint capacity)
 {
-@safe pure nothrow @nogc:
+    pure nothrow @nogc:
     import core.bitop : bt, bts, btr;
 
     /** Number of bits. */
