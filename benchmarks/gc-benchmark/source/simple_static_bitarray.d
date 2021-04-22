@@ -32,11 +32,7 @@ struct StaticBitArray(uint capacity)
 
     /** Gets the $(D idx)'th bit. */
     bool opIndex(size_t idx) const @trusted
-    in
-    {
-        assert(idx < length);     // TODO: nothrow or not?
-    }
-    body
+    in(idx < length)            // TODO: nothrow or not?
     {
         version(D_Coverage) {} else pragma(inline, true);
         return cast(bool)bt(_blocks.ptr, idx);
@@ -44,11 +40,7 @@ struct StaticBitArray(uint capacity)
 
     /** Sets the $(D idx)'th bit. */
     bool opIndexAssign(bool b, size_t idx) @trusted
-    in
-    {
-        assert(idx < length);     // TODO: nothrow or not?
-    }
-    body
+    in(idx < length)            // TODO: nothrow or not?
     {
         version(D_Coverage) {} else pragma(inline, true);
         if (b)
