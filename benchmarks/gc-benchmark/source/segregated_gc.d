@@ -232,9 +232,7 @@ struct SmallPools
         // TODO: optimize this:
         blkinfo.size = ceilPow2(size);
         if (blkinfo.size < smallSizeClasses[0])
-        {
             blkinfo.size = smallSizeClasses[0];
-        }
 
     top:
         switch (blkinfo.size)
@@ -243,13 +241,9 @@ struct SmallPools
             {
             case sizeClass:
                 if (bits & BlkAttr.NO_SCAN) // no scanning needed
-                {
                     mixin(`blkinfo.base = unscannedPool` ~ sizeClass.stringof ~ `.allocateNext();`);
-                }
                 else
-                {
                     mixin(`blkinfo.base = scannedPool` ~ sizeClass.stringof ~ `.allocateNext();`);
-                }
                 break top;
             }
         default:
@@ -571,10 +565,8 @@ class SegregatedGC : GC
     {
         debug(PRINTF) printf("### %s: \n", __FUNCTION__.ptr);
         foreach (ref r; tlGcx.roots)
-        {
             if (auto result = dg(r))
                 return result;
-        }
         return 0;
     }
 
@@ -585,7 +577,8 @@ class SegregatedGC : GC
     {
         int x;
         printf("### %s(p:%p, sz:%lu ti:%p, stack:%p)\n", __FUNCTION__.ptr, p, sz, ti, &x);
-        if (p is null) return;
+        if (p is null)
+            return;
         tlGcx.ranges.insertBack(Range(p, p + sz, cast() ti));
     }
 
@@ -595,7 +588,8 @@ class SegregatedGC : GC
     void removeRange(void* p) nothrow @nogc
     {
         debug(PRINTF) printf("### %s(p:%p)\n", __FUNCTION__.ptr, p);
-        if (p is null) return;
+        if (p is null)
+            return;
         foreach (ref range; tlGcx.ranges)
         {
             if (range.pbot is p)
@@ -618,10 +612,8 @@ class SegregatedGC : GC
     {
         debug(PRINTF) printf("### %s: \n", __FUNCTION__.ptr);
         foreach (ref range; tlGcx.ranges)
-        {
             if (auto result = dg(range))
                 return result;
-        }
         return 0;
     }
 
@@ -673,14 +665,13 @@ private T powIntegralImpl(PowType type, T)(T val)
 {
     version(D_Coverage) {} else pragma(inline, true);
     import core.bitop : bsr;
-    if (val == 0 || (type == PowType.ceil && (val > T.max / 2 || val == T.min)))
-    {
+    if (val == 0 ||
+        (type == PowType.ceil &&
+         (val > T.max / 2 ||
+          val == T.min)))
         return 0;
-    }
     else
-    {
         return (T(1) << bsr(val) + type);
-    }
 }
 
 private T nextPow2(T)(const T val)
