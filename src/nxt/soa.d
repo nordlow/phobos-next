@@ -40,7 +40,7 @@ if (is(S == struct))        // TODO: extend to `isAggregate!S`?
         // TODO: static assert(0, S.stringof ~ " has no field named " ~ name);
     }
 
-    /// Push element (struct) `value` to back of array.
+    /** Push element (struct) `value` to back of array. */
     void insertBack()(S value) @trusted // template-lazy
     {
         import core.lifetime : moveEmplace;
@@ -51,7 +51,7 @@ if (is(S == struct))        // TODO: extend to `isAggregate!S`?
         ++_length;
     }
 
-    /// Push element (struct) `value` to back of array using its data members `members`.
+    /** Push element (struct) `value` to back of array using its data members `members`. */
     void insertBackMembers()(Types members) @trusted // template-lazy
     {
         import core.lifetime : moveEmplace;
@@ -69,17 +69,20 @@ if (is(S == struct))        // TODO: extend to `isAggregate!S`?
         insertBack(value);
     }
 
-    /// Length of this array.
+    /** Length of this array. */
     @property size_t length() const @safe pure nothrow @nogc
     {
         return _length;
     }
 
-    /// Capacity of this array.
+    /** Capacity of this array. */
     @property size_t capacity() const @safe pure nothrow @nogc
     {
         return _capacity;
     }
+
+    /** Returns true iff no elements are present. */
+    bool empty() const pure @safe { return _length == 0; }
 
     ~this() @trusted @nogc
     {
@@ -107,7 +110,7 @@ private:
     static foreach (const index, Type; Types)
         mixin(Type.stringof ~ `[] _container` ~ index.stringof ~ ";");
 
-    /// Get array of all fields at aggregate field index `index`.
+    /** Get array of all fields at aggregate field index `index`. */
     ref inout(Types[index][]) getArray(size_t index)() inout return
     {
         mixin(`return _container` ~ index.stringof ~ ";");
@@ -115,14 +118,10 @@ private:
 
     size_t _length = 0;         ///< Current length.
     size_t _capacity = 0;       ///< Current capacity.
-    enum _growthFactor = 2;     ///< Growth factor.
+    enum _growthFactor = 2;     ///< Growth factor. TODO adjust to something around 3/2 like specified in DynamicArray
 
     void allocate(in size_t newCapacity) @trusted
     {
-        // if (_alloc is null)
-        // {
-        //     _alloc = allocatorObject(Mallocator.instance);
-        // }
         import std.experimental.allocator : makeArray;
         static foreach (const index, _; S.tupleof)
             getArray!index = PureMallocator.instance.makeArray!(Types[index])(newCapacity);
