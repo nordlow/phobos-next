@@ -1,6 +1,6 @@
-template from(string module_)
+template from(string moduleName)
 {
-    mixin("import from = ", module_, ';');
+    mixin("import from = ", moduleName, ';');
 }
 
 @safe pure unittest
