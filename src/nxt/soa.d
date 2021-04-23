@@ -5,7 +5,8 @@
  * Initially a builtin feature in the Jai programming language that later was
  * made into a library solution.
  *
- * TODO merge with https://gist.github.com/PetarKirov/a074073a12482e761a5e88eec559e5a8 by calculating `_capacity` based on `_length` and allocating everything in a separate heap allocation.
+ * TODO merge with soa_petar_kirov.d by calculating `_capacity` based on
+ * `_length` and allocating everything in a separate heap allocation.
  *
  * See_Also: http://forum.dlang.org/post/wvulryummkqtskiwrusb@forum.dlang.org
  * See_Also: https://forum.dlang.org/post/purhollnapramxczmcka@forum.dlang.org
