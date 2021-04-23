@@ -6,8 +6,8 @@
  * made into a library solution.
  *
  * TODO merge with soa_petar_kirov.d by
- * - calculating `_capacity` based on `_length` and
- * - allocate all arrays in a single chunk
+ * 1. allocate all arrays in a single chunk
+ * 2. calculating `_capacity` based on `_length` and
  *
  * See_Also: http://forum.dlang.org/post/wvulryummkqtskiwrusb@forum.dlang.org
  * See_Also: https://forum.dlang.org/post/purhollnapramxczmcka@forum.dlang.org
