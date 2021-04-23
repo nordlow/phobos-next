@@ -1,10 +1,11 @@
-/** Structure of arrays similar to a feature present in the Jai programming language.
+/** Structure of arrays (SOA).
+ *
+ * SOAs are common in game engines.
  *
  * Initially a builtin feature in the Jai programming language that later was
  * made into a library solution.
  *
- * TODO: merge with https://gist.github.com/PetarKirov/a074073a12482e761a5e88eec559e5a8
- *       by calculating `_capacity` based on `_length` and allocating everything in a separate heap allocation.
+ * TODO merge with https://gist.github.com/PetarKirov/a074073a12482e761a5e88eec559e5a8 by calculating `_capacity` based on `_length` and allocating everything in a separate heap allocation.
  *
  * See_Also: https://maikklein.github.io/post/soa-d/
  * See_Also: http://forum.dlang.org/post/wvulryummkqtskiwrusb@forum.dlang.org
@@ -147,7 +148,7 @@ private:
 }
 alias StructArrays = SOA;
 
-/// Reference to element in `soaPtr` at index `elementIndex`.
+/** Reference to element in `soaPtr` at index `elementIndex`. */
 private struct SOAElementRef(S)
 if (is(S == struct))        // TODO: extend to `isAggregate!S`?
 {
@@ -156,7 +157,7 @@ if (is(S == struct))        // TODO: extend to `isAggregate!S`?
 
     @disable this(this);
 
-    /// Access member name `memberName`.
+    /** Access member name `memberName`. */
     auto ref opDispatch(string memberName)()
         @trusted return scope
     {
@@ -164,7 +165,7 @@ if (is(S == struct))        // TODO: extend to `isAggregate!S`?
     }
 }
 
-/// Reference to slice in `soaPtr`.
+/** Reference to slice in `soaPtr`. */
 private struct SOASlice(S)
 if (is(S == struct))            // TODO: extend to `isAggregate!S`?
 {
@@ -172,7 +173,7 @@ if (is(S == struct))            // TODO: extend to `isAggregate!S`?
 
     @disable this(this);
 
-    /// Access aggregate at `index`.
+    /** Access aggregate at `index`. */
     inout(S) opIndex(in size_t index) inout @trusted return scope
     {
         S s = void;
