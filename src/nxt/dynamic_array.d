@@ -4,8 +4,6 @@ module nxt.dynamic_array;
 
 import core.internal.traits : Unqual;
 
-@safe:
-
 /** Array type with deterministic control of memory. The memory allocated for
     the array is reclaimed as soon as possible; there is no reliance on the
     garbage collector. Array uses malloc, realloc and free for managing its own
