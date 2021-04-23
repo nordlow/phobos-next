@@ -18,7 +18,7 @@ module nxt.soa;
 
 /** Structure of arrays similar to members of `S`.
  */
-struct SoA(S, CapacityType = size_t)
+struct SoA(S, Capacity = size_t)
 if (is(S == struct))        // TODO: extend to `isAggregate!S`?
 {
     /** Growth factor P/Q.
@@ -34,7 +34,7 @@ if (is(S == struct))        // TODO: extend to `isAggregate!S`?
     private alias toType(string s) = typeof(__traits(getMember, S, s));
     private alias Types = typeof(S.tupleof);
 
-    this(in CapacityType initialCapacity)
+    this(in Capacity initialCapacity)
     {
         _capacity = initialCapacity;
         allocate(initialCapacity);
@@ -78,13 +78,13 @@ if (is(S == struct))        // TODO: extend to `isAggregate!S`?
     }
 
     /** Length of this array. */
-    @property CapacityType length() const @safe pure nothrow @nogc
+    @property Capacity length() const @safe pure nothrow @nogc
     {
         return _length;
     }
 
     /** Capacity of this array. */
-    @property CapacityType capacity() const @safe pure nothrow @nogc
+    @property Capacity capacity() const @safe pure nothrow @nogc
     {
         return _capacity;
     }
@@ -100,7 +100,7 @@ if (is(S == struct))        // TODO: extend to `isAggregate!S`?
     }
 
     /** Index operator. */
-    inout(SoAElementRef!S) opIndex()(in CapacityType elementIndex) inout return // template-lazy
+    inout(SoAElementRef!S) opIndex()(in Capacity elementIndex) inout return // template-lazy
     {
         assert(elementIndex < _length);
         return typeof(return)(&this, elementIndex);
@@ -119,15 +119,15 @@ private:
         mixin(Type.stringof ~ `[] _container` ~ index.stringof ~ ";");
 
     /** Get array of all fields at aggregate field index `index`. */
-    ref inout(Types[index][]) getArray(CapacityType index)() inout return
+    ref inout(Types[index][]) getArray(Capacity index)() inout return
     {
         mixin(`return _container` ~ index.stringof ~ ";");
     }
 
-    CapacityType _length = 0;         ///< Current length.
-    CapacityType _capacity = 0;       ///< Current capacity.
+    Capacity _length = 0;         ///< Current length.
+    Capacity _capacity = 0;       ///< Current capacity.
 
-    void allocate(in CapacityType newCapacity) @trusted
+    void allocate(in Capacity newCapacity) @trusted
     {
         import std.experimental.allocator : makeArray;
         static foreach (const index, _; S.tupleof)

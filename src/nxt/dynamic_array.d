@@ -18,10 +18,10 @@ import core.internal.traits : Unqual;
 
     See also https://github.com/izabera/s
  */
-@safe struct DynamicArray(T, alias Allocator = null, CapacityType = size_t)
+@safe struct DynamicArray(T, alias Allocator = null, Capacity = size_t)
 if (!is(Unqual!T == bool) &&             // use `BitArray` instead
-    (is(CapacityType == ulong) ||        // 3 64-bit words
-     is(CapacityType == uint)))          // 2 64-bit words
+    (is(Capacity == ulong) ||        // 3 64-bit words
+     is(Capacity == uint)))          // 2 64-bit words
 {
     /** Growth factor P/Q.
         https://github.com/facebook/folly/blob/master/folly/docs/FBVector.md#memory-handling
@@ -71,12 +71,12 @@ pragma(inline):
          * - and value of all elements `elementValue`.
          */
         static typeof(this) withLengthElementValue()(size_t length, T elementValue)
-        in(length <= CapacityType.max)
+        in(length <= Capacity.max)
         {
             version(D_Coverage) {} else pragma(inline, true);
             return typeof(return)(Store(typeof(this).allocateWithValue(length, move(elementValue)),
-                                        cast(CapacityType)length,
-                                        cast(CapacityType)length));
+                                        cast(Capacity)length,
+                                        cast(Capacity)length));
         }
     }
 
@@ -87,12 +87,12 @@ pragma(inline):
     */
     private static typeof(this) withCapacityLengthZero()(size_t capacity, size_t length, bool zero) @trusted // template-lazy
     in(capacity >= length)
-    in(capacity <= CapacityType.max)
+    in(capacity <= Capacity.max)
     {
         version(LDC) pragma(inline, true);
         return typeof(return)(Store(typeof(this).allocate(capacity, zero),
-                                    cast(CapacityType)capacity,
-                                    cast(CapacityType)length));
+                                    cast(Capacity)capacity,
+                                    cast(Capacity)length));
     }
 
     /** Emplace `thatPtr` with elements moved from `elements`. */
@@ -100,8 +100,8 @@ pragma(inline):
     {
         immutable length = elements.length;
         thatPtr._store.ptr = typeof(this).allocate(length, false);
-        thatPtr._store.capacity = cast(CapacityType)length;
-        thatPtr._store.length = cast(CapacityType)length;
+        thatPtr._store.capacity = cast(Capacity)length;
+        thatPtr._store.length = cast(Capacity)length;
         foreach (immutable i, ref e; elements[])
             moveEmplace(e, thatPtr._mptr[i]);
         return *thatPtr;
@@ -113,8 +113,8 @@ pragma(inline):
     {
         immutable length = elements.length;
         thatPtr._store.ptr = typeof(this).allocate(length, false);
-        thatPtr._store.capacity = cast(CapacityType)length;
-        thatPtr._store.length = cast(CapacityType)length;
+        thatPtr._store.capacity = cast(Capacity)length;
+        thatPtr._store.length = cast(Capacity)length;
         foreach (immutable i, ref e; elements[])
             thatPtr._mptr[i] = cast(T)e; // TODO: restrict this function using a
                                          // T-trait where this cast can be @trusted
@@ -173,12 +173,12 @@ pragma(inline):
 
             // ptr[0 .. length] = elements[];
             return typeof(return)(Store(ptr,
-                                        cast(CapacityType)length,
-                                        cast(CapacityType)length));
+                                        cast(Capacity)length,
+                                        cast(Capacity)length));
         }
 
         /// Returns: shallow duplicate of `this`.
-        @property DynamicArray!(Unqual!T, Allocator, CapacityType) dup()() const @trusted // template-lazy
+        @property DynamicArray!(Unqual!T, Allocator, Capacity) dup()() const @trusted // template-lazy
         {
             version(D_Coverage) {} else pragma(inline, true);
             return typeof(this).withElements(this[]);
@@ -193,10 +193,10 @@ pragma(inline):
         // TODO: use import emplace_all instead
 
         _store.ptr = allocate(values.length, false);
-        static if (!is(CapacityType == size_t))
-            assert(values.length <= CapacityType.max,
+        static if (!is(Capacity == size_t))
+            assert(values.length <= Capacity.max,
                    "Minimum capacity doesn't fit in capacity type.");
-        _store.capacity = cast(CapacityType)values.length;
+        _store.capacity = cast(Capacity)values.length;
 
         foreach (index; 0 .. values.length)
             static if (needsMove!(T))
@@ -215,8 +215,8 @@ pragma(inline):
         // TODO: use import emplace_all instead
 
         _store.ptr = allocate(values.length, false);
-        static assert(values.length <= CapacityType.max);
-        _store.capacity = cast(CapacityType)values.length;
+        static assert(values.length <= Capacity.max);
+        _store.capacity = cast(Capacity)values.length;
 
         static foreach (index; 0 .. values.length)
             static if (needsMove!(T))
@@ -525,13 +525,13 @@ pragma(inline):
         setLengthChecked(newLength);
     }
 
-    /// Set capacity, checking for overflow when `CapacityType` is not `size_t`.
+    /// Set capacity, checking for overflow when `Capacity` is not `size_t`.
     private void setLengthChecked(size_t newLength) scope
     {
-        static if (!is(CapacityType == size_t))
-            assert(newLength <= CapacityType.max,
+        static if (!is(Capacity == size_t))
+            assert(newLength <= Capacity.max,
                    "New length doesn't fit in capacity type.");
-        _store.length = cast(CapacityType)newLength;
+        _store.length = cast(Capacity)newLength;
     }
 
     /// Get capacity.
@@ -546,8 +546,8 @@ pragma(inline):
      */
     void reserve(size_t minimumCapacity) @trusted scope pure nothrow @nogc
     {
-        static if (!is(CapacityType == size_t))
-            assert(minimumCapacity <= CapacityType.max,
+        static if (!is(Capacity == size_t))
+            assert(minimumCapacity <= Capacity.max,
                    "Minimum capacity doesn't fit in capacity type.");
 
         if (minimumCapacity <= capacity)
@@ -561,14 +561,14 @@ pragma(inline):
     /// Reallocate storage.
     private void reallocateAndSetCapacity()(size_t newCapacity) @trusted // template-lazy
     {
-        static if (!is(CapacityType == size_t))
-            assert(newCapacity <= CapacityType.max,
+        static if (!is(Capacity == size_t))
+            assert(newCapacity <= Capacity.max,
                    "New capacity doesn't fit in capacity type.");
 
         static if (mustAddGCRange!T)
             gc_removeRange(_store.ptr);
 
-        _store.capacity = cast(CapacityType)newCapacity;
+        _store.capacity = cast(Capacity)newCapacity;
         _store.ptr = cast(T*)realloc(_mptr, T.sizeof * _store.capacity);
 
         if (_store.ptr is null &&
@@ -912,8 +912,8 @@ private:
             @NoGc T* ptr;       // non-GC-allocated store pointer
         }
 
-        CapacityType capacity; // store capacity
-        CapacityType length;   // store length
+        Capacity capacity; // store capacity
+        Capacity length;   // store length
     }
 
     Store _store;

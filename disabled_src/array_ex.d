@@ -93,10 +93,10 @@ private struct Array(E,
                      Assignment assignment = Assignment.disabled,
                      Ordering ordering = Ordering.unsorted,
                      bool useGCAllocation = false,
-                     CapacityType = size_t, // see also https://github.com/izabera/s
+                     Capacity = size_t, // see also https://github.com/izabera/s
                      alias less = "a < b") // TODO: move out of this definition and support only for the case when `ordering` is not `Ordering.unsorted`
-if (is(CapacityType == ulong) ||           // 3 64-bit words
-    is(CapacityType == uint))              // 2 64-bit words
+if (is(Capacity == ulong) ||           // 3 64-bit words
+    is(Capacity == uint))              // 2 64-bit words
 {
     import core.internal.traits : hasElaborateDestructor;
     import core.lifetime : emplace, move, moveEmplace;
@@ -121,7 +121,7 @@ if (is(CapacityType == ulong) ||           // 3 64-bit words
     private alias ThisTemplate = TemplateOf!(typeof(this));
 
     /// Same type as this but with mutable element type.
-    private alias MutableThis = ThisTemplate!(MutableE, assignment, ordering, useGCAllocation, CapacityType, less);
+    private alias MutableThis = ThisTemplate!(MutableE, assignment, ordering, useGCAllocation, Capacity, less);
 
     static if (useGCAllocation || // either we asked for allocation
                shouldAddGCRange!E) // or we need GC ranges
@@ -1135,12 +1135,12 @@ if (is(CapacityType == ulong) ||           // 3 64-bit words
                    isComparable!E)
         {
             /// Returns: a sorted array copy.
-            Array!(E, assignment, ordering.sortedValues, useGCAllocation, CapacityType, less_) toSortedArray(alias less_ = "a < b")() const
+            Array!(E, assignment, ordering.sortedValues, useGCAllocation, Capacity, less_) toSortedArray(alias less_ = "a < b")() const
             {
                 return typeof(return)(slice);
             }
             /// Returns: a sorted set array copy.
-            Array!(E, assignment, ordering.sortedUniqueSet, useGCAllocation, CapacityType, less_) toSortedSetArray(alias less_ = "a < b")() const
+            Array!(E, assignment, ordering.sortedUniqueSet, useGCAllocation, Capacity, less_) toSortedSetArray(alias less_ = "a < b")() const
             {
                 return typeof(return)(slice);
             }
@@ -1571,7 +1571,7 @@ private:                        // data
     {
         static if (useAlignedTaggedPointer)
         {
-            private enum lengthMax = CapacityType.max;
+            private enum lengthMax = Capacity.max;
             version(LittleEndian) // see: http://forum.dlang.org/posting/zifyahfohbwavwkwbgmw
             {
                 import std.bitmanip : taggedPointer;
@@ -1592,8 +1592,8 @@ private:                        // data
                     return cast(E*)_uintptr;
                 }
 
-                CapacityType capacity;  // store capacity
-                CapacityType length;  // store length
+                Capacity capacity;  // store capacity
+                Capacity length;  // store length
             }
             else
             {
@@ -1602,7 +1602,7 @@ private:                        // data
         }
         else
         {
-            private enum lengthBits = 8*CapacityType.sizeof - 2;
+            private enum lengthBits = 8*Capacity.sizeof - 2;
             private enum lengthMax = 2^^lengthBits - 1;
 
             static if (useGCAllocation)
@@ -1614,10 +1614,10 @@ private:                        // data
                 @nogc E* ptr;   // non-GC-allocated store pointer
             }
 
-            CapacityType capacity;  // store capacity
+            Capacity capacity;  // store capacity
 
             import std.bitmanip : bitfields; // TODO: replace with own logic cause this mixin costs compilation speed
-            mixin(bitfields!(CapacityType, "length", lengthBits,
+            mixin(bitfields!(Capacity, "length", lengthBits,
                              bool, "isBorrowed", 1,
                              bool, "isLarge", 1,
                       ));
@@ -1630,7 +1630,7 @@ private:                        // data
             assert(initialLength <= lengthMax);
 
             setCapacity(initialCapacity);
-            this.capacity = cast(CapacityType)initialCapacity;
+            this.capacity = cast(Capacity)initialCapacity;
             this.ptr = allocate(initialCapacity, zero);
             this.length = initialLength;
             this.isLarge = true;
@@ -1642,7 +1642,7 @@ private:                        // data
         void setCapacity(size_t newCapacity)
         {
             assert(newCapacity <= capacity.max);
-            capacity = cast(CapacityType)newCapacity;
+            capacity = cast(Capacity)newCapacity;
         }
 
         MutableE* _mptr() const

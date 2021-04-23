@@ -1104,8 +1104,8 @@ private:
 
     /** 32-bit capacity and length for LargeBinLnegth on 64-bit platforms
      * saves one word and makes insert() and contains() significantly faster */
-    alias LargeBinCapacityType = uint;
-    alias LargeBin = Array!(T, Allocator, LargeBinCapacityType);
+    alias LargeBinCapacity = uint;
+    alias LargeBin = Array!(T, Allocator, LargeBinCapacity);
 
     alias SmallBin = T[smallBinCapacity];
 
