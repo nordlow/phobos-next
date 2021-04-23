@@ -29,20 +29,20 @@ if (is(T == struct))
         enum FieldNames = from!`std.traits`.FieldNameTuple!T;
     }
 
-    /** Creates a structure of arrays instance with `newLen` elements. */
-    this(size_t newLen) nothrow
-    in (newLen)
-       out (; this._storage)
-       {
-           _length = newLen;
+    /** Creates a structure of arrays instance with `newLength` elements. */
+    this(size_t newLength) nothrow
+    in (newLength)
+    out (; this._storage)
+    {
+        _length = newLength;
 
-           // TODO: Respect individual field alignment
-           _storage = allocator.allocate(T.sizeof * capacity()).ptr;
+        // TODO: Respect individual field alignment
+        _storage = allocator.allocate(T.sizeof * capacity()).ptr;
 
-           // Initialize each array with the default value for each field type:
-           static foreach (idx; 0 .. Fields.length)
-               chunkFor!idx(_storage, capacity())[] = Fields[idx].init;
-       }
+        // Initialize each array with the default value for each field type:
+        static foreach (idx; 0 .. Fields.length)
+            chunkFor!idx(_storage, capacity())[] = Fields[idx].init;
+    }
 
     void toString(Writer)(Writer sink) const
     {
