@@ -1,6 +1,6 @@
-/** Structure of arrays (SOA).
+/** Structure of arrays (SoA).
  *
- * SOAs are common in game engines.
+ * SoAs are common in game engines.
  *
  * Initially a builtin feature in the Jai programming language that later was
  * made into a library solution.
@@ -16,7 +16,7 @@ module nxt.soa;
 
 /** Structure of arrays similar to members of `S`.
  */
-struct SOA(S)
+struct SoA(S)
 if (is(S == struct))        // TODO: extend to `isAggregate!S`?
 {
     import nxt.pure_mallocator : PureMallocator;
@@ -87,14 +87,14 @@ if (is(S == struct))        // TODO: extend to `isAggregate!S`?
     }
 
     /** Index operator. */
-    inout(SOAElementRef!S) opIndex()(in size_t elementIndex) inout return // template-lazy
+    inout(SoAElementRef!S) opIndex()(in size_t elementIndex) inout return // template-lazy
     {
         assert(elementIndex < _length);
         return typeof(return)(&this, elementIndex);
     }
 
     /** Slice operator. */
-    inout(SOASlice!S) opSlice()() inout return // template-lazy
+    inout(SoASlice!S) opSlice()() inout return // template-lazy
     {
         return typeof(return)(&this);
     }
@@ -146,13 +146,13 @@ private:
             grow();
     }
 }
-alias StructArrays = SOA;
+alias StructArrays = SoA;
 
 /** Reference to element in `soaPtr` at index `elementIndex`. */
-private struct SOAElementRef(S)
+private struct SoAElementRef(S)
 if (is(S == struct))        // TODO: extend to `isAggregate!S`?
 {
-    SOA!S* soaPtr;
+    SoA!S* soaPtr;
     size_t elementIndex;
 
     @disable this(this);
@@ -166,10 +166,10 @@ if (is(S == struct))        // TODO: extend to `isAggregate!S`?
 }
 
 /** Reference to slice in `soaPtr`. */
-private struct SOASlice(S)
+private struct SoASlice(S)
 if (is(S == struct))            // TODO: extend to `isAggregate!S`?
 {
-    SOA!S* soaPtr;
+    SoA!S* soaPtr;
 
     @disable this(this);
 
@@ -191,7 +191,7 @@ if (is(S == struct))            // TODO: extend to `isAggregate!S`?
 
     struct S { int i; float f; }
 
-    auto x = SOA!S();
+    auto x = SoA!S();
 
     static assert(is(typeof(x.getArray!0()) == int[]));
     static assert(is(typeof(x.getArray!1()) == float[]));
@@ -213,7 +213,7 @@ if (is(S == struct))            // TODO: extend to `isAggregate!S`?
     assert(x[2].i == 42);
     assert(x[2].f == 43f);
 
-    const x3 = SOA!S(3);
+    const x3 = SoA!S(3);
     assert(x3.length == 0);
     assert(x3.capacity == 3);
 
@@ -228,7 +228,7 @@ if (is(S == struct))            // TODO: extend to `isAggregate!S`?
                                 {
                                     ref int testScope() @safe
                                     {
-                                        auto y = SOA!S(1);
+                                        auto y = SoA!S(1);
                                         y ~= S(42, 43f);
                                         return y[0].i;
                                     }
