@@ -21,7 +21,7 @@ When the allocator has grown too large it will be neccessary to do sweeps to
 free pages. Such sweeps can be triggered by a low memory limit (ratio) and
 doesn't have to do a complete sweep if low latency is needed.
 
-### Segregated by size class and other attributes
+### Segregated via Design by Introspection
 
 Opposite to D's current GC, different size classes are allocated in separate
 pools, called *segregated* allocation. This will lead to worse cache locality
