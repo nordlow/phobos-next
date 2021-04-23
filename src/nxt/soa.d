@@ -118,7 +118,14 @@ private:
 
     size_t _length = 0;         ///< Current length.
     size_t _capacity = 0;       ///< Current capacity.
-    enum _growthFactor = 2;     ///< Growth factor. TODO adjust to something around 3/2 like specified in DynamicArray
+
+    /** Growth factor P/Q.
+        https://github.com/facebook/folly/blob/master/folly/docs/FBVector.md#memory-handling
+        Use 1.5 like Facebook's `fbvector` does.
+    */
+    enum _growthP = 3;
+    /// ditto
+    enum _growthQ = 2;
 
     void allocate(in size_t newCapacity) @trusted
     {
@@ -127,11 +134,14 @@ private:
             getArray!index = PureMallocator.instance.makeArray!(Types[index])(newCapacity);
     }
 
+    /** Grow storage.
+     */
     void grow() @trusted
     {
+        // Motivation: https://github.com/facebook/folly/blob/master/folly/docs/FBVector.md#memory-handling
         import std.algorithm.comparison : max;
         import std.experimental.allocator : expandArray;
-        const newCapacity = max(1, _capacity * _growthFactor);
+        const newCapacity = max(1, _growthP * _capacity / _growthQ);
         const expandSize = newCapacity - _capacity;
         if (_capacity is 0)
             allocate(newCapacity);
