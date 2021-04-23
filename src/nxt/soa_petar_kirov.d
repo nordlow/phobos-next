@@ -11,6 +11,8 @@ module nxt.soa_petar_kirov;
  The representation in memory is roughly this:
  storage = [ [ Fields!T[0], .. ] ... [ Fields!T[$ - 1] .. ] ]
  (storage is a single memory allocation)
+
+ Original at https://gist.github.com/PetarKirov/a074073a12482e761a5e88eec559e5a8
  +/
 struct SoA(T, alias Allocator = from!`std.experimental.allocator.gc_allocator`.GCAllocator)
 if (is(T == struct))
