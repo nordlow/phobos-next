@@ -5,8 +5,9 @@
  * Initially a builtin feature in the Jai programming language that later was
  * made into a library solution.
  *
- * TODO merge with soa_petar_kirov.d by calculating `_capacity` based on
- * `_length` and allocating everything in a separate heap allocation.
+ * TODO merge with soa_petar_kirov.d by
+ * - calculating `_capacity` based on `_length` and
+ * - allocate all arrays in a single chunk
  *
  * See_Also: http://forum.dlang.org/post/wvulryummkqtskiwrusb@forum.dlang.org
  * See_Also: https://forum.dlang.org/post/purhollnapramxczmcka@forum.dlang.org
