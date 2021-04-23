@@ -7,22 +7,31 @@ import core.internal.traits : Unqual;
 @safe:
 
 /** Array type with deterministic control of memory. The memory allocated for
- * the array is reclaimed as soon as possible; there is no reliance on the
- * garbage collector. Array uses malloc, realloc and free for managing its own
- * memory.
- *
- * TODO: Use `std.bitmanip.BitArray` for array container storing boolean values.
- * TODO: Add OutputRange.writer support as
- * https://github.com/burner/StringBuffer/blob/master/source/stringbuffer.d#L45
- * TODO: Use `std.traits.areCopyCompatibleArrays`
+    the array is reclaimed as soon as possible; there is no reliance on the
+    garbage collector. Array uses malloc, realloc and free for managing its own
+    memory.
+
+    A null `Allocator` means means to qcmeman functions. TODO use `PureMallocator` by default
+
+    TODO: Use `std.bitmanip.BitArray` for array container storing boolean values.
+    TODO: Add OutputRange.writer support as
+    https://github.com/burner/StringBuffer/blob/master/source/stringbuffer.d#L45
+    TODO: Use `std.traits.areCopyCompatibleArrays`
+
+    See also https://github.com/izabera/s
  */
-struct DynamicArray(T, alias Allocator = null, // null means means to qcmeman functions. TODO: use `PureMallocator` by default
-                    CapacityType = size_t)  // see also https://github.com/izabera/s
+@safe struct DynamicArray(T, alias Allocator = null, CapacityType = size_t)
 if (!is(Unqual!T == bool) &&             // use `BitArray` instead
     (is(CapacityType == ulong) ||        // 3 64-bit words
      is(CapacityType == uint)))          // 2 64-bit words
 {
-@safe:
+    /** Growth factor P/Q.
+        https://github.com/facebook/folly/blob/master/folly/docs/FBVector.md#memory-handling
+        Use 1.5 like Facebook's `fbvector` does.
+    */
+    enum _growthP = 3;          // numerator
+    /// ditto
+    enum _growthQ = 2;          // denominator
 
     // import core.exception : onOutOfMemoryError;
     import core.internal.traits : hasElaborateDestructor;
@@ -74,10 +83,10 @@ pragma(inline):
     }
 
     /** Construct using
-     * - initial capacity `capacity`,
-     * - initial length `length`,
-     * - and zeroing-flag `zero`.
-     */
+        - initial capacity `capacity`,
+        - initial length `length`,
+        - and zeroing-flag `zero`.
+    */
     private static typeof(this) withCapacityLengthZero()(size_t capacity, size_t length, bool zero) @trusted // template-lazy
     in(capacity >= length)
     in(capacity <= CapacityType.max)
@@ -534,17 +543,8 @@ pragma(inline):
         return _store.capacity;
     }
 
-    /** Growth factor P/Q.
-        https://github.com/facebook/folly/blob/master/folly/docs/FBVector.md#memory-handling
-        Use 1.5 like Facebook's `fbvector` does.
-    */
-    enum _growthP = 3;
-    /// ditto
-    enum _growthQ = 2;
-
-    /** Ensures sufficient capacity to accommodate for minimumCapacity number
-     * of elements. If `minimumCapacity` < `capacity`, this method does
-     * nothing.
+    /** Ensures sufficient capacity to accommodate for minimumCapacity number of
+        elements. If `minimumCapacity` < `capacity`, this method does nothing.
      */
     void reserve(size_t minimumCapacity) @trusted scope pure nothrow @nogc
     {
@@ -752,8 +752,8 @@ pragma(inline):
     }
 
     /** Rmove `n` last values from the end of the array.
-     *
-     * See_Also: http://mir-algorithm.libmir.org/mir_appender.html#.ScopedBuffer.popBackN
+
+        See_Also: http://mir-algorithm.libmir.org/mir_appender.html#.ScopedBuffer.popBackN
      */
     void popBackN()(size_t n) @trusted   // template-lazy
     in(length >= n)
@@ -768,10 +768,10 @@ pragma(inline):
     }
 
     /** Pop back element and return it.
-     *
-     * This is well-missed feature of C++'s `std::vector` because of problems
-     * with exception handling. For more details see
-     * https://stackoverflow.com/questions/12600330/pop-back-return-value.
+
+        This is well-missed feature of C++'s `std::vector` because of problems
+        with exception handling. For more details see
+        https://stackoverflow.com/questions/12600330/pop-back-return-value.
      */
     T backPop()() @trusted      // template-lazy
     in(!empty)
@@ -925,11 +925,11 @@ import std.traits : isInstanceOf;
 import std.functional : unaryFun;
 
 /** Remove all elements matching `predicate`.
- *
- * Returns: number of elements that were removed.
- *
- * TODO: implement version that doesn't use a temporary array `tmp`, which is
- * probably faster for small arrays.
+
+    Returns: number of elements that were removed.
+
+    TODO: implement version that doesn't use a temporary array `tmp`, which is
+    probably faster for small arrays.
  */
 size_t remove(alias predicate, C)(ref C c) @trusted
     @("complexity", "O(length)")
@@ -1339,8 +1339,9 @@ unittest
     }
 
     /* D compilers cannot currently move stuff efficiently when using
-     * std.algorithm.mutation.move. A final dtor call to the cleared sourced is
-     * always done. */
+       std.algorithm.mutation.move. A final dtor call to the cleared sourced is
+       always done.
+    */
     size_t extraDtor = 1;
 
     alias A = DynamicArray!(S);
