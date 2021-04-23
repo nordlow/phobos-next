@@ -21,6 +21,14 @@ module nxt.soa;
 struct SoA(S)
 if (is(S == struct))        // TODO: extend to `isAggregate!S`?
 {
+    /** Growth factor P/Q.
+        https://github.com/facebook/folly/blob/master/folly/docs/FBVector.md#memory-handling
+        Use 1.5 like Facebook's `fbvector` does.
+    */
+    enum _growthP = 3;          // numerator
+    /// ditto
+    enum _growthQ = 2;          // denominator
+
     import nxt.pure_mallocator : PureMallocator;
 
     private alias toType(string s) = typeof(__traits(getMember, S, s));
@@ -119,14 +127,6 @@ private:
     size_t _length = 0;         ///< Current length.
     size_t _capacity = 0;       ///< Current capacity.
 
-    /** Growth factor P/Q.
-        https://github.com/facebook/folly/blob/master/folly/docs/FBVector.md#memory-handling
-        Use 1.5 like Facebook's `fbvector` does.
-    */
-    enum _growthP = 3;
-    /// ditto
-    enum _growthQ = 2;
-
     void allocate(in size_t newCapacity) @trusted
     {
         import std.experimental.allocator : makeArray;
@@ -134,14 +134,14 @@ private:
             getArray!index = PureMallocator.instance.makeArray!(Types[index])(newCapacity);
     }
 
-    /** Grow storage.
+    /** Grow storage with at least on element.
      */
     void grow() @trusted
     {
         // Motivation: https://github.com/facebook/folly/blob/master/folly/docs/FBVector.md#memory-handling
         import std.algorithm.comparison : max;
         import std.experimental.allocator : expandArray;
-        const newCapacity = max(1, _growthP * _capacity / _growthQ);
+        const newCapacity = _capacity == 1 ? 2 : max(1, _growthP * _capacity / _growthQ);
         const expandSize = newCapacity - _capacity;
         if (_capacity is 0)
             allocate(newCapacity);
