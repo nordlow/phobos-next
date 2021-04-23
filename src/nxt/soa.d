@@ -82,7 +82,7 @@ if (is(S == struct))        // TODO: extend to `isAggregate!S`?
     }
 
     /** Returns true iff no elements are present. */
-    bool empty() const pure @safe { return _length == 0; }
+    bool empty() const @safe pure nothrow @nogc { return _length == 0; }
 
     ~this() @trusted @nogc
     {
