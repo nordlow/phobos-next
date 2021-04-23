@@ -534,6 +534,14 @@ pragma(inline):
         return _store.capacity;
     }
 
+    /** Growth factor P/Q.
+        https://github.com/facebook/folly/blob/master/folly/docs/FBVector.md#memory-handling
+        Use 1.5 like Facebook's `fbvector` does.
+    */
+    enum _growthP = 3;
+    /// ditto
+    enum _growthQ = 2;
+
     /** Ensures sufficient capacity to accommodate for minimumCapacity number
      * of elements. If `minimumCapacity` < `capacity`, this method does
      * nothing.
@@ -547,9 +555,7 @@ pragma(inline):
         if (minimumCapacity <= capacity)
             return;
 
-        // growth factor
-        // Motivation: https://github.com/facebook/folly/blob/master/folly/docs/FBVector.md#memory-handling
-        reallocateAndSetCapacity(3*minimumCapacity/2); // use 1.5 like Facebook's `fbvector` does
+        reallocateAndSetCapacity(_growthP * minimumCapacity / _growthQ);
         // import std.math : nextPow2;
         // reallocateAndSetCapacity(minimumCapacity.nextPow2);
     }
