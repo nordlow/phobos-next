@@ -68,7 +68,6 @@ if (is(T == struct))
 
     alias opDollar = length;
 
-
     /** Returns the current capacity - the current length rounded up to a power
         of two. This assumption allows us to save on having a separate field.
     */
