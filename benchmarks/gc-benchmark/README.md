@@ -153,3 +153,5 @@ allocator may do better to store this data separately, similar to the basic GC.
 10. [Adding your own GC to the GC Registry](https://dlang.org/spec/garbage.html#gc_registry)
 
 11. [Understanding GC memory ranges and roots](https://forum.dlang.org/post/uiuedvfnftsnbpmkchyq@forum.dlang.org)
+
+12. [Tasks, actors and garbage collection](https://forum.dlang.org/post/yqdwgbzkmutjzfdhotst@forum.dlang.org)
