@@ -21,16 +21,18 @@ When the allocator has grown too large it will be neccessary to do sweeps to
 free pages. Such sweeps can be triggered by a low memory limit (ratio) and
 doesn't have to do a complete sweep if low latency is needed.
 
-### Segregated by size class
+### Segregated via Design by Introspection
 
 Opposite to D's current GC, different size classes are allocated in separate
 pools, called *segregated* allocation. This will lead to worse cache locality
 during consecutive allocation of different size classes. The implementation is
 however significantly simpler to express in code especially when D's design by
-introspection via `static foreach` plus `mixin` is used to realize different
-pool types. This will likely lead to faster execution of the collect phase for
-some pool types, such as types containing no pointers, but this remains to be
-proven.
+introspection via `static foreach` plus `mixin` is used to instantiate different
+pool types. This will likely leading to a faster mark phase typically for types
+without indirections, but this remains to be proven.
+
+The lack of sweep phase will lead to a significantly lower worst case for the
+collection time.
 
 Segregation happens on all combinations of
 
@@ -151,3 +153,5 @@ allocator may do better to store this data separately, similar to the basic GC.
 10. [Adding your own GC to the GC Registry](https://dlang.org/spec/garbage.html#gc_registry)
 
 11. [Understanding GC memory ranges and roots](https://forum.dlang.org/post/uiuedvfnftsnbpmkchyq@forum.dlang.org)
+
+12. [Tasks, actors and garbage collection](https://forum.dlang.org/post/yqdwgbzkmutjzfdhotst@forum.dlang.org)
