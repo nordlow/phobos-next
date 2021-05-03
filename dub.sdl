@@ -11,6 +11,7 @@ authors "Per Nordlöw <per.nordlow@gmail.com>"
 
 dependency "arsd-official:terminal" version="~>8.2.0"
 dependency "silly" version="*"
+dependency "mir-algorithm" version="*"
 
 buildRequirements "allowWarnings"
 
