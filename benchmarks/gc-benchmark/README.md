@@ -17,9 +17,13 @@ discovered to be referenced. When mark-phase is complete this new bitmap
 `slotMarks` is swapped with `slotUsages`. This may or may not work for pools of
 objects that have finalizers (TODO find out).
 
-When the allocator has grown too large it will be neccessary to do sweeps to
-free pages. Such sweeps can be triggered by a low memory limit (ratio) and
-doesn't have to do a complete sweep if low latency is needed.
+When the allocator has grown too large it will be neccessary to do sweeps and
+run-finalizers to free pages. Such sweeps can be triggered by a low memory limit
+(ratio) and doesn't have to do a complete sweep if low latency is
+needed.
+
+The running of a finalizer can be delayed to the time when its slots is needed
+by an allocation.
 
 ### Segregated via Design by Introspection
 
