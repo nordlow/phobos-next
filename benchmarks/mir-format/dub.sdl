@@ -1,0 +1,8 @@
+name "mir-format"
+targetName "mir-format"
+description "Benchmark of mir.format."
+authors "Per Nordlöw"
+copyright "Copyright © 2021, Per Nordlöw"
+license "proprietary"
+dependency "mir-algorithm" version="~>3.10.58"
+targetType "executable"
