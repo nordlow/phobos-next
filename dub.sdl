@@ -9,7 +9,7 @@ license "BSL-1.0"
 copyright "Copyright © 2018, Per Nordlöw"
 authors "Per Nordlöw <per.nordlow@gmail.com>"
 
-dependency "arsd-official:terminal" version="~>8.2.0"
+dependency "arsd-official:terminal" version="*"
 dependency "silly" version="*"
 dependency "mir-algorithm" version="*"
 
