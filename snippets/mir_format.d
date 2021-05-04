@@ -1,7 +1,7 @@
 @safe pure unittest
 {
     import mir.conv : to;
-    import mir.small_string;
+    import mir.small_string : SmallString;
     alias S = SmallString!32;
 
     // Floating-point numbers are formatted to the shortest precise exponential notation.
