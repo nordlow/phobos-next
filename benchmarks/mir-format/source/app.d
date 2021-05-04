@@ -6,5 +6,8 @@ int main(string[] args)
     version(useMir)
     {
     }
+    version(usePhobos)
+    {
+    }
 	return 0;
 }
