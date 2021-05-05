@@ -1,4 +1,4 @@
-version = useMir;
+// version = useMir;
 version = usePhobos;
 
 int main(string[] args)
