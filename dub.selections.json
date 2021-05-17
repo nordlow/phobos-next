@@ -1,0 +1,9 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"arsd-official": "9.5.0",
+		"mir-algorithm": "3.10.60",
+		"mir-core": "1.1.68",
+		"silly": "1.1.1"
+	}
+}

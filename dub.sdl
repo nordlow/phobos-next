@@ -10,8 +10,8 @@ copyright "Copyright © 2018, Per Nordlöw"
 authors "Per Nordlöw <per.nordlow@gmail.com>"
 
 dependency "arsd-official:terminal" version="*"
-dependency "silly" version="*"
 dependency "mir-algorithm" version="*"
+dependency "silly" version="*"
 
 buildRequirements "allowWarnings"
 
