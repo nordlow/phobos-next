@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo "Benchmark with templated AliasThisTypeOf ..."
+for i in {1..5}
+do
+    \time -f "%Uuser %Ssystem %Eelapsed %PCPU (%Xtext+%Ddata %Mmax)k" dmd -o- app.d
+done
+
+echo "Benchmark with inlined AliasThisTypeOf ..."
+for i in {1..5}
+do
+    \time -f "%Uuser %Ssystem %Eelapsed %PCPU (%Xtext+%Ddata %Mmax)k" dmd -o- app.d -version=typeof2
+done

@@ -1,0 +1,21 @@
+name "xdag"
+description "Process Execution Directed Acyclic Graph (DAG)."
+targetType "library"
+license "BSL-1.0"
+
+authors "Per Nordlöw <per.nordlow@gmail.com>"
+copyright "Copyright © 2023, Per Nordlöw"
+
+dependency "phobos-next" path="../"
+dependency "tcc-d2" path="../tcc-d2" # TODO: apt install libtcc-dev on demand
+
+dflags "-vcolumns" "-preview=in" "-dip1000"
+
+libs "tcc"
+
+buildType "unittest" {
+   dflags "-d" "-g" "-checkaction=context" "-allinst"
+   dflags "-fsanitize=address" platform="posix-ldc"
+   dflags "-debug" platform="dmd"
+   dflags "--d-debug" platform="ldc"
+}

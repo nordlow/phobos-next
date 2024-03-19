@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<!-- saved from url=(0050)https://olshansky.me/posts/2017-06-15-inside-d-gc/ -->
+<html lang="en" data-theme="light"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>Inside D's GC | Holistic scientist</title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="generator" content="Hugo 0.121.2">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css" media="screen" href="./Inside D&#39;s GC _ Holistic scientist_files/normalize.css">
+<link rel="stylesheet" type="text/css" media="screen" href="./Inside D&#39;s GC _ Holistic scientist_files/main.css">
+<link rel="stylesheet" type="text/css" media="screen" href="./Inside D&#39;s GC _ Holistic scientist_files/all.css">
+
+
+
+
+<meta property="og:title" content="Inside D&#39;s GC">
+<meta property="og:description" content="At the DConf 2017 hackathon I adventurously led a druntime group (of 2 persons) hacking on D’s GC. After a few hours I couldn’t shake off the nagging feeling “boy, this could use a rewrite”. So I decided to start on the quest of better GC for D, the first iteration being faster classic mark-sweep collector.
+To explain my motivation I’m going to describe the internals of current GC, enumerating issues with the design.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://olshansky.me/posts/2017-06-15-inside-d-gc/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2017-06-15T00:01:38+03:00">
+<meta property="article:modified_time" content="2017-06-15T00:01:38+03:00">
+
+<meta name="twitter:card" content="summary"><meta name="twitter:title" content="Inside D&#39;s GC">
+<meta name="twitter:description" content="At the DConf 2017 hackathon I adventurously led a druntime group (of 2 persons) hacking on D’s GC. After a few hours I couldn’t shake off the nagging feeling “boy, this could use a rewrite”. So I decided to start on the quest of better GC for D, the first iteration being faster classic mark-sweep collector.
+To explain my motivation I’m going to describe the internals of current GC, enumerating issues with the design.">
+
+<meta itemprop="name" content="Inside D&#39;s GC">
+<meta itemprop="description" content="At the DConf 2017 hackathon I adventurously led a druntime group (of 2 persons) hacking on D’s GC. After a few hours I couldn’t shake off the nagging feeling “boy, this could use a rewrite”. So I decided to start on the quest of better GC for D, the first iteration being faster classic mark-sweep collector.
+To explain my motivation I’m going to describe the internals of current GC, enumerating issues with the design."><meta itemprop="datePublished" content="2017-06-15T00:01:38+03:00">
+<meta itemprop="dateModified" content="2017-06-15T00:01:38+03:00">
+<meta itemprop="wordCount" content="1850">
+<meta itemprop="keywords" content="">
+</head>
+<body data-new-gr-c-s-check-loaded="14.1148.0" data-gr-ext-installed="">
+<header>
+<div id="titletext">
+<h2 id="titleonly"><a href="https://olshansky.me/">Holistic scientist</a></h2>
+</div>
+<div id="title-social">
+</div>
+<div id="mainmenu">
+<nav>
+<ul>
+<li><a href="https://olshansky.me/">Home</a></li>
+<li><a href="https://olshansky.me/about/">About</a></li>
+<li><a href="https://olshansky.me/posts/">Posts</a></li>
+</ul>
+</nav>
+</div>
+</header>
+<main>
+<div class="post">
+<article>
+<div class="post-header">
+<div class="meta">
+<div class="date">
+<span class="day">15</span>
+<span class="rest">Jun 2017</span>
+</div>
+</div>
+<div class="matter">
+<h1 class="title">Inside D's GC</h1>
+<p class="post-meta">
+<span class="post-meta">
+
+
+
+
+
+</span>
+
+</p>
+</div>
+</div>
+<div class="markdown">
+<p>At the DConf 2017 hackathon I adventurously led a druntime group (of 2 persons) hacking on D’s GC. After a few hours I couldn’t shake off the nagging feeling “boy, this could use a rewrite”. So I decided to start on the quest of better GC for D, the first iteration being faster classic mark-sweep collector.</p>
+<p>To explain my motivation I’m going to describe the internals of current GC, enumerating issues with the design. All in all, one should analyze what we have to understand where to go from here.</p>
+<h2 id="pools-pools-everywhere">Pools, pools everywhere</h2>
+<p>If we were to ignore some global paraphernalia the GC is basically an array of pool objects. Each pool is a chunk of mmap-ed memory + a bunch of malloc-ed metadata such as tables for mark bits, free bits and so on. All allocation happens inside of a pool, if not a single pool is capable to service an allocation a new pool is allocated.  The size of a pool is determined by arithmetic progression on the number of pools or 150% of the size of allocation, whatever is bigger.</p>
+<p>Importantly pools come in two flavors: small object pool and large object pool. Small pools allocate objects up to 2kb in size, the rest is serviced by large pools. Small pools are actually more interesting so let’s look at them first.</p>
+<p></p><figure>
+  <img src="./Inside D&#39;s GC _ Holistic scientist_files/SmallPool.jpg" alt="Small pool structure" title="Small pool structure">
+</figure>
+Any small allocation is first rounded up to one of power of 2 size classes - 16, 32, 64, 128, 256, 512, 1024, 2048.  Then a global freelist for this size class is checked, failing that we go on to locate a small pool. That small pool would allocate a new page and link it up as a free list of objects of this size class. Here comes the first big mistake of the current design - size class is assigned on a page basis, therefore we need a table that maps each page of a pool to a size class (confusingly called pagetable). Now to find the start of an object by internal pointer we first locate the page it belongs to, then lookup the size class, and finally do a bitmask to get to the start of object. More over metadata is a bunch of simple bit-tables that now has to cope with heterogeneous pages, it does so by having ~7 bits per 16 bytes regardless of the object size.<p></p>
+<p>What motivated that particular design? I have 2 hypotheses. First is being afraid to reserve memory for underutilized pools, which is a non-issue due to virtual memory with lazy commit. Second is being afraid of having too many pools, slowing down allocation and interestingly marking. The last one is more likely the reason, as indeed GC does a linear scan over pools quite often and a binary search for every potential pointer(!) during the marking phase.</p>
+<p>That brings us to the second mistake - pool search in logP where P is a number of pools, which makes mark a NlogP business. A hash table could have saved quite a few cycles.</p>
+<p>Concluding our overview of small pool, we should also look at the selection of size classes. This is a third issue (not a mistake, but controversial choice) having power of 2 sizes guarantees us up to 50% of <a href="https://en.m.wikipedia.org/wiki/Fragmentation_%28computing%29#Internal_fragmentation" target="_blank">internal fragmentation</a>.  Modern allocators such as <a href="https://m.facebook.com/notes/facebook-engineering/scalable-memory-allocation-using-jemalloc/480222803919/" target="_blank">jemalloc</a>  typically provide for one more size class in between powers of 2. Modulo by a constant that is not a power of 2 is a bit slower than a single bit AND but still quite affordable.</p>
+<p></p><figure>
+  <img src="./Inside D&#39;s GC _ Holistic scientist_files/LargePool.jpg" alt="Large pool structure" title="Large pool structure">
+</figure><p></p>
+<p>Let’s have a look at large object pools. First thing to note is that its granularity is a memory page (4kb) for both metadata and allocations. Free runs of pages are linked in one free list which is linearly scanned for every allocation request. This is the 4th mistake, that is not bothering with performance of large object allocation at all. To locate a start of an object a separate table is maintained where for every page an index of the start of the object it belongs to is stored. The scheme is sensible until one considers big allocations of 100+ Mb, as it will likely fail to reallocate in place causing a new pool to be allocated and would waste huge amounts of memory on metadata for essentially one object.</p>
+<h2 id="collection">Collection</h2>
+<p>So far we observed the allocation pipeline, deallocation follows the same paths. What’s more interesting is automatic reclamation which is the whole point of GC.  Let me first dully note that D’s GC is conservative meaning that it doesn’t know if something is a pointer or not, and secondly it supports finalizers, actions that are run on object before reclaiming its memory.  These two decisions heavily constrain the design of a collector.</p>
+<p>From a high level view a collection is surprisingly a whole 4 phase process: <a href="https://github.com/dlang/druntime/blob/master/src/gc/impl/conservative/gc.d#L2106" target="_blank">prepare</a>, <a href="https://github.com/dlang/druntime/blob/master/src/gc/impl/conservative/gc.d#L2144" target="_blank">markAll</a>, <a href="https://github.com/dlang/druntime/blob/master/src/gc/impl/conservative/gc.d#L2172" target="_blank">sweep</a> and <a href="https://github.com/dlang/druntime/blob/master/src/gc/impl/conservative/gc.d#L2291" target="_blank">recover</a>.</p>
+<p>Prepare stage is the most dubious, essentially it should have been “copy of free bits to mark bits” (to prevent scanning of free memory). The waters are muddied by actually calculating all of free space by walking free lists. This is  5th(?) mistake - leap frogging an additional untold amount of pointers is the last thing to do during stop the world pause.  A better design would be  flipping free bits during allocation/deallocation, especially since free list maintains pointers to pool for each object so pool search is not required.</p>
+<p>The actual marking phase is markAll call, that just delegates apropriate ranges of memory to mark function. That <a href="https://github.com/dlang/druntime/blob/master/src/gc/impl/conservative/gc.d#L1955" target="_blank">mark</a> deserves a closer look.</p>
+<ol>
+<li>For each pointer in memory range it will first check if it hits the address range of the GC heap (smallest address in a pool to highest address in a pool).</li>
+<li>Following that a dreaded binary search to find the right pool for the pointer.</li>
+<li>Regardless of the pool type a lookup into a pagetable for the current pool to see its size class or if it’s a large object or even free memory that is not scanned. There is a tiny optimization in that this lookup also tells us if it’s a start of large object or continuation. We have 3 cases  - small object, large object start or large object continuation, the last two are identical save for one extra table lookup.</li>
+<li>Determining the start of the object - bit masking with the right mask plus in case of large object continuation an offset table lookup.</li>
+<li>In case of large object there is a “no interior pointer” bit that allows ignoring internal pointers to the object.</li>
+<li>Finally check and set bit in mark bits, if wasn’t marked before or noscan bit is not set add the object to the stack of memory to scan.</li>
+</ol>
+<p>Ignoring the curious stack limiting manipulations (to avoid stack overflow yet try to use the stack allocation) this is all there is to mark function. Apart from already mentioned pool search, deficiencies are still numerous. Mixing no-pointers memory (noscan) with normal memory in the same pool gives us an extra bit-table lookup on hot path. Likewise a pagetable lookup could be easily avoided had we segregated the pools by size class. Not to mention the dubious optimization of no interior pointers bit that not only promotes unsafe code (an object can be collected while still being pointed at) but also introduces a few extra checks on the critical path for all large objects, including a potential bit-table lookup.</p>
+<p>That was quite involved but keep in mind that mark phase is the heart of any collector. Now to the 3rd phase - sweep. Ironically in current D’s GC sweep doesn’t sweep to free lists as one would expect. Instead all it is concerned about is calling finalizers (if present) and setting free bits and other tables. Bear in mind that this is doing a linear pass through the memory of each pool looking at mark bits.</p>
+<p>Final stage - recover, this will actually rebuild free lists. It is again a linear pass across pools but only the small ones.  Again a pagetable lookup for every page of a pool to learn a size class, it just makes me want to cry. But the main unanswered question is why? Why an extra pass? I tried hard to come up with a reasonable cause but couldn’t, “for simplicity” is a weak but probable explanation. This is the last big mistake by my count.</p>
+<h2 id="whats-not-there">What’s not there</h2>
+<p>So far I’ve been criticizing things that are in plain sight, now it’s time to go on to things that are simply non-existent.</p>
+<p>Thread cache is one big omission, keeping in mind that D’s GC is dated by early 2000s it’s not that surprising.  Every modern allocator has some form of thread cache, some try to maintain a per processor cache. A cache works by each thread basically doing allocations in bulk, keeping a stash of allocations for the future. This amortizes the cost of locking the shared data-structures of heap. Speaking of which there is a bit of fine grained locking present, but not say on per pool level.</p>
+<p>Parallel marking is another example of modern feature that is now totally expected of any garbage collector. Also quite popular are concurrent and mostly concurrent GCs whereby the marking and less often sweep/compaction is done while application threads are running.</p>
+<h2 id="closing-thoughts">Closing thoughts</h2>
+<p>The post got pretty lengthy and more involved then I would hope. Still I belive it carries the message across - D’s GC is slow not because of some fundamental limitation but because of a half a dozen or so of bad implementation decisions. In the same vein one could easily build a precise generational GC that is slow, purely missing out on good implementation techniques.</p>
+<p>Now to sum up what my first iteration attempts to change compared to this baseline.</p>
+<ul>
+<li>Segregate small pools on size class.</li>
+<li>Make O(1) pool search.</li>
+<li>Try to use more size classes including non-power of 2,  a-la jemalloc, to defeat internal fragmentation.</li>
+<li>Segregate all pools based on no-scan attribute, this streamlines marking.</li>
+<li>Provide 3rd class of “pools” for huge allocations (16+ Mb) intended for single objects only.</li>
+<li>Large object pool allocation needs more thought, a kind of tree keyed on block length might be in order. jemalloc uses red-black trees.</li>
+<li>Drop no interior pointer attribute, it tries to combat false pointers due to conservative GC. However it is fundamentally unsafe and the price is too high, lastly it’s completely pointless on 64-bit systems where your servers are.</li>
+<li>No whacky multi-phase collection in mark-sweep cycle, it’s mark and sweep, that’s it.</li>
+<li>Fine grained locking from the start, I see no problem with per pool locking.</li>
+</ul>
+<p>The second iteration will focus on more juicy stuff such as thread cache, parallel marking and concurrent marking utilizing the fork trick.</p>
+<p>The third iteration (if we get to it) would be a completely new design - a mark-region collector with design inspired by <a href="http://www.cs.utexas.edu/users/speedway/DaCapo/papers/immix-pldi-2008.pdf" target="_blank">immix</a>.</p>
+<p>This concludes my plans and on this optimistic note I will warn that it’s going to start as Linux specific, slowly becoming POSIX specific with Windows support being a distant posibility.</p>
+
+</div>
+</article></div>
+
+
+</main><script src="./Inside D&#39;s GC _ Holistic scientist_files/dark-mode.js"></script>
+
+
+
+
+                <div id="cf_notif_div_izj1nl07zu" class="cf_div_position_south light_body cf_div_theme_dark">
+                    <div id="all_notification_actions" style="display: none;">
+                        <a href="https://olshansky.me/posts/2017-06-15-inside-d-gc/#" class="all_notification_action_button" title="Clear all notifications" id="clear_all"><img src="chrome-extension://iipjdmnoigaobkamfhnojmglcdbnfaaf/img/ic_clear_all.svg"></a>
+                        <a href="https://olshansky.me/posts/2017-06-15-inside-d-gc/#" class="all_notification_action_button" title="Notification settings" id="open_settings"><img src="chrome-extension://iipjdmnoigaobkamfhnojmglcdbnfaaf/img/ic_settings_20px.svg"></a>
+                    </div>
+                </div></body><grammarly-desktop-integration data-grammarly-shadow-root="true"><template shadowrootmode="open"><style>
+      div.grammarly-desktop-integration {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select:none;
+        user-select:none;
+      }
+
+      div.grammarly-desktop-integration:before {
+        content: attr(data-content);
+      }
+    </style><div aria-label="grammarly-integration" role="group" tabindex="-1" class="grammarly-desktop-integration" data-content="{&quot;mode&quot;:&quot;full&quot;,&quot;isActive&quot;:true,&quot;isUserDisabled&quot;:false}"></div></template></grammarly-desktop-integration></html>

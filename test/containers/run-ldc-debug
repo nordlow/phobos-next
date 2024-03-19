@@ -1,0 +1,4 @@
+#!/bin/bash
+
+DC=${DC:-"ldc2"}
+dub run --compiler="$DC" --build=debug

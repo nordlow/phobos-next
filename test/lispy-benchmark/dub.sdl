@@ -1,0 +1,21 @@
+name "lispy-benchmark"
+targetType "executable"
+dependency "phobos-next" path="../../"
+dflags "-vcolumns" "-preview=in" "-dip1000" "-dip1008"
+dflags "-fsanitize=address" "-fsanitize=leak" "-mcpu=native" platform="posix-ldc"
+# TODO: lflags "-ltcmalloc"
+
+buildType "release" {
+          dflags "-mcpu=native"
+          buildOptions "releaseMode" "optimize" "inline"
+}
+
+buildType "release-test" {
+          dflags "-mcpu=native"
+          buildOptions "unittests" "releaseMode" "optimize" "inline"
+}
+
+buildType "release-nobounds" {
+          dflags "-mcpu=native"
+          buildOptions "releaseMode" "optimize" "noBoundsCheck" "inline"
+}

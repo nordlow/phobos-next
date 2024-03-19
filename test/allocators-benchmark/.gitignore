@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+allocators-benchmark
+allocators-benchmark.so
+allocators-benchmark.dylib
+allocators-benchmark.dll
+allocators-benchmark.a
+allocators-benchmark.lib
+allocators-benchmark-test-*
+*.exe
+*.o
+*.obj
+*.lst

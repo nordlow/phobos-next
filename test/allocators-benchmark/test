@@ -1,0 +1,3 @@
+#!/bin/bash
+
+exec dub run --compiler=ldc2 --build=release-nobounds

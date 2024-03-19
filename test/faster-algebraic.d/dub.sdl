@@ -1,0 +1,7 @@
+name "faster-algebraic"
+description "Benchmark my alternative to Algebraic in vary.d"
+authors "Per Nordlöw"
+copyright "Copyright © 2018, Per Nordlöw"
+license "Boost Software License, Version 1.0"
+
+dependency "phobos-next" path="../../"

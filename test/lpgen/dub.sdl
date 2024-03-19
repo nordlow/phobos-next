@@ -1,0 +1,21 @@
+name "benchmark-lpgen"
+targetType "executable"
+description "Benchmark lpgen."
+authors "Per Nordlöw"
+copyright "Copyright © 2019, Per Nordlöw"
+license "Boost"
+dependency "phobos-next" path="../../"
+dependency "tcc-d2" path="../../tcc-d2" # TODO: apt install libtcc-dev on demand
+buildRequirements "allowWarnings"
+dflags "-vcolumns" "-dip1008" "-checkaction=context" # TODO: "-dip1000"
+# TODO: fails linking: dflags "-preview=in"
+buildType "release" {
+          dflags "-mcpu=native"
+          dflags-posix-ldc "-flto=full" "-O3"
+          buildOptions "releaseMode" "optimize" "inline"
+}
+buildType "release-nobounds" {
+          dflags "-mcpu=native"
+          dflags-posix-ldc "-flto=full" "-O3"
+          buildOptions "releaseMode" "optimize" "inline" "noBoundsCheck"
+}

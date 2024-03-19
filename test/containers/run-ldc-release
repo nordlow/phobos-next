@@ -1,0 +1,7 @@
+#!/bin/bash
+
+DC=${DC:-"ldc2"}
+
+# uses -boundscheck=off to make comparison with C++ fair
+dub run --compiler="$DC" --build=release-nobounds
+dub run --compiler="$DC" --build=release-nobounds-tcmalloc

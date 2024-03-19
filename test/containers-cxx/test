@@ -1,0 +1,30 @@
+#!/bin/bash
+
+echo "====="
+echo "Compiling with Clang first because it used to have better diagnostics:"
+echo "======"
+
+EXE_CLANG=main-clang
+clang++ -std=gnu++20 \
+      -D__MAIN__ -DNDEBUG \
+      -O3 -funroll-loops -ftree-vectorize -flto \
+      -Wall -Warray-bounds -Wempty-body -Wunused-const-variable -Wunused-parameter -Winit-self -Wwrite-strings -Wmissing-braces -Wsign-compare -Wcast-align -Wpointer-arith -Wchar-subscripts \
+      -Itsl \
+      app.cpp \
+      -lstdc++ -lpthread -lm \
+      -o ${EXE_CLANG} && ./${EXE_CLANG}
+
+echo "===="
+echo "GCC:"
+echo "===="
+
+EXE_GCC=main-gcc
+g++ -std=gnu++20 \
+      -DNDEBUG \
+      -O6 -funroll-loops -ftree-vectorize -floop-interchange -floop-block -ftree-partial-pre -fno-diagnostics-show-caret \
+      -Wall -Warray-bounds -Wempty-body -Wunused-but-set-variable -Wunused-but-set-parameter -Winit-self -Wwrite-strings -Wmissing-braces -Wsign-compare -Wcast-align -Wpointer-arith -Wchar-subscripts \
+      -O6 \
+      -Itsl \
+      app.cpp \
+      -lstdc++ -lpthread -lm \
+      -o ${EXE_GCC} && ./${EXE_GCC}

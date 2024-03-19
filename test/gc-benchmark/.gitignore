@@ -1,0 +1,16 @@
+
+.dub
+docs.json
+__dummy.html
+docs/
+gc-benchmark
+gc-benchmark.so
+gc-benchmark.dylib
+gc-benchmark.dll
+gc-benchmark.a
+gc-benchmark.lib
+gc-benchmark-test-*
+*.exe
+*.o
+*.obj
+*.lst

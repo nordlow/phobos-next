@@ -1,0 +1,47 @@
+name "phobos-next"
+targetType "library"
+
+description "Various reusable D code."
+
+homepage "https://github.com/nordlow/phobos-next"
+
+license "BSL-1.0"
+copyright "Copyright © 2023, Per Nordlöw"
+authors "Per Nordlöw <per.nordlow@gmail.com>"
+
+# dependency "arsd-official:terminal" version="*"
+dependency "mir-algorithm" version="*"
+# TODO: enable when works with test/lpgen/tcc-d2/dub.sdl
+# dependency "silly" version="~>1.2.0-dev.2"
+# dependency "argparse" version="*" # https://code.dlang.org/packages/argparse
+
+buildRequirements "allowWarnings"
+
+dflags "-vcolumns" "-preview=in" "-dip1000"
+# TODO: fails build: dflags "-preview=nosharedaccess"
+
+# TODO: lflags "-ltcmalloc"
+
+importPaths "src"
+
+buildType "unittest" {
+   dflags "-g" "-checkaction=context" "-allinst" "-unittest"
+   dflags "-fsanitize=address" "-fsanitize=leak" "-mcpu=native" platform="posix-ldc"
+   dflags "-debug" platform="dmd"
+   dflags "--d-debug" platform="ldc"
+   dflags "-preview=fieldwise" "-preview=rvaluerefparam"
+   dflags "-preview=bitfields" platform="dmd" # TODO: merge into dflags spec above when 2.101 has been merged into ldc and gdc
+}
+
+# TODO: make this pass
+buildType "unittest-no-previews" {
+   dflags "-g" "-checkaction=context" "-allinst" "-unittest"
+   dflags "-fsanitize=address" "-fsanitize=leak" "-mcpu=native" platform="posix-ldc"
+   dflags "-debug" platform="dmd"
+   dflags "--d-debug" platform="ldc"
+}
+
+buildType "release-unittest" {
+   dflags "-checkaction=context" "-allinst" "-release" "-unittest"
+   dflags "-fsanitize=address" "-fsanitize=leak" "-mcpu=native" platform="posix-ldc"
+}

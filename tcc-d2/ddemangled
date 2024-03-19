@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+exec "$@" > >(ddemangle) 2> >(ddemangle)

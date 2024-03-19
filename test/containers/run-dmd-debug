@@ -1,0 +1,4 @@
+#!/bin/bash
+
+DC=${DC:-"dmd"}
+dub run --compiler="$DC" --build=debug

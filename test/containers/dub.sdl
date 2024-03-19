@@ -1,0 +1,47 @@
+name "benchmark-containers"
+targetType "executable"
+description "Benchmark containers."
+authors "Per Nordlöw"
+copyright "Copyright © 2019, Per Nordlöw"
+license "Boost"
+
+dependency "phobos-next" path="../../"
+dependency "mir-algorithm" version="*"
+dependency "automem" version="*"
+dependency "emsi_containers" version="*"
+
+buildRequirements "allowWarnings"
+
+dflags "-vcolumns" "-preview=dtorfields" "-preview=in" "-dip1000" "-dip1008"
+dflags "-preview=bitfields" platform="dmd"
+dflags "-preview=bitfields" platform="posix-ldc"
+dflags "-mcpu=native"           # NOTE: needed for `nxt.crc32c_sse42`
+dflags "-mattr=+sse4.2" platform="ldc"
+
+# dflags "-link-internally" platform="linux-ldc" # use LLD linker. TODO: currently fails
+
+buildType "debug" {
+          dflags "-fsanitize=address" "-fsanitize=leak" platform="posix-ldc"
+          dflags "-g" "-debug" "-checkaction=context" platform="dmd"
+          dflags "--d-debug" platform="ldc"
+}
+
+buildType "release" {
+          dflags "-march=native" platform="gdc"
+          dflags-posix-ldc "-O3" # "-flto=full"
+          buildOptions "releaseMode" "optimize" "inline"
+}
+
+buildType "release-nobounds" {
+          dflags "-march=native" platform="gdc"
+          dflags-posix-ldc "-O3" # "-flto=full"
+          buildOptions "releaseMode" "optimize" "inline" "noBoundsCheck"
+}
+
+buildType "release-nobounds-tcmalloc" {
+          dflags "-march=native" platform="gdc"
+          dflags-posix-ldc "-O3" # "-flto=full"
+          buildOptions "releaseMode" "optimize" "inline" "noBoundsCheck"
+          # TODO: preBuildCommands "sudo apt install libtcmalloc-minimal4" # provision on Ubuntu
+          lflags "-ltcmalloc"
+}

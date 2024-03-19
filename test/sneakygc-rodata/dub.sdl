@@ -1,0 +1,9 @@
+name "sneakygc-rodata"
+targetType "executable"
+description "Use GC to figure out static read-only data memory segments."
+
+dependency "phobos-next" path="../../"
+
+buildRequirements "allowWarnings"
+
+dflags "-vcolumns" "-dip1008" "-dip1000" "-checkaction=context"

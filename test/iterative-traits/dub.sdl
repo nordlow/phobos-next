@@ -1,0 +1,22 @@
+name "iterative-traits"
+
+targetType "executable"
+
+dependency "phobos-next" path="../../"
+
+# TODO: lflags "-ltcmalloc"
+
+buildType "release" {
+          dflags "-mcpu=native"
+          buildOptions "releaseMode" "optimize" "inline"
+}
+
+buildType "release-test" {
+          dflags "-mcpu=native"
+          buildOptions "unittests" "releaseMode" "optimize" "inline"
+}
+
+buildType "release-nobounds" {
+          dflags "-mcpu=native"
+          buildOptions "releaseMode" "optimize" "noBoundsCheck" "inline"
+}

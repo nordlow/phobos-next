@@ -1,0 +1,15 @@
+*.o
+*.so
+*.a
+.dub
+dub.selections.json
+*.lst
+*-test-library
+*-test-application
+docs
+.fldd.cache
+dub_describe.json
+# match vc-ediff VER files
+*.~[0-9a-fA-F]*~
+perf.data*
+stackaddr

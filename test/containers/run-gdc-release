@@ -1,0 +1,6 @@
+#!/bin/bash
+
+DC=${DC:-"gdc-12"}
+
+# uses -boundscheck=off to make comparison with C++ fair
+dub run --compiler="$DC" --build=release-nobounds

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+TIME='/usr/bin/time'
+FORMAT='%e [s], %M [kB]'
+
+# Base
+"$TIME" -f "$FORMAT" dmd -i app.d -o-
+
+# Builtin trait
+"$TIME" -f "$FORMAT" dmd -i app.d -o- -version=doBenchmark -version=useBuiltin
+
+# Phobos
+"$TIME" -f "$FORMAT" dmd -i app.d -o- -version=doBenchmark

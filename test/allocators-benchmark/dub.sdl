@@ -1,0 +1,23 @@
+name "allocators-benchmark"
+description "Benchmark std.experimental.allocator"
+authors "Per Nordlöw"
+copyright "Copyright © 2018, Per Nordlöw"
+license "Boost Software License, Version 1.0"
+seeAlso "https://forum.dlang.org/post/avistfdwsutzpjjgyhyp@forum.dlang.org"
+dependency "phobos-next" path="../../"
+dflags "-fsanitize=address" "-fsanitize=leak" "-mcpu=native" platform="posix-ldc"
+
+buildType "release" {
+          dflags "-mcpu=native"
+          buildOptions "releaseMode" "optimize" "inline"
+}
+
+buildType "release-test" {
+          dflags "-mcpu=native"
+          buildOptions "unittests" "releaseMode" "optimize" "inline"
+}
+
+buildType "release-nobounds" {
+          dflags "-mcpu=native"
+          buildOptions "releaseMode" "optimize" "noBoundsCheck" "inline"
+}

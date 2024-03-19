@@ -1,0 +1,5 @@
+#!/bin/bash
+
+rm trace.def trace.log
+dmd -profile=gc app.d
+./app

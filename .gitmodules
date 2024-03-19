@@ -1,0 +1,3 @@
+[submodule "src/arsd"]
+	path = src/arsd
+	url = https://github.com/adamdruppe/arsd.git

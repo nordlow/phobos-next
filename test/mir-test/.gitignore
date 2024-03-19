@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+mir-test.so
+mir-test.dylib
+mir-test.dll
+mir-test.a
+mir-test.lib
+mir-test-test-*
+*.exe
+*.o
+*.obj
+*.lst
+dub.selections.json
+mir-test

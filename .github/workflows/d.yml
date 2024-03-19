@@ -1,0 +1,44 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+name: D
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+# TODO: provision gmp.lib using https://github.com/marketplace/actions/run-vcpkg
+# and then add ‘windows-latest’ to list of os.
+
+jobs:
+  test:
+    name: Build and Test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        dc:
+        - dmd-latest
+        - ldc-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+    # - name: 'Provision'
+    #   run: |
+    #     bash provision.sh
+    - uses: awalsh128/cache-apt-pkgs-action@latest # https://github.com/marketplace/actions/cache-apt-packages
+      with:
+        packages: git llvm clang zlib1g-dev libbz2-dev liblzo2-dev libzstd-dev tcc libtcc-dev libtree-sitter-dev
+        version: 1.0
+    - uses: actions/checkout@v3
+    - uses: dlang-community/setup-dlang@v1.3.0
+      with:
+        compiler: ${{ matrix.dc }}
+    - name: 'Build, Run and Test All'
+      run: |
+        bash ci.sh

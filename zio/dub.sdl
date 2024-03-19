@@ -1,0 +1,7 @@
+name "zio"
+targetType "library"
+license "BSL-1.0"
+copyright "Copyright © 2022, Per Nordlöw"
+authors "Per Nordlöw <per.nordlow@gmail.com>"
+dependency "phobos-next" path="../"
+libs "z" "bz2"

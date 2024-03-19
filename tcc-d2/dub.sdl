@@ -1,0 +1,23 @@
+name "tcc-d2"
+description "Idiomatic D bindings to the Tiny C Compiler"
+targetType "library"
+license "LGPL-2.1 or later"
+homepage "http://bellard.org/tcc/"
+
+authors "Per Nordlöw <per.nordlow@gmail.com>"
+copyright "Copyright © 2023, Per Nordlöw"
+
+sourcePaths "src"
+importPaths "src"
+
+dflags "-vcolumns" "-preview=in" "-dip1000"
+
+dependency "phobos-next" path="../"
+libs "tcc" platform="posix"     # TODO: apt install libtcc-dev on demand
+
+buildType "unittest" {
+   dflags "-g" "-checkaction=context" "-allinst" "-unittest"
+   dflags "-fsanitize=address" platform="posix-ldc"
+   dflags "-debug" platform="dmd"
+   dflags "--d-debug" platform="ldc"
+}

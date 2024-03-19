@@ -1,0 +1,13 @@
+#!/bin/bash
+
+TIME='/usr/bin/time'
+FORMAT='%e [s], %M [kB]'
+
+# Base
+"$TIME" -f "$FORMAT" dmd -i app.d -o-
+
+# Faster
+"$TIME" -f "$FORMAT" dmd -i app.d -o- -version=doBenchmark -version=useFaster
+
+# Phobos
+"$TIME" -f "$FORMAT" dmd -i app.d -o- -version=doBenchmark

@@ -1,0 +1,12 @@
+name "gc-benchmark"
+targetType "executable"
+description "Benchmark comparing default and segregated GC."
+authors "Per Nordlöw"
+copyright "Copyright © 2019, Per Nordlöw"
+license "Boost"
+dependency "phobos-next" path="../../"
+
+buildType "release-nobounds-segregated-gc" {
+          buildOptions "releaseMode" "optimize" "inline" "noBoundsCheck"
+          version "segregated_gc"
+}
