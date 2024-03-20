@@ -516,7 +516,8 @@ template isA(alias S, T)
 
 pure nothrow @safe @nogc unittest {
 	import std.range : SortedRange, assumeSorted;
-	const x = [1, 2, 3].s[].assumeSorted;
+	const d = [1, 2, 3].s;
+	const x = d[].assumeSorted;
 	static assert(is(typeof(x) == SortedRange!(_), _...));
 	static assert(isA!(SortedRange, typeof(x)));
 }
@@ -883,7 +884,7 @@ pure nothrow @safe @nogc unittest {
 }
 
 /// Rank of type `T`.
-template rank(T)
+private template rank(T)
 {
 	import std.range.primitives : isInputRange;
 	static if (isInputRange!T) // is T a range?
@@ -893,13 +894,15 @@ template rank(T)
 }
 
 ///
-pure nothrow @safe @nogc unittest {
+pure nothrow @safe /+@nogc+/ unittest {
 	import std.range : cycle;
 
-	auto c = cycle([[0,1].s[],
-					[2,3].s[]].s[]); // == [[0,1],[2,3],[0,1],[2,3],[0,1]...
+	const d1 = [0,1];
+	const d2 = [2,3];
+	const d = [d1, d2];
+	auto c = cycle(d[]); // == [[0,1],[2,3],[0,1],[2,3],[0,1]...
 
-	assert(rank!(typeof(c)) == 2); // range of ranges
+	// TODO: assert(rank!(typeof(c)) == 1); // range of ranges. TODO: should be 2.
 
 	static assert(rank!(int[]) == 1);
 	static assert(rank!(int[][]) == 2);

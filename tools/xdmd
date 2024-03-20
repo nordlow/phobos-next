@@ -1,5 +1,0 @@
-#!/bin/bash
-
-THIS_DIR=$(dirname "${BASH_SOURCE[0]}")
-
-exec rdmd "${THIS_DIR}"/xdmd.d "$@"

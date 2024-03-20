@@ -22,19 +22,27 @@ public import nxt.stdio : Format;
  * See_Also: https://forum.dlang.org/post/svjjawiezudnugdyriig@forum.dlang.org
  * See_Also: http://forum.dlang.org/thread/yczwqrbkxdiqijtiynrh@forum.dlang.org?page=1
  */
-void dbg(Args...)(scope auto ref Args args, in string file = __FILE_FULL_PATH__, const uint line = __LINE__) {
+void dbg(Args...)(scope auto ref Args args, in string file = __FILE_FULL_PATH__, in uint line = __LINE__) {
 	import nxt.stdio : pwriteln;
 	debug pwriteln(Format.debugging, file, "(", line, "):", " Debug: ", args, "");
+	debug _fflush(); // most often what we want before a potentially crash happens
 }
 
-void pdbg(Args...)(in Format fmt, scope auto ref Args args, in string file = __FILE_FULL_PATH__, const uint line = __LINE__) {
+void pdbg(Args...)(in Format fmt, scope auto ref Args args, in string file = __FILE_FULL_PATH__, in uint line = __LINE__) {
 	import nxt.stdio : pwriteln;
 	debug pwriteln(fmt, file, "(", line, "):", " Debug: ", args, "");
+	debug _fflush(); // most often what we want before a potentially crash happens
 }
 
-void dbgf(Args...)(scope Args args, const string file = __FILE_FULL_PATH__, const uint line = __LINE__, const string fun = __FUNCTION__) {
+void dbgf(Args...)(scope Args args, const string file = __FILE_FULL_PATH__, in uint line = __LINE__, const string fun = __FUNCTION__) {
 	import nxt.stdio : pwriteln;
 	debug pwriteln(Format.debugging, file, "(", line, "): ", fun, ": Debug: ", args, "");
+	debug _fflush(); // most often what we want before a potentially crash happens
+}
+
+private void _fflush() @trusted {
+	import core.stdc.stdio : stdout, fflush;
+	debug fflush(stdout);
 }
 
 ///

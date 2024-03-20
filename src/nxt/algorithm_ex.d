@@ -27,10 +27,7 @@ alias tail = dropOne;
  * BUG: this overload is not chosen over `std.algorithm.either` so function
  * must currently be called `eitherRef` instead of `either`.
  */
-ref Ts[0] eitherRef(Ts...)(ref Ts a)
-if (a.length != 0 &&
-	allSame!Ts)		 /+ TODO: better trait for this? +/
-{
+ref Ts[0] eitherRef(Ts...)(ref Ts a) if (a.length != 0 && allSame!Ts) /+ TODO: better trait for this? +/ {
 	static if (Ts.length == 1)
 		return a[0];
 	else
@@ -40,6 +37,7 @@ if (a.length != 0 &&
 ///
 @safe pure /*TODO: nothrow*/ unittest {
 	int x = 1, y = 2;
+	eitherRef(x) = x;
 	eitherRef(x, y) = 3;
 	assert(x == 3);
 	assert(y == 2);
@@ -53,8 +51,7 @@ if (a.length != 0 &&
  *
  * TODO: Is inout Conversion!T the correct return value?
 */
-CommonType!T every(T...)(lazy T a)
-if (T.length != 0) {
+CommonType!T every(T...)(lazy T a) if (T.length != 0) {
 	auto a0 = a[0]();		   // evaluate only once
 	static if (T.length == 1)
 		return a0;
@@ -105,8 +102,7 @@ version (none) // WARNING disabled because I don't see any use of this for.
  * If all values of `parts` implicitly convert to `bool true`, return the values
  * as an array, otherwise restore whole and return null.
  */
-CommonType!T[] tryEvery(S, T...)(ref S whole, lazy T parts)
-if (T.length != 0) {
+CommonType!T[] tryEvery(S, T...)(ref S whole, lazy T parts) if (T.length != 0) {
 	const wholeBackup = whole;
 	bool all = true;
 	alias R = typeof(return);
@@ -246,8 +242,7 @@ pure nothrow @safe @nogc unittest {
  * TODO: Test graphemes in `string` and `wstring`.
  * TODO: Move to Phobos
 */
-bool isSymmetric(R)(R range)
-if (isBidirectionalRange!(R)) {
+bool isSymmetric(R)(R range) if (isBidirectionalRange!(R)) {
 	size_t i = 0;
 	import std.range.primitives : empty;
 	while (!range.empty) {
@@ -276,10 +271,9 @@ pure @safe unittest {
 
 /** Returns: If `range` is a palindrome larger than `lengthMin`.
  */
-bool isPalindrome(R)(R range,
-					 size_t lengthMin = 0) /+ TODO: good value for lengthMin? +/
+bool isPalindrome(R)(R range, size_t lengthMin = 0) /+ TODO: good value for lengthMin? +/
 if (isBidirectionalRange!(R)) {
-	static if (isRandomAccessRange!R) // arrays excluding `char[]` and `wchar[]`
+	static if (hasLength!R) // arrays excluding `char[]` and `wchar[]`
 		if (range.length < lengthMin)
 			return false;
 	size_t i = 0;
@@ -299,7 +293,6 @@ if (isBidirectionalRange!(R)) {
 
 ///
 pure @safe unittest {
-	assert(`dallassallad`.isPalindrome);
 	assert(!`ab`.isPalindrome);
 	assert(`a`.isPalindrome);
 	assert(`åäå`.isPalindrome);
@@ -307,6 +300,9 @@ pure @safe unittest {
 	assert(`åäå`.isPalindrome);
 	assert(``.isPalindrome);
 	assert([1, 2, 2, 1].s[].isPalindrome);
+	assert(![1, 2, 2, 1].s[].isPalindrome(5));
+	assert(``.isPalindrome(lengthMin: 0));
+	assert(!``.isPalindrome(lengthMin: 1));
 }
 
 import nxt.traits_ex : areEquable;
@@ -580,8 +576,7 @@ alias packBPRL = packBitParallelRunLengths;
  * See_Also: http://forum.dlang.org/thread/ujouqtqeehkegmtaxebg@forum.dlang.org#post-lczzsypupcfigttghkwx:40forum.dlang.org
  * See_Also: http://rosettacode.org/wiki/Forward_difference#D
  */
-auto forwardDifference(R)(R r)
-if (isInputRange!R) {
+auto forwardDifference(R)(R r) if (isInputRange!R) {
 	import std.range: front, empty, popFront, dropOne;
 
 	struct ForwardDifference
@@ -711,12 +706,10 @@ import std.algorithm: SwapStrategy;
  */
 template sort(alias less = `a < b`, SwapStrategy ss = SwapStrategy.unstable) {
 	import std.algorithm: stdSort = sort;
-	auto sort(Arr)(ref Arr arr)
-	if (__traits(isStaticArray, Arr)) {
+	auto sort(Arr)(ref Arr arr) if (__traits(isStaticArray, Arr)) {
 		return stdSort!(less, ss)(arr[]);
 	}
-	auto sort(Range)(Range r)
-	if (!__traits(isStaticArray, Range)) {
+	auto sort(Range)(Range r) if (!__traits(isStaticArray, Range)) {
 		return stdSort!(less, ss)(r);
 	}
 }
@@ -733,8 +726,7 @@ pure @safe unittest {
  *
  * See_Also: http://forum.dlang.org/thread/gjuvmrypvxeebvztszpr@forum.dlang.org
  */
-auto ref stableSort(T)(auto ref T a) pure
-if (isRandomAccessRange!T) {
+auto ref stableSort(T)(auto ref T a) pure if (isRandomAccessRange!T) {
 	if (a.length >= 2) {
 		import std.algorithm: partition3, sort;
 		auto parts = partition3(a, a[$ / 2]); // mid element as pivot
@@ -854,8 +846,7 @@ pure @safe unittest {
 	assert(zipWith!`a+b+c`(x, x, x).array == [3, 6, 9]);
 }
 
-auto zipWith(fun, StoppingPolicy, Ranges...)(StoppingPolicy sp,
-											 Ranges ranges)
+auto zipWith(fun, StoppingPolicy, Ranges...)(StoppingPolicy sp, Ranges ranges)
 if (Ranges.length != 0 &&
 	allSatisfy!(isInputRange, Ranges)) {
 	import std.range: zip;
@@ -928,14 +919,12 @@ pure @safe unittest {
 /** Expand Static `array` into a parameter arguments (AliasSeq!).
 	See_Also: http://forum.dlang.org/thread/hwellpcaomwbpnpofzlx@forum.dlang.org?page=1
 */
-template expand(alias array, size_t idx = 0)
-if (__traits(isStaticArray, typeof(array))) {
+template expand(alias array, size_t idx = 0) if (__traits(isStaticArray, typeof(array))) {
 	@property ref delay() { return array[idx]; }
 	static if (idx + 1 < array.length) {
 		import std.meta : AliasSeq;
 		alias expand = AliasSeq!(delay, expand!(array, idx + 1));
-	}
-	else
+	} else
 		alias expand = delay;
 }
 
@@ -1061,9 +1050,7 @@ if (isForwardRange!R) {
 		return tuple(haystack[0 .. pos1],
 					 haystack[pos1 .. pos2],
 					 haystack[pos2 .. haystack.length]);
-	}
-	else
-	{
+	} else {
 		import std.functional : unaryFun;
 		auto original = haystack.save;
 		auto h = haystack.save;
@@ -1072,9 +1059,7 @@ if (isForwardRange!R) {
 			if (unaryFun!pred(h.front)) {
 				h.popFront();
 				++pos2;
-			}
-			else
-			{
+			} else {
 				haystack.popFront();
 				h = haystack.save;
 				pos2 = ++pos1;
@@ -1104,9 +1089,7 @@ if (isForwardRange!R) {
 		immutable pos = haystack.length - balance.length;
 		return tuple(haystack[0 .. pos],
 					 haystack[pos .. haystack.length]);
-	}
-	else
-	{
+	} else {
 		import std.functional : unaryFun;
 		auto original = haystack.save;
 		auto h = haystack.save;
@@ -1115,8 +1098,7 @@ if (isForwardRange!R) {
 		while (!h.empty)
 			if (unaryFun!pred(h.front))
 				h.popFront();
-			else
-			{
+			else {
 				haystack.popFront();
 				h = haystack.save;
 				++pos;
@@ -1142,9 +1124,7 @@ if (isForwardRange!R) {
 		immutable pos = balance.empty ? 0 : haystack.length - balance.length + 1;
 		/+ TODO: use Voldemort struct instead of tuple +/
 		return tuple(haystack[0 .. pos], haystack[pos .. haystack.length]);
-	}
-	else
-	{
+	} else {
 		static assert(0, `How to implement this?`);
 		// import std.range.primitives : empty;
 		/* auto original = haystack.save; */
@@ -1182,8 +1162,7 @@ pure @safe unittest {
 	assert(`aa1`.splitAfter!(a => a.isDigit) == tuple(`aa1`, ``));
 }
 
-auto moveUntil(alias pred, R)(ref R r)
-if (isInputRange!R) {
+auto moveUntil(alias pred, R)(ref R r) if (isInputRange!R) {
 	auto split = r.splitBefore!pred;
 	r = split[1];
 	return split[0];
@@ -1197,8 +1176,7 @@ pure @safe unittest {
 	assert(r == `111`);
 }
 
-auto moveWhile(alias pred, R)(ref R r)
-if (isInputRange!R) {
+auto moveWhile(alias pred, R)(ref R r) if (isInputRange!R) {
 	return r.moveUntil!(a => !pred(a));
 }
 
@@ -1217,19 +1195,15 @@ auto findPopBefore(alias pred = `a == b`, R1, R2)(ref R1 haystack, R2 needle)
 if (isForwardRange!R1 &&
 	isForwardRange!R2) {
 	import std.range.primitives : empty;
-
 	if (needle.empty)
 		return haystack[0 .. 0]; // contextual empty hit
 	if (haystack.empty)
 		return R1.init;
-
 	import std.algorithm.searching : findSplitBefore;
-	if (auto split = findSplitBefore!pred(haystack, needle)) /+ TODO: If which case are empty and what return value should they lead to? +/
-	{
+	if (auto split = findSplitBefore!pred(haystack, needle)) /+ TODO: If which case are empty and what return value should they lead to? +/ {
 		haystack = split[1];
 		return split[0];
-	}
-	else
+	} else
 		return R1.init; /+ TODO: correct? +/
 }
 
@@ -1258,18 +1232,15 @@ auto findPopAfter(alias pred = `a == b`, R1, R2)(ref R1 haystack, R2 needle)
 if (isForwardRange!R1 &&
 	isForwardRange!R2) {
 	import std.range.primitives : empty;
-
 	if (needle.empty)
 		return haystack[0 .. 0]; // contextual empty hit
 	if (haystack.empty)
 		return R1.init;
-
 	import std.algorithm.searching : findSplitAfter;
 	auto split = findSplitAfter!pred(haystack, needle);/+ TODO: use new interface to findSplitAfter +/
 	if (split[0].empty)
 		return R1.init; /+ TODO: correct? +/
-	else
-	{
+	else {
 		haystack = split[1];
 		return split[0];
 	}
@@ -1432,8 +1403,7 @@ alias smul = mulu;
  * See_Also: http://forum.dlang.org/thread/jufggxqwzhlsmhshtnfj@forum.dlang.org?page=2
  * See_Also: http://dpaste.dzfl.pl/7b4b37b490a7
  */
-auto distinct(R)(R r)
-if (isInputRange!(Unqual!R)) {
+auto distinct(R)(R r) if (isInputRange!(Unqual!R)) {
 	import std.traits: ForeachType;
 	bool[ForeachType!R] seen; /+ TODO: Use containers.hashset.HashSet +/
 	import std.algorithm.iteration: filter;
@@ -1454,14 +1424,11 @@ if (isInputRange!(Unqual!R)) {
 //				  [1, 0, 2, 3, 5]));
 // }
 
-/** Returns: `true` iff `value` is equal to any of `values`, `false` otherwise. */
-bool isAmong(alias pred = (a, b) => a == b,
-			 Value,
-			 Values...)(Value value,
-						Values values)
+/** Returns: `true` iff `needle` is equal to any of `haystack`, `false` otherwise. */
+bool isAmong(alias pred = (a, b) => a == b, Value, Values...)(Value needle, Values haystack)
 if (Values.length != 0) {
 	import std.algorithm.comparison : among;
-	return cast(bool)value.among!pred(values);
+	return cast(bool)needle.among!pred(haystack);
 }
 
 ///
@@ -1517,8 +1484,7 @@ if (is(T == class)) {
 
 ///
 pure nothrow @safe unittest {
-	class C
-	{
+	class C {
 		this (int a, int b, string c) {
 			this.a = a;
 			this.b = b;
@@ -1526,9 +1492,7 @@ pure nothrow @safe unittest {
 		}
 		int a; int b; string c;
 	}
-	void f(C c) {
-		c.resetAllMembers();
-	}
+	void f(C c) { c.resetAllMembers(); }
 	auto c = new C(1, 2, "3");
 	assert(c.a == 1);
 	assert(c.b == 2);
@@ -1574,8 +1538,7 @@ if (isInputRange!R) {
 	import std.range.primitives : hasLength;
 	static if (hasLength!R)
 		return r.length == exactCount;
-	else
-	{
+	else {
 		size_t n = 0;
 		import std.range.primitives : empty;
 		while (!r.empty) {
@@ -1594,8 +1557,7 @@ if (isInputRange!R) {
 	import std.range.primitives : hasLength;
 	static if (hasLength!R)
 		return r.length >= minCount;
-	else
-	{
+	else {
 		size_t n;
 		import std.range.primitives : empty;
 		while (!r.empty) {
@@ -1614,8 +1576,7 @@ if (isInputRange!R) {
 	import std.range.primitives : hasLength;
 	static if (hasLength!R)
 		return r.length <= maxCount;
-	else
-	{
+	else {
 		size_t n;
 		import std.range.primitives : empty;
 		while (!r.empty) {
@@ -1669,7 +1630,6 @@ import std.range.primitives : hasLength;
 /** Returns: `true` iff `r` and all `ss` all have equal length.
  */
 bool equalLength(R, Ss...)(const R r, const Ss ss)
-	pure nothrow @safe @nogc
 if (Ss.length != 0 &&
 	allSatisfy!(hasLength, R, Ss)) {
 	foreach (const ref s; ss)
@@ -1752,10 +1712,8 @@ pure nothrow @safe unittest {
  * Safely avoids range checking thanks to D's builtin slice expressions.
  * Use in divide-and-conquer algorithms such as quicksort and binary search.
  */
-auto spliced2(T)(T[] x) @trusted
-{
-	static struct Result		// Voldemort type
-	{
+auto spliced2(T)(T[] x) @trusted {
+	static struct Result /+ Voldemort type +/ {
 		T[] first;			  // first half
 		T[] second;			 // second half
 	}
@@ -1779,11 +1737,9 @@ pure nothrow @safe @nogc unittest {
  * Safely avoids range checking thanks to D's builtin slice expressions.
  * Use in divide-and-conquer algorithms such as quicksort and binary search.
  */
-auto spliced3(T)(T[] x) @trusted
-{
+auto spliced3(T)(T[] x) @trusted {
 	enum count = 3;
-	static struct Result		// Voldemort type
-	{
+	static struct Result /+ Voldemort type +/ {
 		T[] first;			  // first half
 		T[] second;			 // second half
 		T[] third;			  // third half
@@ -1809,16 +1765,13 @@ pure nothrow @safe @nogc unittest {
  * Safely avoids range checking thanks to D's builtin slice expressions.
  * Use in divide-and-conquer algorithms such as quicksort and binary search.
  */
-auto splicerN(uint N, T)(T[] x) @trusted
-{
-	static struct Result		// Voldemort type
-	{
+auto splicerN(uint N, T)(T[] x) @trusted {
+	static struct Result /+ Voldemort type +/ {
 		enum count = N;
 		pragma(inline) @trusted pure nothrow @nogc:
 
 		/// Returns: `i`:th slice.
-		inout(T)[] at(uint i)() inout
-		{
+		inout(T)[] at(uint i)() inout {
 			static assert(i < N, "Index " ~ i ~ " to large");
 			static if (i == 0)
 				return _.ptr[0 .. (i + 1)*_.length/N]; // can be @trusted
@@ -1846,27 +1799,22 @@ pure nothrow @safe @nogc unittest {
 }
 
 /** Specialization of `splicerN` to `N` being 2. */
-auto splicer2(T)(T[] x) @trusted
-{
-	static struct Result		// Voldemort type
-	{
+auto splicer2(T)(T[] x) @trusted {
+	static struct Result /+ Voldemort type +/ {
 		enum count = 2;
 		pragma(inline) @trusted pure nothrow @nogc:
 
 		/// Returns: first part of splice.
-		@property inout(T)[] first() inout
-		{
+		@property inout(T)[] first() inout {
 			return _.ptr[0 .. _.length/count]; // can be @trusted
 		}
 
 		/// Returns: second part of splice.
-		@property inout(T)[] second() inout
-		{
+		@property inout(T)[] second() inout {
 			return _.ptr[_.length/count .. _.length]; // can be @trusted
 		}
 
-		inout(T)[] at(uint i)() inout
-		{
+		inout(T)[] at(uint i)() inout {
 			static assert(i < count, "Index " ~ i ~ " to large");
 			static	  if (i == 0)
 				return first;
@@ -1890,28 +1838,23 @@ pure nothrow @safe @nogc unittest {
 }
 
 /** Specialization of `splicerN` to `N` being 3. */
-auto splicer3(T)(T[] x) @trusted
-{
-	static struct Result		// Voldemort type
-	{
+auto splicer3(T)(T[] x) @trusted {
+	static struct Result /+ Voldemort type +/ {
 		enum count = 3;
 		pragma(inline) @trusted pure nothrow @nogc:
 
 		/// Returns: first part of splice.
-		@property inout(T)[] first() inout
-		{
+		@property inout(T)[] first() inout {
 			return _.ptr[0 .. _.length/count];  // can be @trusted
 		}
 
 		/// Returns: second part of splice.
-		@property inout(T)[] second() inout
-		{
+		@property inout(T)[] second() inout {
 			return _.ptr[_.length/count .. 2*_.length/count];  // can be @trusted
 		}
 
 		/// Returns: third part of splice.
-		@property inout(T)[] third() inout
-		{
+		@property inout(T)[] third() inout {
 			return _.ptr[2*_.length/count .. _.length]; // can be @trusted
 		}
 
@@ -1956,14 +1899,11 @@ if (isExpressionTuple!needles &&
 			// no front decoding needed
 			static if (needles.length == 1)
 				return haystack.ptr[0] == needles[0] ? 1 : 0;
-			else
-			{
+			else {
 				import std.algorithm.comparison : among;
 				return haystack.ptr[0].among!(needles);
 			}
-		}
-		else
-		{
+		} else {
 			import std.range.primitives : front; // need decoding
 			import std.algorithm.comparison : among;
 			return haystack.front.among!(needles);
@@ -2005,14 +1945,11 @@ if (isExpressionTuple!needles &&
 			// no back decoding needed
 			static if (needles.length == 1)
 				return haystack.ptr[haystack.length - 1] == needles[0] ? 1 : 0;
-			else
-			{
+			else {
 				import std.algorithm.comparison : among;
 				return haystack.ptr[haystack.length - 1].among!(needles);
 			}
-		}
-		else
-		{
+		} else {
 			import std.range.primitives : back; // need decoding
 			import std.algorithm.comparison : among;
 			return haystack.back.among!(needles);

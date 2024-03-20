@@ -2,16 +2,15 @@
  +/
 module nxt.algorithm.comparison;
 
-// version = unittestAsBetterC; // Run_As: dmd -betterC -unittest -run $(__FILE__).d
-
-import std.range.primitives : isInputRange, isInfinite, ElementType;
+import std.range.primitives : isInfinite;
 
 // Use until `std.algorithm.comparison.equal` supports uncopyable parameters.
 bool equal(T, U)(scope T a, scope U b)
 if (!(isInfinite!T &&
 	  isInfinite!U)) {
-	static if ((is(T == TE[M], TE, size_t M)) &&
-			   (is(U == UE[N], UE, size_t N)) &&
+	import std.range.primitives : ElementType;
+	static if (is(T == TE[M], TE, size_t M) &&
+			   is(U == UE[N], UE, size_t N) &&
 			   is(typeof(TE.init == UE.init) : bool)) /+ static array +/ {
 		static if (M != N)
 			return false;
@@ -21,9 +20,9 @@ if (!(isInfinite!T &&
 					return false;
 			return true;
 		}
-	} else static if ((is(T == TA[], TA)) &&
-					(is(U == UA[], UA)) &&
-					is(typeof(TA.init == UA.init) : bool)) /+ dynamic array +/ {
+	} else static if (is(T == TA[], TA) &&
+					  is(U == UA[], UA) &&
+					  is(typeof(TA.init == UA.init) : bool)) /+ dynamic array +/ {
 		if (a.length != b.length)
 			return false;
 		const N = a.length;
@@ -61,13 +60,10 @@ if (!(isInfinite!T &&
 	} else
 		static assert(0, "Cannot compare " ~ T.stringof ~ "with" ~ U.stringof);
 }
-/// ditto
-bool equal(T, U)(scope const(T)[] a, scope const(U)[] b)
-if (is(typeof(T.init == U.init) : bool)) {
-}
 
 /// dynamic arrays
 pure nothrow @safe @nogc unittest {
+	assert(!equal([0], [1]));
 	assert(!equal([1, 2   ].s[], [1, 2, 3].s[]));
 	assert(!equal([1, 2, 3].s[], [1, 2,  ].s[]));
 	assert( equal([1, 2, 3].s[], [1, 2, 3].s[]));
@@ -75,6 +71,7 @@ pure nothrow @safe @nogc unittest {
 
 /// static arrays
 pure nothrow @safe @nogc unittest {
+	assert(!equal([0].s, [1].s));
 	assert(!equal([1, 2   ].s, [1, 2, 3].s));
 	assert(!equal([1, 2, 3].s, [1, 2,  ].s));
 	assert( equal([1, 2, 3].s, [1, 2, 3].s));
@@ -82,12 +79,4 @@ pure nothrow @safe @nogc unittest {
 
 version (unittest) {
 	import nxt.array_help : s;
-}
-
-// See_Also: https://dlang.org/spec/betterc.html#unittests
-version (unittestAsBetterC)
-extern(C) void main() {
-	static foreach (u; __traits(getUnitTests, __traits(parent, main))) {
-		u();
-	}
 }

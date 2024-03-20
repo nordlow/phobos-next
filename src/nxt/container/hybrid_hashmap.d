@@ -161,7 +161,7 @@ struct HybridHashMap(K, V = void,
 					 Allocator = Mallocator,
 					 Options options = Options.init)
 if (isNullable!K /*&& !hasAliasing!K */ && isAllocator!Allocator) {
-	// pragma(msg, K.stringof, " => ", V.stringof);
+	// pragma(msg, __FILE__, "(", __LINE__, ",1): Debug: ", K.stringof, " => ", V);
 	import core.exception : onOutOfMemoryError;
 	import core.internal.traits : hasElaborateDestructor, Unqual;
 	import core.lifetime : move;
@@ -708,21 +708,10 @@ if (isNullable!K /*&& !hasAliasing!K */ && isAllocator!Allocator) {
 	/** Insert `elements`, all being either a key-value (map-case) or a just a key (set-case).
 	 */
 	void insertN(R)(R elements) @trusted
-	if (isIterable!R &&
-		__traits(isCopyable, T))		   /+ TODO: support uncopyable T? +/
-	{
+	if (isIterable!R && __traits(isCopyable, T)) /+ TODO: support uncopyable T? +/ {
 		static if (isBorrowChecked) { debug assert(!isBorrowed, borrowedErrorMessage); }
-		import std.range.primitives : hasLength;
-		static if (hasLength!R)
-			reserveExtra(elements.length); // might create unused space in `_store` store
-		foreach (ref element; elements) {
-			static if (!hasLength!R)
-				reserveExtra(1);
-			static if (hasIndirections!T)
-				insertWithoutGrowthNoStatus(element);
-			else
-				insertWithoutGrowthNoStatus(*cast(Unqual!T*)&element);
-		}
+		foreach (ref element; elements)
+			insert(element);
 	}
 
 	/// Is `true` iff in-place rehashing during growth should be performed.

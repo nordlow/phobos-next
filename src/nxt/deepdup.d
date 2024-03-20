@@ -15,6 +15,32 @@ import std.range.primitives : ElementType;
 
 alias TypeofDeepdup(T) = typeof(deepdup(T.init));
 
+/++ Returns: Copy of `x` where each members `m` is duplicated via `m.dup` if
+    possible. +/
+T dupMembers(T)(T x) @safe pure nothrow if (is(T == struct)) {
+    typeof(return)ret;
+    foreach (const i, member; x.tupleof) {
+        static if(__traits(compiles, member.dup))
+            ret.tupleof[i] = member.dup;
+        else
+            ret.tupleof[i] = member;
+    }
+    return ret;
+}
+
+///
+@safe pure nothrow unittest {
+	struct S {
+		int ia;
+		int ib;
+		string s; // @gc
+	}
+	S x = { ia: 42, ib: 43, s: "abc" };
+	auto y = x.dupMembers;
+	assert(x == y);
+	assert(x.s !is y.s);
+}
+
 ref Unqual!T deepdup(T)(T t)
 if (is(T == struct) &&
 	!is(T.Types)) {

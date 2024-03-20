@@ -6,9 +6,6 @@
  +/
 module nxt.path;
 
-import nxt.algorithm.searching : canFind, stripRight;
-private import std.path : std_expandTilde = expandTilde, std_buildPath = buildPath, std_buildNormalizedPath = buildNormalizedPath, std_baseName = baseName, dirSeparator;
-
 @safe:
 
 /++ Path.
@@ -21,12 +18,14 @@ private import std.path : std_expandTilde = expandTilde, std_buildPath = buildPa
  +/
 struct Path {
 	this(string str, in bool normalize = false) pure nothrow @nogc {
+		import nxt.algorithm.mutation : stripRight;
+		import std.path : dirSeparator;
 		this.str = normalize ? str.stripRight(dirSeparator) : str;
 	}
 	string str;
 pure nothrow @nogc:
 	bool opCast(T : bool)() const scope => str !is null;
-	string toString() inout @property => str;
+	string toString() const @property => str;
 }
 
 ///
@@ -34,7 +33,7 @@ pure nothrow @nogc:
 	assert(Path("/usr/bin/").toString == "/usr/bin/");
 }
 
-/++ (Regular) File path.
+/++ (Regular) file path (on local file system).
 	See: https://hackage.haskell.org/package/filepath-1.5.0.0/docs/System-FilePath.html#t:FilePath
  +/
 struct FilePath {
@@ -57,7 +56,7 @@ struct FilePath {
 	assert(Path("foo", true).str == "foo");
 }
 
-/++ Directory path.
+/++ Directory path (on local file system).
 	See: SUMO:`ComputerDirectory`.
  +/
 struct DirPath {
@@ -76,16 +75,17 @@ struct DirPath {
 	assert(DirPath("/etc/", true).str == "/etc");
 }
 
-/++ File (local) name.
+/++ File name (either local or remote).
  +/
 struct FileName {
+	import nxt.algorithm.searching : canFind;
 	this(string str) pure nothrow @nogc in (!str.canFind('/')) {
 		this.str = str;
 	}
 	string str;
 pure nothrow @nogc:
 	bool opCast(T : bool)() const scope => str !is null;
-	string toString() inout @property => str;
+	string toString() const @property => str;
 }
 
 ///
@@ -94,16 +94,17 @@ pure nothrow @safe unittest {
 	assert(FileName(".emacs").toString == ".emacs");
 }
 
-/++ Directory (local) name.
+/++ Directory name (either local or remote).
  +/
 struct DirName {
+	import nxt.algorithm.searching : canFind;
 	this(string str) pure nothrow @nogc in (!str.canFind('/')) {
 		this.str = str;
 	}
 	string str;
 pure nothrow @nogc:
 	bool opCast(T : bool)() const scope => str !is null;
-	string toString() inout @property => str;
+	string toString() const @property => str;
 }
 
 ///
@@ -112,7 +113,7 @@ pure nothrow @safe unittest {
 	assert(DirName(".emacs.d").toString == ".emacs.d");
 }
 
-/++ Execute file path.
+/++ Execute file path (on local file system).
  +/
 struct ExePath {
 	this(string path) pure nothrow @nogc {
@@ -127,7 +128,7 @@ struct ExePath {
 	assert(ExePath("/usr/bin/") == Path("/usr/bin/"));
 }
 
-/++ Written (input) path. +/
+/++ Written (input) path (on local file system). +/
 struct RdPath {
 	this(string str) pure nothrow @nogc {
 		this.path = Path(str);
@@ -141,7 +142,7 @@ struct RdPath {
 	assert(RdPath("/usr/bin/") == Path("/usr/bin/"));
 }
 
-/++ Written (output) path. +/
+/++ Written (output) path (on local file system). +/
 struct WrPath {
 	this(string str) pure nothrow @nogc {
 		this.path = Path(str);
@@ -155,16 +156,22 @@ struct WrPath {
 	assert(WrPath("/usr/bin/") == Path("/usr/bin/"));
 }
 
-/// Expand tilde in `a`.
-FilePath expandTilde(FilePath a) nothrow => typeof(return)(std_expandTilde(a.path.str));
+private import std.path : std_expandTilde = expandTilde;
+
+/++ Expand tilde in `a`.
+	TODO: remove `@trusted` when scope inference is works.
+ +/
+FilePath expandTilde(scope return FilePath a) nothrow @trusted => typeof(return)(std_expandTilde(a.path.str));
 /// ditto
-DirPath expandTilde(DirPath a) nothrow => typeof(return)(std_expandTilde(a.path.str));
+DirPath expandTilde(scope return DirPath a) nothrow @trusted => typeof(return)(std_expandTilde(a.path.str));
 
 ///
 @safe nothrow unittest {
 	assert(FilePath("~").expandTilde);
 	assert(DirPath("~").expandTilde);
 }
+
+private import std.path : std_buildPath = buildPath;
 
 /// Build path `a`/`b`.
 FilePath buildPath(DirPath a, FilePath b) pure nothrow => typeof(return)(std_buildPath(a.path.str, b.path.str));
@@ -183,6 +190,8 @@ FilePath buildPath(DirPath a, FileName b) pure nothrow => typeof(return)(std_bui
 	assert(DirPath("/usr").buildPath(DirPath("bin")) == DirPath("/usr/bin"));
 	assert(DirPath("/usr").buildPath(DirPath("/bin")) == DirPath("/bin"));
 }
+
+private import std.path : std_buildNormalizedPath = buildNormalizedPath;
 
 /// Build path `a`/`b`.
 FilePath buildNormalizedPath(DirPath a, FilePath b) pure nothrow => typeof(return)(std_buildNormalizedPath(a.path.str, b.path.str));
@@ -208,7 +217,7 @@ struct URL {
 	string str;
 pure nothrow @nogc:
 	bool opCast(T : bool)() const scope => str !is null;
-	string toString() inout @property => str;
+	string toString() const @property => str;
 }
 
 ///
@@ -219,32 +228,38 @@ pure nothrow @nogc:
 /++ File URL.
  +/
 struct FileURL {
-	string str;
+	URL url;
 pure nothrow @nogc:
-	bool opCast(T : bool)() const scope => str !is null;
-	string toString() inout @property => str;
+	this(string str) { this.url = URL(str); }
+	this(FilePath path) { this.url = URL(path.str); }
+	bool opCast(T : bool)() const scope => url.str !is null;
+	string toString() const @property => url.str;
 }
 
 ///
 @safe pure nothrow unittest {
 	assert(FileURL("www.sunet.se").toString == "www.sunet.se");
+	assert(FileURL(FilePath("/etc/passwd")).toString == "/etc/passwd");
 }
 
 /++ Directory URL.
  +/
 struct DirURL {
-	string str;
+	URL url;
 pure nothrow @nogc:
-	bool opCast(T : bool)() const scope => str !is null;
-	string toString() inout @property => str;
+	this(string str) { this.url = URL(str); }
+	this(DirPath path) { this.url = URL(path.str); }
+	bool opCast(T : bool)() const scope => url.str !is null;
+	string toString() const @property => url.str;
 }
 
 ///
 @safe pure nothrow unittest {
 	assert(DirURL("www.sunet.se").toString == "www.sunet.se");
+	assert(DirURL(DirPath("/etc/")).toString == "/etc/");
 }
 
-/++ File Offset URL.
+/++ File URL and Offset (in bytes).
  +/
 struct FileURLOffset {
 	import nxt.offset : Offset;
@@ -252,13 +267,15 @@ struct FileURLOffset {
 	Offset offset;
 }
 
-/++ File Region URL.
+/++ File URL and Region (in bytes).
  +/
 struct FileURLRegion {
 	import nxt.region : Region;
 	FileURL url;
 	Region region;
 }
+
+private import std.path : std_baseName = baseName;
 
 /// Get basename of `a`.
 FileName baseName(FilePath a) pure nothrow @nogc => typeof(return)(std_baseName(a.str));
@@ -267,9 +284,9 @@ DirName baseName(DirPath a) pure nothrow @nogc => typeof(return)(std_baseName(a.
 /// ditto
 DirName baseName(URL a) pure nothrow @nogc => typeof(return)(std_baseName(a.str));
 /// ditto
-FileName baseName(FileURL a) pure nothrow @nogc => typeof(return)(std_baseName(a.str));
+FileName baseName(FileURL a) pure nothrow @nogc => typeof(return)(std_baseName(a.url.str));
 /// ditto
-DirName baseName(DirURL a) pure nothrow @nogc => typeof(return)(std_baseName(a.str));
+DirName baseName(DirURL a) pure nothrow @nogc => typeof(return)(std_baseName(a.url.str));
 
 ///
 version (Posix) nothrow @safe unittest {
@@ -289,6 +306,10 @@ bool exists(in Path a) nothrow @nogc => typeof(return)(std_exists(a.str));
 bool exists(in FilePath a) nothrow @nogc => typeof(return)(std_exists(a.str));
 /// ditto
 bool exists(in DirPath a) nothrow @nogc => typeof(return)(std_exists(a.str));
+/// ditto
+bool exists(in FileURL a) nothrow @nogc => typeof(return)(std_exists(a.url.str));
+/// ditto
+bool exists(in DirURL a) nothrow @nogc => typeof(return)(std_exists(a.url.str));
 /// ditto
 bool exists(in FileName a) nothrow @nogc => typeof(return)(std_exists(a.str));
 /// ditto
@@ -310,8 +331,10 @@ version (Posix) nothrow @safe unittest {
 	assert( Path("/etc/").exists);
 	assert(!Path("/etcxyz/").exists);
 	assert( DirPath("/etc/").exists);
+	assert( DirURL("/etc/").exists);
 	assert(!DirPath("/etcxyz/").exists);
 	assert( FilePath("/etc/passwd").exists);
+	assert( FileURL("/etc/passwd").exists);
 	assert(!FileName("dsfdsfdsfdsfdfdsf").exists);
 	assert(!DirName("dsfdsfdsfdsfdfdsf").exists);
 }

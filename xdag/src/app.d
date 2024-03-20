@@ -230,9 +230,9 @@ Spec[Name] makeSpecs(bool echo) {
 	}
 
 	void fetch(scope ref const BuildOption[] bos, in DirPath dlDir, in bool echo) scope @trusted { // TODO: -dip1000 without @trusted
-		import nxt.git : RepositoryAndDir;
+		import nxt.git : RepoAndDir;
 		import core.thread : Thread;
-		auto rad = RepositoryAndDir(url, dlDir, echo);
+		auto rad = RepoAndDir(url, dlDir, echo);
 		/+ TODO: use waitAllInSequence(); +/
 		enforce(!rad.cloneOrResetHard(recurseSubModulesFlag, gitRemote, gitBranch).wait());
 		enforce(!rad.clean().wait());

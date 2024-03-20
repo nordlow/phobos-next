@@ -14,5 +14,6 @@
 module nxt.algorithm;
 
 public import nxt.algorithm.searching;
+public import nxt.algorithm.mutation;
 public import nxt.algorithm.comparison;
 public import nxt.algorithm.sortn;

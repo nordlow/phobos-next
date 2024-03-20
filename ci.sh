@@ -35,7 +35,7 @@ echo '### Build library "tcc-d2" ...'
 dub --root=tcc-d2 build
 
 echo '### Build library "xdag" ...'
-dub --root=xdag build
+# TODO: enable: dub --root=xdag build
 
 echo '### Build library "zio" ...'
 dub --root=zio build

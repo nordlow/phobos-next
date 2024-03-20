@@ -2,6 +2,149 @@ module nxt.container.variant_arrays;
 
 // version = nxt_benchmark;
 
+// private mixin template VariantArrayOf(Type)
+// {
+//	 import nxt.container.dynamic_array : DynamicArray;
+//	 DynamicArray!Type store;
+// }
+
+/** Array storage of variants.
+
+	Enables lightweight storage of polymorphic objects.
+
+	Each element is indexed by a corresponding `VariantRef`.
+ */
+struct VariantArrays(Types...) { /+ TODO: Change to AliasSeq TypesTuple, Allocatar = GCAllocator +/
+	alias Size = size_t;
+	alias Ref = VariantRef!(Size, Types);
+
+	import nxt.container.dynamic_array : DynamicArray;
+	import std.experimental.allocator.mallocator : Mallocator;
+
+	/// Returns: array type (as a string) of `Type`.
+	private static immutable(string) arrayTypeStringOfIndex(uint typeIndex)() {
+		pragma(inline, true);
+		return `DynamicArray!(Types[` ~ typeIndex.stringof ~ `], Mallocator)`; /+ TODO: Make Mallocator a parameter +/
+	}
+
+	/** Returns: array instance (as a strinng) storing `SomeKind`.
+	 * TODO: make this a template mixin
+	 */
+	private static immutable(string) arrayInstanceString(SomeKind)()
+	if (Ref.canReferenceType!SomeKind) {
+		pragma(inline, true);
+		return `_store` ~ Ref.nrOfKind!(SomeKind).stringof; // previously `SomeKind.mangleof`
+	}
+
+	/// Make reference to type `SomeKind` at offset `index`.
+	static Ref makeRef(SomeKind)(Ref.Size index)
+	if (Ref.canReferenceType!SomeKind) {
+		pragma(inline, true);
+		return Ref(Ref.nrOfKind!SomeKind, index);
+	}
+
+	/** Insert `value` at back.
+	 */
+	Ref insertBack(SomeKind)(SomeKind value) /+ TODO: add array type overload +/
+	if (Ref.canReferenceType!SomeKind) {
+		mixin(`alias arrayInstance = ` ~ arrayInstanceString!SomeKind ~ `;`);
+		const currentIndex = arrayInstance.length;
+		arrayInstance.insertBackMove(value);
+		return Ref(Ref.nrOfKind!SomeKind, currentIndex);
+	}
+	alias put = insertBack;	 // polymorphic `OutputRange` support
+
+	/** Move (emplace) `value` into back.
+	 */
+	Ref insertBackMove(SomeKind)(ref SomeKind value) /+ TODO: add array type overload +/
+	if (Ref.canReferenceType!SomeKind) {
+		version (DigitalMars) pragma(inline, false); // DMD cannot inline
+		mixin(`alias arrayInstance = ` ~ arrayInstanceString!SomeKind ~ `;`);
+		const currentIndex = arrayInstance.length;
+		arrayInstance.insertBackMove(value);
+		return Ref(Ref.nrOfKind!SomeKind, currentIndex);
+	}
+
+	/// ditto
+	void opOpAssign(string op, SomeKind)(SomeKind value) /+ TODO: add array type overload +/
+	if (op == "~" &&
+		Ref.canReferenceType!SomeKind) {
+		pragma(inline, true);
+		insertBackMove(value);  // move enables uncopyable types
+	}
+
+	/// Get reference to element of type `SomeKind` at `index`.
+	ref inout(SomeKind) at(SomeKind)(in size_t index) inout return scope
+	if (Ref.canReferenceType!SomeKind) {
+		pragma(inline, true);
+		mixin(`return ` ~ arrayInstanceString!SomeKind ~ `[index];`);
+	}
+
+	/// Get reference to element of type `SomeKind` at `ref_`.
+	scope ref inout(SomeKind) at(SomeKind)(in Ref ref_) inout return
+	if (Ref.canReferenceType!SomeKind) {
+		pragma(inline, true);
+		assert(Ref.nrOfKind!SomeKind == ref_.kindNr,
+			   "Ref is not of expected template type " ~ SomeKind.stringof);
+		mixin(`return ` ~ arrayInstanceString!SomeKind ~ `[ref_.index];`);
+	}
+
+	/// Peek at element of type `SomeKind` at `ref_`.
+	inout(SomeKind)* peek(SomeKind)(in Ref ref_) inout return @system
+	if (Ref.canReferenceType!SomeKind) {
+		pragma(inline, true);
+		if (Ref.nrOfKind!SomeKind == ref_._word.kindNr)
+			return &at!SomeKind(ref_._word.index);
+		else
+			return null;
+	}
+
+	/// Constant access to all elements of type `SomeKind`.
+	inout(SomeKind)[] allOf(SomeKind)() inout return scope
+	if (Ref.canReferenceType!SomeKind) {
+		pragma(inline, true);
+		mixin(`return ` ~ arrayInstanceString!SomeKind ~ `[];`);
+	}
+
+	/// Reserve space for `newCapacity` elements of type `SomeKind`.
+	size_t reserve(SomeKind)(in size_t newCapacity)
+	if (Ref.canReferenceType!SomeKind) {
+		pragma(inline, true);
+		mixin(`alias arrayInstance = ` ~ arrayInstanceString!SomeKind ~ `;`);
+		return arrayInstance.reserve(newCapacity);
+	}
+
+	/** Returns: length of store. */
+	@property size_t length() const
+	{
+		pragma(inline, true);
+		typeof(return) lengthSum = 0;
+		foreach (Type; Types)
+			mixin(`lengthSum += ` ~ arrayInstanceString!Type ~ `.length;`);
+		return lengthSum;
+	}
+
+	/** Check if empty. */
+	bool empty() const @property
+	{
+		pragma(inline, true);
+		return length == 0;
+	}
+
+private:
+	// static foreach (const typeIndex, Type; Types)
+	// {
+	//	 /+ TODO: is it better to use?: mixin VariantArrayOf!(Type); +/
+	//	 mixin(arrayTypeStringOfIndex!typeIndex ~ ` ` ~ arrayInstanceString!Type ~ `;`);
+	// }
+	mixin({
+		string s = "";
+		foreach (const typeIndex, Type; Types)
+			s ~= arrayTypeStringOfIndex!typeIndex ~ ` ` ~ arrayInstanceString!Type ~ `;`;
+		return s;
+	}());
+}
+
 /** Typed index (reference) into an element in `VariantArrays`.
  *
  * TODO: merge with soa.d?
@@ -152,149 +295,6 @@ unittest {
 	alias R = VariantRef!(size_t, int, float);
 	R r;
 	assert(r.to!string == R.stringof~`(null)`);
-}
-
-// private mixin template VariantArrayOf(Type)
-// {
-//	 import nxt.container.dynamic_array : DynamicArray;
-//	 DynamicArray!Type store;
-// }
-
-/** Stores set of variants.
-
-	Enables lightweight storage of polymorphic objects.
-
-	Each element is indexed by a corresponding `VariantRef`.
- */
-struct VariantArrays(Types...) { /+ TODO: Change to AliasSeq TypesTuple, Allocatar = GCAllocator +/
-	alias Size = size_t;
-	alias Ref = VariantRef!(Size, Types);
-
-	import nxt.container.dynamic_array : DynamicArray;
-	import std.experimental.allocator.mallocator : Mallocator;
-
-	/// Returns: array type (as a string) of `Type`.
-	private static immutable(string) arrayTypeStringOfIndex(uint typeIndex)() {
-		pragma(inline, true);
-		return `DynamicArray!(Types[` ~ typeIndex.stringof ~ `], Mallocator)`; /+ TODO: Make Mallocator a parameter +/
-	}
-
-	/** Returns: array instance (as a strinng) storing `SomeKind`.
-	 * TODO: make this a template mixin
-	 */
-	private static immutable(string) arrayInstanceString(SomeKind)()
-	if (Ref.canReferenceType!SomeKind) {
-		pragma(inline, true);
-		return `_store` ~ Ref.nrOfKind!(SomeKind).stringof; // previously `SomeKind.mangleof`
-	}
-
-	/// Make reference to type `SomeKind` at offset `index`.
-	static Ref makeRef(SomeKind)(Ref.Size index)
-	if (Ref.canReferenceType!SomeKind) {
-		pragma(inline, true);
-		return Ref(Ref.nrOfKind!SomeKind, index);
-	}
-
-	/** Insert `value` at back.
-	 */
-	Ref insertBack(SomeKind)(SomeKind value) /+ TODO: add array type overload +/
-	if (Ref.canReferenceType!SomeKind) {
-		mixin(`alias arrayInstance = ` ~ arrayInstanceString!SomeKind ~ `;`);
-		const currentIndex = arrayInstance.length;
-		arrayInstance.insertBackMove(value);
-		return Ref(Ref.nrOfKind!SomeKind, currentIndex);
-	}
-	alias put = insertBack;	 // polymorphic `OutputRange` support
-
-	/** Move (emplace) `value` into back.
-	 */
-	Ref insertBackMove(SomeKind)(ref SomeKind value) /+ TODO: add array type overload +/
-	if (Ref.canReferenceType!SomeKind) {
-		version (DigitalMars) pragma(inline, false); // DMD cannot inline
-		mixin(`alias arrayInstance = ` ~ arrayInstanceString!SomeKind ~ `;`);
-		const currentIndex = arrayInstance.length;
-		arrayInstance.insertBackMove(value);
-		return Ref(Ref.nrOfKind!SomeKind, currentIndex);
-	}
-
-	/// ditto
-	void opOpAssign(string op, SomeKind)(SomeKind value) /+ TODO: add array type overload +/
-	if (op == "~" &&
-		Ref.canReferenceType!SomeKind) {
-		pragma(inline, true);
-		insertBackMove(value);  // move enables uncopyable types
-	}
-
-	/// Get reference to element of type `SomeKind` at `index`.
-	ref inout(SomeKind) at(SomeKind)(in size_t index) inout return scope
-	if (Ref.canReferenceType!SomeKind) {
-		pragma(inline, true);
-		mixin(`return ` ~ arrayInstanceString!SomeKind ~ `[index];`);
-	}
-
-	/// Get reference to element of type `SomeKind` at `ref_`.
-	scope ref inout(SomeKind) at(SomeKind)(in Ref ref_) inout return
-	if (Ref.canReferenceType!SomeKind) {
-		pragma(inline, true);
-		assert(Ref.nrOfKind!SomeKind == ref_.kindNr,
-			   "Ref is not of expected template type " ~ SomeKind.stringof);
-		mixin(`return ` ~ arrayInstanceString!SomeKind ~ `[ref_.index];`);
-	}
-
-	/// Peek at element of type `SomeKind` at `ref_`.
-	inout(SomeKind)* peek(SomeKind)(in Ref ref_) inout return @system
-	if (Ref.canReferenceType!SomeKind) {
-		pragma(inline, true);
-		if (Ref.nrOfKind!SomeKind == ref_._word.kindNr)
-			return &at!SomeKind(ref_._word.index);
-		else
-			return null;
-	}
-
-	/// Constant access to all elements of type `SomeKind`.
-	inout(SomeKind)[] allOf(SomeKind)() inout return scope
-	if (Ref.canReferenceType!SomeKind) {
-		pragma(inline, true);
-		mixin(`return ` ~ arrayInstanceString!SomeKind ~ `[];`);
-	}
-
-	/// Reserve space for `newCapacity` elements of type `SomeKind`.
-	size_t reserve(SomeKind)(in size_t newCapacity)
-	if (Ref.canReferenceType!SomeKind) {
-		pragma(inline, true);
-		mixin(`alias arrayInstance = ` ~ arrayInstanceString!SomeKind ~ `;`);
-		return arrayInstance.reserve(newCapacity);
-	}
-
-	/** Returns: length of store. */
-	@property size_t length() const
-	{
-		pragma(inline, true);
-		typeof(return) lengthSum = 0;
-		foreach (Type; Types)
-			mixin(`lengthSum += ` ~ arrayInstanceString!Type ~ `.length;`);
-		return lengthSum;
-	}
-
-	/** Check if empty. */
-	bool empty() const @property
-	{
-		pragma(inline, true);
-		return length == 0;
-	}
-
-private:
-	// static foreach (const typeIndex, Type; Types)
-	// {
-	//	 /+ TODO: is it better to use?: mixin VariantArrayOf!(Type); +/
-	//	 mixin(arrayTypeStringOfIndex!typeIndex ~ ` ` ~ arrayInstanceString!Type ~ `;`);
-	// }
-	mixin({
-		string s = "";
-		foreach (const typeIndex, Type; Types)
-			s ~= arrayTypeStringOfIndex!typeIndex ~ ` ` ~ arrayInstanceString!Type ~ `;`;
-		return s;
-	}());
 }
 
 /** Minimalistic fixed-length (static) array of (`capacity`) number of elements

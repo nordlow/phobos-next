@@ -4,6 +4,7 @@ module nxt.limits;
 
 /** Limit/Span (Min,Max) Pair.
  *
+ * TODO: Relate|Unite with `nxt.sampling.Span`.
  * TODO: Simultaneous min and max (minmax) can be optimized to 3/4 comparison.
  * TODO: Decide on either `Span`, `MinMax` or `Limits`
  * See_Also: https://stackoverflow.com/questions/21241878/generic-span-type-in-phobos

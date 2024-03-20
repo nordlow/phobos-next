@@ -634,7 +634,8 @@ auto adjacentTriples(R)(R r) if (isInputRange!R) => adjacentTuples!(3, R)(r);
 pure nothrow @safe @nogc unittest {
 	import std.typecons : t = tuple;
 	import std.algorithm : equal, map;
-	auto x = [1, 2, 3, 4, 5, 6, 7].s[].map!(a => a); // test with ForwardRange
+	const d = [1, 2, 3, 4, 5, 6, 7].s;
+	auto x = d[].map!(a => a); // test with ForwardRange
 	auto y = x.adjacentTuples!4;
 	assert(y.equal([t(1, 2, 3, 4),
 					t(2, 3, 4, 5),

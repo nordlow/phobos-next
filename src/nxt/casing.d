@@ -1,6 +1,7 @@
 module nxt.casing;
 
 import std.traits : isSomeString;
+import nxt.string_traits : isASCIIString;
 
 version (unittest) {
 	import std.algorithm : equal;
@@ -10,7 +11,7 @@ version (unittest) {
  *
  * String must contain ASCII characters only.
  */
-auto toLowerASCII(S)(S s)
+auto toLowerASCII_(S)(S s)
 if (isSomeString!S) {
 	import std.algorithm.iteration : map;
 	import std.ascii : toLower;
@@ -23,10 +24,38 @@ if (isSomeString!S) {
 		return t.map!(ch => ch.toLower);
 }
 
+/++ Return `s` lowercased if `s` is an ASCII-string, otherwise `defaultValue`. +/
+string toLowerIfASCII(scope const(char)[] s, string defaultValue) @safe pure nothrow {
+	if (!s.isASCIIString)
+		return defaultValue;
+	typeof(return) result;
+	result.reserve(s.length);
+	foreach (const c; s) {
+		import std.ascii : toLower;
+		result ~= c.toLower;
+	}
+	return result;
+}
+
+/++ Return `s` lowercased if `s` is an ASCII-string, otherwise `s`. +/
+inout(char)[] toLowerIfASCII(return scope inout(char)[] s) @safe pure nothrow {
+	if (!s.isASCIIString)
+		return s;
+	typeof(return) result;
+	result.reserve(s.length);
+	foreach (const c; s) {
+		import std.ascii : toLower;
+		result ~= c.toLower;
+	}
+	return result;
+}
+
 ///
 @safe pure /*TODO: nothrow @nogc*/ unittest {
-	assert("Lasse".toLowerASCII.equal("lasse"));
-	assert("Åberg".toLowerASCII.equal("Åberg")); // ignores unicode letters
+	assert("Lasse".toLowerIfASCII("Lasse").equal("lasse"));
+	assert("Åberg".toLowerIfASCII("Åberg").equal("Åberg"));
+	assert("Lasse".toLowerIfASCII.equal("lasse"));
+	assert("Åberg".toLowerIfASCII.equal("Åberg"));
 }
 
 /** Convert string $(S s) to lower-case.
@@ -92,8 +121,8 @@ pure @safe unittest {
 auto toLowerSpacedChars(T, Separator)(const T t,
 									  const Separator separator = " ")
 if (is(T == enum)) {
-	import nxt.enum_ex : toStringFaster;
-	return t.toStringFaster
+	import nxt.enum_ex : toStringFromEnumWithConsecutiveAliases;
+	return t.toStringFromEnumWithConsecutiveAliases
 			.camelCasedToLowerSpaced(separator);
 }
 

@@ -13,6 +13,7 @@ import std.exception : enforce;
 import std.format : format;
 import std.file : exists, isDir, isFile;
 import std.path : absolutePath, buildNormalizedPath, dirName, relativePath;
+import std.process : pipeProcess;
 import std.stdio : write, writeln, writefln, File, stdin, stdout, stderr;
 import std.algorithm.mutation : move;
 import nxt.logging : LogLevel, defaultLogLevel, trace, info, warning, error;
@@ -36,16 +37,10 @@ struct ExitStatus
  */
 struct Spawn
 {
-	import std.process : Pid;
+	import std.process : Pid, ProcessPipes;
 
-	this(Pid pid, File input_, File out_, File err_, in LogLevel logLevel = defaultLogLevel)
-		in(input_.isOpen)
-		in(out_.isOpen)
-		in(err_.isOpen) {
-		this.pid = pid;
-		this.input = input_;
-		this.output = out_;
-		this.error = err_;
+	this(ProcessPipes processPipes, in LogLevel logLevel = defaultLogLevel) {
+		this.processPipes = processPipes;
 		this.logLevel = logLevel;
 	}
 
@@ -60,9 +55,9 @@ struct Spawn
 		if (logLevel <= LogLevel.trace) .trace("Waiting");
 
 		import std.process : wait;
-		auto result = typeof(return)(pid.wait());
+		auto result = typeof(return)(processPipes.pid.wait());
 
-		static void echo(ref File src, ref File dst, in string name)
+		static void echo(File src, ref File dst, in string name)
 			in(src.isOpen)
 			in(dst.isOpen) {
 			if (src.eof)
@@ -84,32 +79,25 @@ struct Spawn
 
 		import std.stdio : stdout, stderr;
 		if (result != 0 && logLevel <= LogLevel.info) {
-			() @trusted { if (output != stdout) echo(output, stdout, "OUT"); } ();
+			() @trusted { if (processPipes.stdout != stdout) echo(processPipes.stdout, stdout, "OUT"); } ();
 		}
 		if (result != 0 && logLevel <= LogLevel.warning) {
-			() @trusted { if (error != stderr) echo(error, stderr, "ERR"); } ();
+			() @trusted { if (processPipes.stderr != stderr) echo(processPipes.stderr, stderr, "ERR"); } ();
 		}
 
 		return result;
 	}
 
 package:
-	Pid pid;
-	File input;
-	File output;
-	File error;
+	ProcessPipes processPipes;
 	LogLevel logLevel;
 }
 
 Spawn spawn(scope const(char[])[] args,
-			in LogLevel logLevel = defaultLogLevel,
-			File input_ = stdin,
-			File out_ = stdout,
-			File err_ = stderr) {
+			in LogLevel logLevel = defaultLogLevel,) {
 	import std.process : spawnProcess;
 	if (logLevel <= LogLevel.trace) .trace("Spawning ", args);
-	auto pid = spawnProcess(args, input_, out_, err_);
-	return typeof(return)(pid, input_, out_, err_, logLevel);
+	return typeof(return)(pipeProcess(args), logLevel);
 }
 
 /++ Variant of `std.stdio.write` that flushes `stdout` afterwards.

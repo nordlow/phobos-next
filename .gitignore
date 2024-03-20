@@ -3,6 +3,7 @@
 *.a
 .dub
 dub.selections.json
+dub.sdl.redub_cache_json
 *.lst
 *-test-library
 *-test-application

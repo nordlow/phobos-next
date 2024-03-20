@@ -24,8 +24,8 @@ void scanMagicFiles(string dir)
 	import std.ascii: isDigit;
 	import std.uni: isAlpha, isWhite;
 	import std.algorithm.iteration : splitter;
-
-	import nxt.algorithm.searching : startsWith, strip;
+	import nxt.algorithm.searching : startsWith;
+	import nxt.algorithm.mutation : strip;
 
 	size_t baseCount = 0;
 	size_t attrCount = 0;

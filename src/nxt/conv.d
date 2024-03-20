@@ -49,8 +49,8 @@ if (__traits(isArithmetic, T) && __traits(isIntegral, T)) {
 
 @safe pure nothrow @nogc unittest {
 	foreach (T; IntegralTypes) {
-		assert(!"".tryParse!T.isValid); // empty
-		assert(!"_".tryParse!T.isValid); // non-digit
+		assert(!"".tryParse!T.isValue); // empty
+		assert(!"_".tryParse!T.isValue); // non-digit
 		assert(*"+0".tryParse!T == 0);
 		assert(!*"+0".tryParse!T);
 		assert(*"+1".tryParse!T == 1);

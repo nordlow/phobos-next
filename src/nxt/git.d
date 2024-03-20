@@ -20,6 +20,7 @@ struct SHA1Digest {
 }
 
 /++ (Git) Repository URL.
+	See_Also: https://github.com/fubark/cosmic/blob/master/GitRepoStep.zig
  +/
 struct RepoURL {
 	import nxt.path : URL;
@@ -30,7 +31,7 @@ struct RepoURL {
 	alias _value this;
 }
 
-/++ (Git) Repository URL with optional sub-directory relative path.
+/++ (Git) Repository URL relative sub-directory `subDir` at `commit`.
  +/
 struct RepoURLDir {
 	import nxt.path : DirPath;
@@ -39,10 +40,26 @@ struct RepoURLDir {
 		this.subDir = subDir;
 	}
 	RepoURL url;
-	DirPath subDir; ///< Optional sub-directory in `url`. Can be both in absolute and relative.
+	DirPath subDir; ///< Sub-directory in `url`. Can be both in absolute and relative.
+	SHA1Digest commit;
 }
 
-struct RepositoryAndDir
+/++ (Git) Repository URL relative sub-files `subFiles` at `commit`.
+ +/
+struct RepoURLFiles {
+	import nxt.path : FilePath;
+	this(RepoURL url, FilePath[] subFiles = []) pure nothrow @nogc {
+		this.url = url;
+		this.subFiles = subFiles;
+	}
+	RepoURL url;
+	FilePath[] subFiles;
+	SHA1Digest commit;
+}
+
+/++ (Git) Repository URL accompanied with local clone directory path.
+ +/
+struct RepoAndDir
 {
 	import std.exception : enforce;
 	import nxt.path : DirPath, buildNormalizedPath, exists;

@@ -10,14 +10,12 @@ copyright "Copyright © 2023, Per Nordlöw"
 authors "Per Nordlöw <per.nordlow@gmail.com>"
 
 # dependency "arsd-official:terminal" version="*"
-dependency "mir-algorithm" version="*"
 # TODO: enable when works with test/lpgen/tcc-d2/dub.sdl
 # dependency "silly" version="~>1.2.0-dev.2"
-# dependency "argparse" version="*" # https://code.dlang.org/packages/argparse
 
 buildRequirements "allowWarnings"
 
-dflags "-vcolumns" "-preview=in" "-dip1000"
+dflags "-vcolumns" "-preview=in" "-dip1000" # TODO: "-preview=dip1021"
 # TODO: fails build: dflags "-preview=nosharedaccess"
 
 # TODO: lflags "-ltcmalloc"
@@ -29,8 +27,7 @@ buildType "unittest" {
    dflags "-fsanitize=address" "-fsanitize=leak" "-mcpu=native" platform="posix-ldc"
    dflags "-debug" platform="dmd"
    dflags "--d-debug" platform="ldc"
-   dflags "-preview=fieldwise" "-preview=rvaluerefparam"
-   dflags "-preview=bitfields" platform="dmd" # TODO: merge into dflags spec above when 2.101 has been merged into ldc and gdc
+   dflags "-preview=fieldwise" "-preview=rvaluerefparam" "-preview=bitfields" # TODO: "-preview=fixImmutableConv"
 }
 
 # TODO: make this pass

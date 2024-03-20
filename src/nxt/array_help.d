@@ -23,12 +23,11 @@ import core.internal.traits : Unqual;
  * See_Also: http://dpaste.dzfl.pl/d0059e6e6c09
  * See_Also: http://forum.dlang.org/post/oq0cd1$2ji3$1@digitalmars.com
  */
-Unqual!T[n] staticArray(T, size_t n)(T[n] x...) @trusted
+Unqual!T[n] staticArray(T, size_t n)(T[n] x) @trusted
 {
 	static if (__traits(isCopyable, T))  /+ TODO: remove when compiler does move for us +/
 		return x[];
-	else					  /+ TODO: remove `move` when compiler does it for us +/
-	{
+	else {					  /+ TODO: remove `move` when compiler does it for us +/
 		/+ TODO: remove `move` when compiler does it for us: +/
 		T[n] y = void;		// initialized below
 		import core.internal.traits : hasElaborateDestructor;
@@ -40,9 +39,7 @@ Unqual!T[n] staticArray(T, size_t n)(T[n] x...) @trusted
 			 */
 			foreach (const ix, ref value; x)
 				move(value, y[ix]);
-		}
-		else
-		{
+		} else {
 			import core.stdc.string : memcpy;
 			memcpy(y.ptr, x.ptr, n*T.sizeof); // fast
 		}
@@ -65,10 +62,8 @@ pure @safe unittest {
 
 /** Make a static array. */
 version (none)
-auto staticArrayAlternative() @safe
-{
-	static struct _staticArray
-	{
+auto staticArrayAlternative() @safe {
+	static struct _staticArray {
 		T[n] s(T, size_t n)(auto ref T[n] values) @safe @property { return values; }
 
 		T[0][n] opIndex(size_t n = T.length, T...)(T items) {
@@ -83,8 +78,7 @@ auto staticArrayAlternative() @safe
 }
 
 version (unittest) {
-	static struct US
-	{
+	static struct US {
 		this(this) @disable;
 		int x;
 		void f() { x = 42; }
@@ -100,7 +94,7 @@ pure nothrow @safe @nogc unittest {
 	auto b = "hello".s;
 	static assert(is(typeof(b) == char[5]));
 
-	auto x = s!ubyte(1, 2, 3);
+	auto x = (cast(ubyte[])[1u, 2u, 3u]).s;
 	static assert(is(typeof(x) == ubyte[3]));
 }
 
@@ -161,8 +155,7 @@ static size_t binBlockBytes(size_t bitCount) pure nothrow @safe @nogc
 size_t* makeUninitializedBitArray(alias Allocator)(size_t bitCount) @trusted pure nothrow @nogc
 	=> cast(typeof(return))Allocator.instance.allocate(binBlockBytes(bitCount));
 
-T[] makeArrayZeroed(T, alias Allocator)(size_t numBytes) @trusted pure nothrow @nogc
-{
+T[] makeArrayZeroed(T, alias Allocator)(size_t numBytes) @trusted pure nothrow @nogc {
 	import std.experimental.allocator : makeArray;
 	/+ TODO: activate +/
 	// static if (__traits(isZeroInit, T) &&
@@ -180,8 +173,7 @@ T[] makeArrayZeroed(T, alias Allocator)(size_t numBytes) @trusted pure nothrow @
 }
 
 /** Returns: an zero-initialized bit-array containing `bitCount` number of bits. */
-size_t[] makeBitArrayZeroed(alias Allocator)(size_t bitCount) @trusted pure nothrow @nogc
-{
+size_t[] makeBitArrayZeroed(alias Allocator)(size_t bitCount) @trusted pure nothrow @nogc {
 	version (D_Coverage) {} else pragma(inline, true);
 	return cast(typeof(return))makeArrayZeroed!(size_t, Allocator)(binBlockBytes(bitCount)); /+ TODO: check aligned allocate +/
 }

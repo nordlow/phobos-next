@@ -145,10 +145,9 @@ private void cwritePretty_(T)(T arg, in size_t depth = 0, in char[] name = [], i
 					if (i != 0)
 						wr(',');
 					cwritePretty_(element, 0, [],
-									   Format([], [], false, false), ptrs);
+								  Format(indentation: [], newLine: [], showType: false, hideInit: false), ptrs);
 				} else {
-					cwritePretty_(element, depth + 1, [],
-									   fmt, ptrs);
+					cwritePretty_(element, depth + 1, [], fmt, ptrs);
 				}
 			}
 			static if (!scalarE)
@@ -260,10 +259,10 @@ unittest {
 
 	S s = S(10, 20.5);
     Top top = { s, [s,s], new Cls(1), null, "example", [1, 2, 3] };
-    top.cwritePretty(0, "top", Format("\t", "\n", false, false));
-    top.cwritePretty(0, "top", Format("\t", "\n", false, true));
-    top.cwritePretty(0, "top", Format("\t", "\n", true, false));
-    top.cwritePretty(0, "top", Format("\t", "\n", true, true));
+    top.cwritePretty(0, "top", Format(indentation: "\t", newline:  "\n", showType: false, hideInit: false));
+    top.cwritePretty(0, "top", Format(indentation: "\t", newline: "\n", showType: false, hideInit: true));
+    top.cwritePretty(0, "top", Format(indentation: "\t", newline: "\n", showType: true, hideInit: false));
+    top.cwritePretty(0, "top", Format(indentation: "\t", newline: "\n", showType: true, hideInit: true));
 }
 
 /** Array-specialization of `indexOf` with default predicate.

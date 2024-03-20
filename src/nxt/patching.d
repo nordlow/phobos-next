@@ -2,6 +2,7 @@ module nxt.patching;
 
 /** Patch file handling.
  */
+version (none) // TODO: enable
 struct Patch
 {
 	import nxt.path : Path, DirPath;

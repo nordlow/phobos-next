@@ -15,9 +15,8 @@ struct GzipFileInputRange
 	import std.stdio : File;
 	import std.traits : ReturnType;
 
-	enum chunkSize = 0x4000;	/+ TODO: find optimal value via benchmark +/
-
-	enum defaultExtension = `.gz`;
+	static immutable chunkSize = 0x4000;	/+ TODO: find optimal value via benchmark +/
+	static immutable defaultExtension = `.gz`;
 
 	this(in FilePath path) @trusted
 	{
@@ -124,7 +123,7 @@ class DecompressByLine(BlockInputRange)
 				ubyte[] currentFronts = _range.bufferFrontChunk;
 				// `_range` is mutable so sentinel-based search can kick
 
-				enum useCountUntil = false;
+				static immutable useCountUntil = false;
 				static if (useCountUntil)
 				{
 					import std.algorithm.searching : countUntil;
@@ -235,9 +234,9 @@ struct ZlibFileInputRange
 	   especially for inflate(). If the memory is available, buffers sizes on
 	   the order of 128K or 256K bytes should be used.
 	*/
-	enum chunkSize = 128 * 1024; // 128K
+	static immutable chunkSize = 128 * 1024; // 128K
 
-	enum defaultExtension = `.gz`;
+	static immutable defaultExtension = `.gz`;
 
 	@safe:
 
@@ -313,9 +312,9 @@ struct Bz2libFileInputRange
 {
 	import std.file : FileException;
 
-	enum chunkSize = 128 * 1024; // 128K. TODO: find optimal value via benchmark
-	enum defaultExtension = `.bz2`;
-	enum useGC = false;		 /+ TODO: generalize to allocator parameter +/
+	static immutable chunkSize = 128 * 1024; // 128K. TODO: find optimal value via benchmark
+	static immutable defaultExtension = `.bz2`;
+	static immutable useGC = false;		 /+ TODO: generalize to allocator parameter +/
 
 @safe:
 

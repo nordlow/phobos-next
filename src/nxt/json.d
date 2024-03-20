@@ -28,7 +28,7 @@ JSONValue readJSON(const FilePath path, in JSONOptions options = JSONOptions.non
 
 	alias Sink = Appender!(CodeUnitType[]);
 
-	const fmt = Format(false, true);
+	const fmt = Format(packIntegrals: false, useNativeByteOrder: true);
 	const text = path.str.readText();
 
 	FilePath cachePath;

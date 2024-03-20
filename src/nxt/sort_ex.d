@@ -42,7 +42,7 @@ private static template xtorFun(alias xtor)
 	import std.traits: isIntegral;
 	static if (is(typeof(xtor) : string))
 	{
-		auto ref xtorFun(T)(auto return ref T a)
+		auto ref xtorFun(T)(auto ref return T a)
 		{
 			version (LDC) pragma(inline, true);
 			mixin("with (a) { return " ~ xtor ~ "; }");

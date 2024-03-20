@@ -191,10 +191,10 @@ version (linux)
 unittest {
 	import std.stdio: File, writeln;
 	import std.algorithm.searching: count;
-	import tempfs : tempFilePath;
+	import nxt.file : tempFile;
 	import std.file : write;
 
-	const path = tempFilePath("x");
+	const path = tempFile("x");
 
 	writeln(path);
 	File(path, "wb").write("a\n");

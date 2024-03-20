@@ -13,7 +13,9 @@ importPaths "src"
 dflags "-vcolumns" "-preview=in" "-dip1000"
 
 dependency "phobos-next" path="../"
-libs "tcc" platform="posix"     # TODO: apt install libtcc-dev on demand
+
+preBuildCommands "bash provision.sh"
+libs "tcc"
 
 buildType "unittest" {
    dflags "-g" "-checkaction=context" "-allinst" "-unittest"

@@ -4,27 +4,39 @@
  * Test: ldmd2 -d -fsanitize=address -I.. -i -debug -g -checkaction=context -allinst -unittest -main -run serialization.d
  * Debug: ldmd2 -d -fsanitize=address -I.. -i -debug -g -checkaction=context -allinst -unittest -main serialization.d && lldb serialization
  *
+ * TODO: Detect and pack consecutive bitfields using new `__traits(isBitfield, T)`
+ *
  * TODO: Give compile-time error message when trying to serialize `void*` but not `void[]`
+ *
  * TODO: Allocator supoprt
+ *
  * TODO: Disable (de)serialization of nested types via `!__traits(isNested, T)`
+ *
  * TODO: Support serialization of cycles and remove `Code.failureCycle` and `sc`.
+ *
  * TODO: Use direct field setting for T only when __traits(isPOD, T) is true
          otherwise use __traits(getOverloads, T, "__ctor").
 		 Try to use this to generalize (de)serialization of `std.json.JSONValue`
 		 to a type-agnostic logic inside inside generic main generic `serializeRaw`
 		 and `deserializeRaw`.
+ *
  * TODO: Support bit-blitting of unions of only non-pointer fields.
+ *
  * TODO: Only disable union's that contain any pointers.
-         Detect using __traits, std.traits or gc_traits.d.
+ *       Detect using __traits, std.traits or gc_traits.d.
+ *
  * TODO: Avoid call to `new` when deserializing arrays of immutable elements
  *       (and perhaps classes) when `Sink` element type `E` is immutable.
+ *
  * TODO: Exercise `JSONValue` (de)serialization with `nxt.sampling`.
+ *
  * TODO: Optimize (de)serialization when `__traits(hasIndirections)` is avaiable and
          `__traits(hasIndirections, T)` is false and `enablesSlicing` is set.
  */
 module nxt.serialization;
 
 import nxt.visiting : Addresses;
+import nxt.dip_traits : hasPreviewBitfields;
 
 version = serialization_json_test;
 
@@ -349,7 +361,7 @@ version (none)
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			static foreach (Sink; AliasSeq!(ArraySink, AppenderSink)) {{ // trigger instantiation
 				Sink sink;
 				alias T = void[];
@@ -369,7 +381,7 @@ version (none)
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			static foreach (Sink; AliasSeq!(ArraySink, AppenderSink)) {{ // trigger instantiation
 				Sink sink;
 				alias T = TestEnum;
@@ -389,7 +401,7 @@ version (none)
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			struct S {}
 			struct U {}
@@ -412,7 +424,7 @@ version (none)
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			alias T = TestClass;
 			T t = new T(11,22);
@@ -433,7 +445,7 @@ version (none) /+ TODO: activate +/
 @trusted unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			alias T = CycleStruct;
 			T t = new T();
@@ -457,7 +469,7 @@ version (none) /+ TODO: activate +/
 @trusted unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			alias T = CycleClass;
 			T t = new T(42);
@@ -476,7 +488,7 @@ version (none) /+ TODO: activate +/
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			struct T { static int _; }
 			T t;
@@ -494,7 +506,7 @@ version (none) /+ TODO: activate +/
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			struct T { immutable int _; }
 			T t;
@@ -508,11 +520,33 @@ version (none) /+ TODO: activate +/
 	}
 }
 
+/// struct with bitfields
+@safe pure nothrow unittest {
+	static if (hasPreviewBitfields) {
+		foreach (const packIntegrals; [false, true]) {
+			foreach (const useNativeByteOrder; [false, true]) {
+				const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
+				AppenderSink sink;
+				alias W = ubyte;
+				struct T { W b_0_2 : 2; W b_2_6 : 6; }
+				static assert(T.sizeof == W.sizeof);
+				T t;
+				assert(sink.serializeRaw(t, fmt) == Status(Status.Code.successful));
+				assert(sink[].length == (packIntegrals ? 2 * W.sizeof : 2*T.sizeof));
+				T u;
+				assert(sink.deserializeRaw(u, fmt) == Status(Status.Code.successful));
+				assert(sink[].length == 0);
+				assert(t == u);
+			}
+		}
+	}
+}
+
 /// {char|wchar|dchar}
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			static foreach (T; CharTypes) {{
 				foreach (const T t; 0 .. 127+1) {
@@ -532,7 +566,7 @@ version (none) /+ TODO: activate +/
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			import std.meta : AliasSeq;
 			static foreach (E; CharTypes) {{
@@ -553,7 +587,7 @@ version (none) /+ TODO: activate +/
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			import std.meta : AliasSeq;
 			static foreach (T; AliasSeq!(byte, short, int, long)) {{
@@ -574,7 +608,7 @@ version (none) /+ TODO: activate +/
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			import std.meta : AliasSeq;
 			import core.simd;
@@ -596,7 +630,7 @@ version (none) /+ TODO: activate +/
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			import std.meta : AliasSeq;
 			static foreach (T; AliasSeq!(ubyte, ushort, uint, ulong)) {{
@@ -617,7 +651,7 @@ version (none) /+ TODO: activate +/
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			import std.meta : AliasSeq;
 			static foreach (T; AliasSeq!(float, double, real)) {{
@@ -638,7 +672,7 @@ version (none) /+ TODO: activate +/
 @trusted pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			import std.meta : AliasSeq;
 			static foreach (E; AliasSeq!(uint, ulong)) {{
@@ -661,7 +695,7 @@ version (none) /+ TODO: activate +/
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			enum n = 3;
 			alias T = int[n];
@@ -680,7 +714,7 @@ version (none) /+ TODO: activate +/
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			alias T = int[];
 			T t = [11,22,33];
@@ -699,7 +733,7 @@ version (none) /+ TODO: activate +/
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			alias T = int[int];
 			T t = [1: 1, 2: 2];
@@ -717,7 +751,7 @@ version (none) /+ TODO: activate +/
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			alias T = int[string];
 			T t = ["1": 3, "2": 4];
@@ -735,7 +769,7 @@ version (none) /+ TODO: activate +/
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			import std.array : Appender;
 			AppenderSink sink;
 			alias A = int[];
@@ -755,7 +789,7 @@ version (none) /+ TODO: activate +/
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			import std.array : Appender;
 			AppenderSink sink;
 			alias A = int[];
@@ -780,7 +814,7 @@ version (none) /+ TODO: activate +/
 @safe pure nothrow unittest {
 	foreach (const packIntegrals; [false, true]) {
 		foreach (const useNativeByteOrder; [false, true]) {
-			const fmt = Format(packIntegrals, useNativeByteOrder);
+			const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 			AppenderSink sink;
 			struct P { int x, y; int* p1, p2; char[3] ch3; char ch; wchar wc; dchar dc; int[int] aa; }
 			struct T { int x, y; long l; float f; double d; real r; bool b1, b2; P p; }
@@ -901,7 +935,7 @@ version (serialization_json_test)
 	]) {
 		foreach (const packIntegrals; [false, true]) {
 			foreach (const useNativeByteOrder; [false, true]) {
-				const fmt = Format(packIntegrals, useNativeByteOrder);
+				const fmt = Format(packIntegrals: packIntegrals, useNativeByteOrder: useNativeByteOrder);
 				AppenderSink sink;
 				alias T = JSONValue;
 				const T t = s.parseJSON();

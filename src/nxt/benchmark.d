@@ -4,6 +4,7 @@
 	License: $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
 	Authors: $(WEB Per Nordlöw)
 
+	TODO: Mimic benchmark.run at https://docs.modular.com/mojo/stdlib/benchmark/benchmark
 	TODO: Use ggplot or similar to visualize results.
 	TODO: Use `nxt.sampling` to generate test data.
 */

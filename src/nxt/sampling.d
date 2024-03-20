@@ -4,19 +4,28 @@
  */
 module nxt.sampling;
 
+alias Offset = size_t;
 alias Length = size_t;
 
+/** Span.
+ * TODO: Relate|Unite with `nxt.limits.Limits`.
+ */
 struct Span {
-	Length min = 0;
-	Length max = 1;
-	invariant (min <= max);
+	Offset offset = 0;
+	Length length = 1;
+}
+
+@safe pure nothrow @nogc unittest {
+	Span x;
+	assert(x == Span.init);
 }
 
 /++ Format (flags) of sampling. +/
 struct Format {
 	/// Array length span.
-	Span arrayLength = Span(0,3);
-	/// Field recursion depth span for recursive aggregate type with unbounded depth like `std.json.JSONValue`.
+	Span arrayLengthSpan = Span(0,3);
+	/++ Field recursion depth span for recursive aggregate type with unbounded
+		depth like `std.json.JSONValue`. +/
 	Span fieldDepth = Span(Length.min, 3);
 }
 
@@ -31,7 +40,7 @@ auto sample(T)(ref Random rnd, in Format fmt = Format.init) {
 	static if (is(T == U[], U)) { // isArray
 		import std.random : uniform;
 		T t;
-		t.length = uniform(fmt.arrayLength.min, fmt.arrayLength.max+1, rnd);
+		t.length = uniform(fmt.arrayLengthSpan.offset, fmt.arrayLengthSpan.length, rnd);
 		foreach (ref e; t)
 			e = rnd.sample!(U);
 		return t;
@@ -57,7 +66,7 @@ auto sample(T)(ref Random rnd, in Format fmt = Format.init) {
 @safe unittest {
     auto rnd = Random(42);
 	foreach (_; 0 .. 100) {
-		auto s = rnd.sample!(char[])(Format(Span(0,10)));
+		auto s = rnd.sample!(char[])(Format(arrayLengthSpan: Span(0,10)));
 		// dbg(s);
 	}
 }

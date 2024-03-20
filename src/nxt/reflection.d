@@ -1,4 +1,4 @@
-/++ Resuable primitives for compile-time reflection.
+/++ Resuable primitives for compile-time reflection (introspection).
 	Used to implement design-by-introspection.
  +/
 module nxt.reflection;

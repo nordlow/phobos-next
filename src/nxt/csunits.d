@@ -8,8 +8,7 @@ module nxt.csunits;
 /** Prefix Multipliers.
 	See_Also: http://searchstorage.techtarget.com/definition/Kilo-mega-giga-tera-peta-and-all-that
 */
-enum PrefixMultipliers
-{
+enum PrefixMultipliers {
 	yocto = -24, // y
 	zepto = -21, // z
 	atto  = -18, // a
@@ -34,7 +33,8 @@ enum PrefixMultipliers
 }
 
 /** Bytes (Count) Unit. */
-struct Bytes(T: ulong) {
+struct Bytes {
+	alias T = size_t;
 	alias _value this;
 
 	inout(T) value() @property inout @safe pure nothrow => _value;
@@ -52,9 +52,7 @@ struct Bytes(T: ulong) {
 		if (inBits) {
 			name = "Bits"; // Unqual!(typeof(this)).stringof; // Unqual: "const(Bytes)" => "Bytes"
 			val = 8*_value;
-		}
-		else
-		{
+		} else {
 			name = "Bytes"; // Unqual!(typeof(this)).stringof; // Unqual: "const(Bytes)" => "Bytes"
 			val = _value;
 		}
@@ -86,17 +84,17 @@ struct Bytes(T: ulong) {
 		mixin("_value = _value " ~ op ~ "rhs;"); return _value;
 	}
 
-	T opAssign(T rhs, string file = __FILE__, int line = __LINE__) {
+	T opAssign(T rhs) {
 		return _value = rhs;
 	}
 
-/* private: */
-	T _value;
+	private T _value;
 }
 
 /** $(D Bytes) Instantiator. */
-auto bytes(T)(T value) => Bytes!T(value);
+auto bytes(size_t value) => Bytes(value);
 
+///
 pure nothrow @safe @nogc unittest {
 	immutable a = bytes(1);
 	immutable b = bytes(1);

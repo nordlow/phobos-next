@@ -66,6 +66,12 @@ import nxt.find_ex : findAcronymAt, FindContext;
 import nxt.debugio;
 import nxt.container.dynamic_array;
 
+/++ String Substitution. +/
+struct Substitution {
+	string src;
+	string dst;
+}
+
 @safe:
 
 /++ Untyped data.
@@ -79,7 +85,14 @@ inout(char)[] matchFirst(scope return /+ref+/ inout(char)[] input, const Node no
 	return input.match(node);
 }
 
-/// ditto
+///
+@safe pure unittest {
+	const x = "a";
+	assert(x.matchFirst(lit("b")).length == 0);
+	assert(x.matchFirst(lit("b")) is []);
+}
+
+///
 @safe pure unittest {
 	const x = "ab";
 	assert(x.matchFirst(lit(x[0 .. 1])) is x[0 .. $]);
@@ -93,7 +106,7 @@ auto ref matchFirst(in return /+ref+/ Data input, const Node node) pure nothrow 
 	return node.findRawAt(input, 0);
 }
 
-/// ditto
+///
 @safe pure unittest {
 	/+const+/ Data x = [1,2];
 	assert(x.matchFirst(lit(x[0 .. 1])) is x[0 .. $]);
@@ -180,10 +193,18 @@ abstract extern(C++) class Node { extern(D):
 final extern(C++) class Lit : Node { extern(D):
 @safe pure nothrow:
 
-	this(string bytes_) { assert(!bytes_.empty); this(bytes_.representation); }
-	this(ubyte ch) { this._bytes ~= ch; }
-	this(Data bytes_) { this._bytes = bytes_; }
-	this(immutable Data bytes_) { this._bytes = bytes_.dup; }
+	this(string bytes_) in(!bytes_.empty) {
+		this(bytes_.representation);
+	}
+	this(ubyte ch) {
+		this._bytes ~= ch;
+	}
+	this(Data bytes_) /+in(!bytes_.empty)+/ {
+		this._bytes = bytes_;
+	}
+	this(immutable Data bytes_) /+in(!bytes_.empty)+/ {
+		this._bytes = bytes_.dup;
+	}
 
 	override size_t atRaw(in Data input, size_t soff = 0) const {
 		const l = _bytes.length;
@@ -191,8 +212,11 @@ final extern(C++) class Lit : Node { extern(D):
 				_bytes[] == input[soff..soff + l]) ? l : size_t.max; // same contents
 	}
 
-	override const(Data) findRawAt(const Data input, size_t soff = 0, in Node[] enders = []) const nothrow {
-		return input[soff..$].find(_bytes); // reuse std.algorithm: find!
+	override const(Data) findRawAt(const Data input, size_t soff = 0, in Node[] enders = []) const nothrow @trusted {
+		const result = input[soff..$].find(_bytes); // Uses std.algorithm.find
+		/+ IMHO, find should return null on miss for non-empty needle (`_bytes`)
+		   so adjust so that it does. +/
+		return result.length != 0 ? result : [];
 	}
 
 @property nothrow @nogc:
@@ -210,7 +234,7 @@ override:
 /++ Literal. +/
 auto lit(Args...)(Args args) @safe pure nothrow => new Lit(args); // instantiator
 
-/++ Full|Exact literal. +/
+/++ Full|Exact|Complete (Anchored) literal. +/
 auto full(Args...)(Args args) @safe pure nothrow => seq(bob, lit(args), eob); // instantiator
 
 pure nothrow @safe unittest {
@@ -259,8 +283,7 @@ version (none) // TODO: enable if and when I need this
 final extern(C++) class Acronym : Node { extern(D):
 @safe pure nothrow:
 
-	this(string bytes_, FindContext ctx = FindContext.inSymbol) {
-		assert(!bytes_.empty);
+	this(string bytes_, FindContext ctx = FindContext.inSymbol) in(!bytes_.empty) {
 		this(bytes_.representation, ctx);
 	}
 
@@ -515,7 +538,7 @@ final extern(C++) class Alt : SPatt { extern(D):
 				const a0 = alts[0].tryGetConstant;
 				if (!a0.empty) {
 					auto hit = input[soff..$].find(a0); // Use: second argument to return alt_hix
-					return hit;
+					return hit.length != 0 ? hit : [];
 				} else
 					return alts[0].findRawAt(input, soff, enders); // recurse to it
 			case 2:
